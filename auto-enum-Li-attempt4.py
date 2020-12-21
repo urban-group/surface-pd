@@ -234,9 +234,9 @@ def automate_surface(target_slab, to_vasp=False):
     volume = slab_tgt.volume
 
     # Enumerate with maximum unit cell of 2
-    # composition = [1, 0.75, 0.5, 0.25, 0]
-    composition = [1, 0.5, 0]
-    # composition = [0.5]
+    composition = [1, 0.75, 0.5, 0.25, 0]
+    # composition = [1, 0.5, 0]
+    # composition = [0.75]
     num = 0
     for i in composition:
         for j in composition:
@@ -254,31 +254,39 @@ def automate_surface(target_slab, to_vasp=False):
             structures = enum.apply_transformation(surface_structure_partial, return_ranked_list=2000)
 
             # C-parameter
-            new_structure = []
+            new_structures = []
             for k, s in enumerate(structures):
                 # print (s['structure'].volume)
                 # Keep volume constant and c lattice parameter unchanged
                 if -1 < s['structure'].lattice.abc[2] - c < 1 and -1 < s['structure'].volume - 2 * volume < 1:
-                    new_structure.append(structures[k]['structure'])
-            num += len(new_structure)
-            print(f'The enumeration found {len(structures)} and {len(new_structure)} '
+                    new_structures.append(structures[k]['structure'])
+            num += len(new_structures)
+            print(f'The enumeration found {len(structures)} and {len(new_structures)} '
                   f'distinct structures for {j * 100}% Li and {i * 100}% O '
                   f'before and after filter respectively.')
 
             # Add selective dynamics for enumerated sites
-            for s in new_structure:
-                for t in s:
-                    if 'Na' or 'F' in t:
+            for structure in new_structures:
+                # print (structure)
+                for t in structure:
+                    # print (t.properties)
+                    if 'Na' in t:
+                        # print('Yes')
                         t.properties = {'selective_dynamics': [True, True, True]}
-                    else:
+                    if 'F' in t:
+                        # print ('Yes')
+                        t.properties = {'selective_dynamics': [True, True, True]}
+                    if t.properties['selective_dynamics'] == None:
                         t.properties = {'selective_dynamics': [False, False, False]}
-
             # Symmetrize structure models
             symmetrized_structure = []
-            for s in new_structure:
+            for s in new_structures:
+                # print (s)
+                # print(s.site_properties)
                 # print(s.lattice.abc[2])
                 s.replace_species({'Na': 'Li', 'F': 'O'})
                 symmetrized_structure.append(symmetrize_top_base(s))
+
 
             if to_vasp:
                 # Generate structure models
@@ -292,5 +300,6 @@ def automate_surface(target_slab, to_vasp=False):
 
 #%% Run
 automate_surface('/Users/xinhaoli/Desktop/2020-Automated-calculation-of-surface-PDs/'
-                 'attempt4-with-layer-classification/2x1x-1/1_LiNiO2_mp-865631_super_2x1x-1.vasp')
-
+                 'attempt4-with-layer-classification/2x1x-1/1_LiNiO2_mp-865631_super_2x1x-1.vasp',
+                 to_vasp=False
+                 )
