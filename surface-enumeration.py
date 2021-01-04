@@ -52,7 +52,8 @@ def equal_lattices(lat1, lat2, dtol=0.001, atol=0.01):
         np.abs(np.array(lat1.angles) - np.array(lat2.angles)) > atol)
     return lencheck and angcheck
 
-#%%
+
+# %%
 def group_atoms_by_layer(o_layer, diff=0.01, max_diff=0.03):
     """
     This function is used to group misclassified atoms into the right layers. For example, c_atom1 = 0.01,
@@ -83,9 +84,9 @@ def group_atoms_by_layer(o_layer, diff=0.01, max_diff=0.03):
             excluded_heights.add(curr_height)
     return res
 
+
 # %%%%%%%%%%%%%%%%%%%%%%% NEW LAYER CLASSIFICATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 def layer_classification(input_structure):
-
     """
     This function is used to determine the c fractional coordinates of central region of the slab models as well as
     the surface metal and O atoms.
@@ -116,7 +117,7 @@ def layer_classification(input_structure):
             else:
                 TM_layers[round(s.frac_coords[2], 2)] += 1
         else:
-            if round(s.frac_coords[2], 2)not in O_layers:
+            if round(s.frac_coords[2], 2) not in O_layers:
                 O_layers[round(s.frac_coords[2], 2)] = 1
             else:
                 O_layers[round(s.frac_coords[2], 2)] += 1
@@ -153,7 +154,8 @@ def layer_classification(input_structure):
         # print('The structure has polar surfaces.')
         return lower_limit, upper_limit, surface_TM_Li, surface_O
 
-# structure = Structure.from_file('LNO_001/2x1x1/Li_terminated_CONTCAR-LiNiO2_mp-865631_super_2x1x1.vasp')
+
+# structure = Structure.from_file('LNO_001/1x2x1/Li_terminated_CONTCAR-LiNiO2_mp-865631_super_1x2x1.vasp')
 # layer_classification(structure)
 # distance = layer_classification(structure)[2] - layer_classification(structure)[1]
 # distance
@@ -263,7 +265,7 @@ def surface_substitute(target_slab, subs1, subs2, direction=2):
     # New way
     max_frac_O = layer_classification(slab_tgt)[-1]
     max_frac_Li = layer_classification(slab_tgt)[-2]
-    distance = layer_classification(slab_tgt)[2] - layer_classification(slab_tgt)[1] # Surface (outermost) TM/Li
+    distance = layer_classification(slab_tgt)[2] - layer_classification(slab_tgt)[1]  # Surface (outermost) TM/Li
     # c fraction coords - uppper limit of center fixed region
 
     # Define criteria to determine surface O and Li atoms
@@ -297,6 +299,7 @@ def surface_substitute(target_slab, subs1, subs2, direction=2):
     # slab_surface_substitute.to(fmt='poscar', filename='104-subs.vasp')
     return slab_surface_substitute
 
+
 # slab_104 = surface_substitute('LNO_104/LNO-104-1x2x1-shifted-3-fixed.vasp', subs1='F', subs2='Na')
 
 # %% Generate enumerated surfaces automatically
@@ -328,12 +331,15 @@ def automate_surface(target_slab, to_vasp=False):
     volume = slab_tgt.volume
 
     # Enumerate with maximum unit cell of 2
-    composition = [1, 0.75, 0.5, 0.25, 0]
+    # composition_Li = [1, 0.833, 0.667, 0.5, 0.333, 0.167, 0] # For 3 layers relaxed only
+    composition_Li = [1, 0.75, 0.5, 0.25, 0]
+    composition_O = [1, 0.75, 0.5, 0.25, 0]
     # composition = [1, 0.5, 0]
-    # composition = [0.75]
+    # composition1 = [1]
+    # composition2 = [0.5]
     num = 0
-    for i in composition:
-        for j in composition:
+    for i in composition_O:
+        for j in composition_Li:
             if i == 1 and j == 1 or i == 0 and j == 0:
                 continue
             subs = SubstitutionTransformation({"F": {"F": i}, "Na": {"Na": j}})
@@ -350,7 +356,7 @@ def automate_surface(target_slab, to_vasp=False):
             # C-parameter and cell size check
             new_structures = []
             for k, s in enumerate(structures):
-                # print (s['structure'].volume)
+                # print (s['structure'])
                 # Keep volume constant and c lattice parameter unchanged
                 if -1 < s['structure'].lattice.abc[2] - c < 1 and -1 < s['structure'].volume - 2 * volume < 1:
                     new_structures.append(structures[k]['structure'])
@@ -361,7 +367,7 @@ def automate_surface(target_slab, to_vasp=False):
 
             # Add selective dynamics for enumerated sites
             for structure in new_structures:
-                # print (structure)
+                # print(structure)
                 for t in structure:
                     # print (t.properties)
                     if 'Na' in t:
@@ -371,7 +377,10 @@ def automate_surface(target_slab, to_vasp=False):
                         # print ('Yes')
                         t.properties = {'selective_dynamics': [True, True, True]}
                     if t.properties['selective_dynamics'] is None:
-                        t.properties = {'selective_dynamics': [False, False, False]}
+                        if layer_classification(slab_tgt)[0]-0.01 <= t.frac_coords[2] <= layer_classification(slab_tgt)[1]+0.01:
+                            t.properties = {'selective_dynamics': [False, False, False]}
+                        else:
+                            t.properties = {'selective_dynamics': [True, True, True]}
             # Symmetrize structure models
             symmetrized_structure = []
             for s in new_structures:
@@ -393,6 +402,6 @@ def automate_surface(target_slab, to_vasp=False):
 
 
 # %% Run
-automate_surface('LNO_104/LNO-104-1x2x1-shifted-3-fixed.vasp',
+automate_surface('LNO_104/LNO-104-1x2x1-shifted-4-fixed.vasp',
                  to_vasp=False
                  )
