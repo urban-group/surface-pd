@@ -22,7 +22,7 @@ __email__ = "xl2778@columbia.edu"
 __date__ = "2021-01-05"
 
 
-def automate_surface(target_slab, to_vasp=False):
+def automate_surface(target_slab, target_cell_size=1, to_vasp=False):
     """
     The general purpose of this code is used to generate slab models
     with O and Li vacancies automatically.  The first step we are gonna
@@ -51,7 +51,7 @@ def automate_surface(target_slab, to_vasp=False):
 
     """
 
-    target_cell_size = 2
+    print("target_cell_size = {}".format(target_cell_size))
 
     # Load initial slab model with no vacancies on the surface
     slab_tgt = surface_substitute(target_slab, subs1='F', subs2='Na')
@@ -65,8 +65,8 @@ def automate_surface(target_slab, to_vasp=False):
     # For 3 layers relaxed only (generates ~1000 structures)
     # composition_Li = [1, 0.833, 0.667, 0.5, 0.333, 0.167, 0]
     # For 2 layers
-    composition_Li = [1, 0.75, 0.5, 0.25, 0]
-    composition_O = [1, 0.75, 0.5, 0.25, 0]
+    composition_Li = [1, 0.75, 0.5, 0.25]
+    composition_O = [1, 0.75, 0.5, 0.25]
     # composition = [1, 0.5, 0]
     # composition1 = [1]
     # composition2 = [0.5]
@@ -81,7 +81,7 @@ def automate_surface(target_slab, to_vasp=False):
             surface_structure_partial = subs.apply_transformation(slab_tgt)
             # FIX: min_cell_size cannot be set to anything greater than 1
             enum = EnumerateStructureTransformation(
-                min_cell_size=1, max_cell_size=target_cell_size)
+                min_cell_size=target_cell_size, max_cell_size=target_cell_size)
             structures = enum.apply_transformation(
                 surface_structure_partial, return_ranked_list=2000)
 
@@ -151,7 +151,14 @@ if __name__ == "__main__":
         help="Generate POSCAR files of enumerated structures.",
         action="store_true")
 
+    parser.add_argument(
+        "--target-cell-size", "-s",
+        help="Target cell size relative to input cell (default: 1).",
+        type=int,
+        default=1)
+
     args = parser.parse_args()
 
-    # 'LNO_104/LNO-104-1x2x1-shifted-4-fixed.vasp'
-    automate_surface(args.input_file, to_vasp=args.generate_poscars)
+    automate_surface(args.input_file,
+                     target_cell_size=args.target_cell_size,
+                     to_vasp=args.generate_poscars)
