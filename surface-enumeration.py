@@ -402,6 +402,6 @@ def automate_surface(target_slab, to_vasp=False):
 
 
 # %% Run
-automate_surface('LNO_104/LNO-104-1x2x1-shifted-4-fixed.vasp',
+automate_surface('data/LNO_104/LNO-104-1x2x1-shifted-4-fixed.vasp',
                  to_vasp=False
                  )
