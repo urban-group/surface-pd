@@ -310,7 +310,7 @@ def surface_substitute(target_slab, subs1, subs2, direction=2):
     idx_surface_O = indices(slab_tgt, surface_O)
     idx_surface_Li = indices(slab_tgt, surface_Li)
 
-    # Substitute surface O and Li atoms with F (fluorine) and Na (sodium)
+    # Substitute surface O and Li atoms with dummy species
     slab_surface_substitute = slab_tgt.copy()
     for i in range(len(slab_surface_substitute)):
         if i in idx_surface_O:
@@ -321,5 +321,5 @@ def surface_substitute(target_slab, subs1, subs2, direction=2):
             slab_surface_substitute.replace(
                 i, subs2,
                 properties={'selective_dynamics': [True, True, True]})
-    # slab_surface_substitute.to(fmt='poscar', filename='104-subs.vasp')
+    # slab_surface_substitute.to(fmt='poscar', filename='001-subs.vasp')
     return slab_surface_substitute
