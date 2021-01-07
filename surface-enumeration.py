@@ -332,8 +332,8 @@ def automate_surface(target_slab, to_vasp=False):
 
     # Enumerate with maximum unit cell of 2
     # composition_Li = [1, 0.833, 0.667, 0.5, 0.333, 0.167, 0] # For 3 layers relaxed only
-    composition_Li = [1, 0.75, 0.5, 0.25, 0]
-    composition_O = [1, 0.75, 0.5, 0.25, 0]
+    composition_Li = [1, 0.75, 0.5, 0.25]
+    composition_O = [1, 0.75, 0.5, 0.25]
     # composition = [1, 0.5, 0]
     # composition1 = [1]
     # composition2 = [0.5]
@@ -344,7 +344,7 @@ def automate_surface(target_slab, to_vasp=False):
                 continue
             subs = SubstitutionTransformation({"F": {"F": i}, "Na": {"Na": j}})
             surface_structure_partial = subs.apply_transformation(slab_tgt)
-            enum = EnumerateStructureTransformation(min_cell_size=1, max_cell_size=2)
+            enum = EnumerateStructureTransformation(min_cell_size=4, max_cell_size=4)
 
             """
             Can not set min_cell_size = 2 here to avoid the criteria in volume check
@@ -358,7 +358,7 @@ def automate_surface(target_slab, to_vasp=False):
             for k, s in enumerate(structures):
                 # print (s['structure'])
                 # Keep volume constant and c lattice parameter unchanged
-                if -1 < s['structure'].lattice.abc[2] - c < 1 and -1 < s['structure'].volume - 2 * volume < 1:
+                if -1 < s['structure'].lattice.abc[2] - c < 1 and -1 < s['structure'].volume - 4 * volume < 1:
                     new_structures.append(structures[k]['structure'])
             num += len(new_structures)
             print(f'The enumeration found {len(structures)} and {len(new_structures)} '
@@ -402,6 +402,6 @@ def automate_surface(target_slab, to_vasp=False):
 
 
 # %% Run
-automate_surface('data/LNO_104/LNO-104-1x2x1-shifted-4-fixed.vasp',
+automate_surface('data/LNO_001/1x1x1/Li_terminated_CONTCAR-LiNiO2_mp-865631_super_1x1x1.vasp',
                  to_vasp=False
                  )
