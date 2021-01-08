@@ -104,38 +104,25 @@ def automate_surface(target_slab,
 
     for i in composition_O:
         for j in composition_Li:
-            if (i == 1 and j == 1) or (i == 0 and j == 0):
+            try:
+                subs = SubstitutionTransformation(
+                    {O_replacement: {O_replacement: i},
+                     Li_replacement: {Li_replacement: j}})
+                surface_structure_partial = subs.apply_transformation(
+                    slab_tgt)
+                enum = EnumerateStructureTransformation(
+                    min_cell_size=target_cell_size,
+                    max_cell_size=target_cell_size)
+                structures = enum.apply_transformation(
+                    surface_structure_partial, return_ranked_list=2000)
+            except:
+                print(f'******************** Unable to enumerate the'
+                      f' {j * 100}% lithium and {i * 100}% oxygen directly'
+                      f'.********************')
                 continue
-            if (i == 0) or (j == 0):
-                try:
-                    subs = SubstitutionTransformation(
-                        {O_replacement: {O_replacement: i},
-                         Li_replacement: {Li_replacement: j}})
-                    surface_structure_partial = subs.apply_transformation(
-                        slab_tgt)
-                    enum = EnumerateStructureTransformation(
-                        min_cell_size=target_cell_size,
-                        max_cell_size=target_cell_size)
-                    structures = enum.apply_transformation(
-                        surface_structure_partial, return_ranked_list=2000)
-                except AttributeError:
-                    print(f'******************** Unable to enumerate the'
-                          f' {j * 100}% lithium and {i * 100}% oxygen directly'
-                          f'.********************')
-                    continue
-                else:
-                    pass
+            else:
+                pass
 
-            subs = SubstitutionTransformation(
-                {O_replacement: {O_replacement: i},
-                 Li_replacement: {Li_replacement: j}})
-            surface_structure_partial = subs.apply_transformation(
-                slab_tgt)
-            enum = EnumerateStructureTransformation(
-                min_cell_size=target_cell_size,
-                max_cell_size=target_cell_size)
-            structures = enum.apply_transformation(
-                surface_structure_partial, return_ranked_list=2000)
             new_structures = []
             for k, s in enumerate(structures):
                 # Keep volume constant and c lattice parameter unchanged
