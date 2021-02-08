@@ -82,7 +82,7 @@ def automate_surface(target_slab,
     # Load initial slab model with no vacancies on the surface
     # O_replacement = DummySpecies(symbol='X', oxidation_state=-2)
     # Li_replacement = DummySpecies(symbol='Z', oxidation_state=+1)
-    O_replacement = Species(symbol='S', oxidation_state=-2)
+    O_replacement = Species(symbol='F', oxidation_state=-2)
     Li_replacement = Species(symbol='Na', oxidation_state=+1)
     slab_tgt = surface_substitute(target_slab,
                                   subs1=O_replacement,
@@ -159,13 +159,16 @@ def automate_surface(target_slab,
             # Symmetrize structure models
             symmetrized_structures = []
             for s in new_structures:
-                if j == 0:
+                if i == 0 and j == 0:
+                    pass
+                if j == 0 and i != 0:
                     s.replace_species({O_replacement: 'O'})
-                if i == 0:
+                if i == 0 and j != 0:
                     s.replace_species({Li_replacement: 'Li'})
                 if (i and j) != 0:
                     s.replace_species({Li_replacement: 'Li',
                                        O_replacement: 'O'})
+
 
                 symmetrized_structures.append(symmetrize_top_base(s))
 
