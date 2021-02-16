@@ -20,6 +20,11 @@ from pymatgen.transformations.advanced_transformations \
     import EnumerateStructureTransformation
 from pymatgen.core.periodic_table import DummySpecies, Species
 
+import pymatgen.command_line.enumlib_caller
+# enum_path = "/Users/xinhaoli/code/enum_version/2021-01-26/"
+# pymatgen.command_line.enumlib_caller.enum_cmd = enum_path+"enum.x"
+# pymatgen.command_line.enumlib_caller.makestr_cmd = enum_path+"makestr.x"
+
 from surface_pd.surface_enum import (surface_substitute,
                                      layer_classification,
                                      symmetrize_top_base)
@@ -125,10 +130,9 @@ def automate_surface(target_slab,
 
             new_structures = []
             for k, s in enumerate(structures):
-                # Keep volume constant and c lattice parameter unchanged
-                if ((-1 < s['structure'].lattice.abc[2] - c < 1) and
-                        (-1 < s['structure'].volume
-                         - target_cell_size * volume < 1)):
+                lattice = s['structure'].lattice.abc
+                # Keep the slab models are perpendicular to x-y surface
+                if (lattice[0] and lattice[1]) < lattice[2] <= c:
                     new_structures.append(structures[k]['structure'])
             num += len(new_structures)
 
@@ -168,8 +172,6 @@ def automate_surface(target_slab,
                 if (i and j) != 0:
                     s.replace_species({Li_replacement: 'Li',
                                        O_replacement: 'O'})
-
-
                 symmetrized_structures.append(symmetrize_top_base(s))
 
             if to_vasp:
@@ -204,14 +206,14 @@ if __name__ == "__main__":
         nargs="+",
         type=float,
         help="All desired surface oxygen composition.",
-        default=[1, 0.75, 0.5, 0.25, 0])
+        default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
         "--lithium-composition", "-L",
         help="All desired surface lithium composition.",
         nargs="+",
         type=float,
-        default=[1, 0.75, 0.5, 0.25, 0])
+        default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
         "--generate-poscars", "-g",

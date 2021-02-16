@@ -120,7 +120,7 @@ def layer_classification(input_structure):
             # Since the c fractional coordinates of atoms even in the
             # exactly same layers are not identical, therefore, all c
             # fractional coordinates will be rounded to 2 decimal. Any
-            # misclassified atoms will be regouped by
+            # misclassified atoms will be regrouped by
             # "group_atoms_by_layer" function.
             if round(s.frac_coords[2], 2) not in Li_layers:
                 Li_layers[round(s.frac_coords[2], 2)] = 1
@@ -321,5 +321,5 @@ def surface_substitute(target_slab, subs1, subs2, direction=2):
             slab_surface_substitute.replace(
                 i, subs2,
                 properties={'selective_dynamics': [True, True, True]})
-    # slab_surface_substitute.to(fmt='poscar', filename='001-subs.vasp')
+    # slab_surface_substitute.to(fmt='poscar', filename='104-subs.vasp')
     return slab_surface_substitute
