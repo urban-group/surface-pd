@@ -132,7 +132,7 @@ def automate_surface(target_slab,
             for k, s in enumerate(structures):
                 lattice = s['structure'].lattice.abc
                 # Keep the slab models are perpendicular to x-y surface
-                if (lattice[0] and lattice[1]) < lattice[2] <= c:
+                if (lattice[0] and lattice[1]) < lattice[2] <= c*1.5:
                     new_structures.append(structures[k]['structure'])
             num += len(new_structures)
 
