@@ -14,16 +14,12 @@ __date__ = "2021-01-05"
 import argparse
 import os
 
-from pymatgen.transformations.standard_transformations \
-    import SubstitutionTransformation
+import pymatgen.command_line.enumlib_caller
+from pymatgen.core.periodic_table import Species
 from pymatgen.transformations.advanced_transformations \
     import EnumerateStructureTransformation
-from pymatgen.core.periodic_table import DummySpecies, Species
-
-import pymatgen.command_line.enumlib_caller
-# enum_path = "/Users/xinhaoli/code/enum_version/2021-01-26/"
-# pymatgen.command_line.enumlib_caller.enum_cmd = enum_path+"enum.x"
-# pymatgen.command_line.enumlib_caller.makestr_cmd = enum_path+"makestr.x"
+from pymatgen.transformations.standard_transformations \
+    import SubstitutionTransformation
 
 from surface_pd.surface_enum import (surface_substitute,
                                      layer_classification,
@@ -109,6 +105,11 @@ def automate_surface(target_slab,
 
     for i in composition_O:
         for j in composition_Li:
+            enum_path = "/Users/xinhaoli/code/enum_version/2021-01-26/"
+            pymatgen.command_line.enumlib_caller.enum_cmd \
+                = enum_path + "enum.x"
+            pymatgen.command_line.enumlib_caller.makestr_cmd \
+                = enum_path + "makestr.x"
             try:
                 subs = SubstitutionTransformation(
                     {O_replacement: {O_replacement: i},
@@ -120,11 +121,33 @@ def automate_surface(target_slab,
                     max_cell_size=target_cell_size)
                 structures = enum.apply_transformation(
                     surface_structure_partial, return_ranked_list=2000)
-            except:
-                print(f'******************** Unable to enumerate the'
-                      f' {j * 100}% lithium and {i * 100}% oxygen directly'
-                      f'.********************')
-                continue
+            except (AttributeError, ValueError):
+                try:
+                    print("************************* Different version of "
+                          "enum.x will be used *************************.")
+                    enum_path = "/Users/xinhaoli/code/enum_version/" \
+                                "debug_2021-02-19/"
+                    pymatgen.command_line.enumlib_caller.enum_cmd \
+                        = enum_path + "enum.x"
+                    pymatgen.command_line.enumlib_caller.makestr_cmd \
+                        = enum_path + "makestr.x"
+                    subs = SubstitutionTransformation(
+                        {O_replacement: {O_replacement: i},
+                         Li_replacement: {Li_replacement: j}})
+                    surface_structure_partial = subs.apply_transformation(
+                        slab_tgt)
+                    enum = EnumerateStructureTransformation(
+                        min_cell_size=target_cell_size,
+                        max_cell_size=target_cell_size)
+                    structures = enum.apply_transformation(
+                        surface_structure_partial, return_ranked_list=2000)
+                except (AttributeError, ValueError):
+                    print(f'******************** Unable to enumerate the'
+                          f' {j * 100}% lithium and {i * 100}% oxygen directly'
+                          f'.********************')
+                    continue
+                else:
+                    pass
             else:
                 pass
 
@@ -132,7 +155,7 @@ def automate_surface(target_slab,
             for k, s in enumerate(structures):
                 lattice = s['structure'].lattice.abc
                 # Keep the slab models are perpendicular to x-y surface
-                if (lattice[0] and lattice[1]) < lattice[2] <= c*1.5:
+                if (lattice[0] and lattice[1]) < lattice[2] <= c * 1.5:
                     new_structures.append(structures[k]['structure'])
             num += len(new_structures)
 
