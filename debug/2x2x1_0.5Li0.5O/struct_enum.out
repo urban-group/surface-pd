@@ -1,0 +1,39 @@
+ # <fortpy version="3" revision="247"></fortpy>
+Na2 Li8 Ni
+bulk
+  5.5482150       0.0000000      0.23134300        # a1 parent lattice vector
+  2.7692110       5.1364290      0.23310300        # a2 parent lattice vector
+  0.0000000       0.0000000       33.323051        # a3 parent lattice vector
+    8 # Number of points in the multilattice
+  2.9439570      0.98706800       13.112059        # d01 d-vector, labels: 0/1
+  4.3285630       3.5552820       13.228610        # d02 d-vector, labels: 0/1
+  5.7180650      0.98706800       13.227730        # d03 d-vector, labels: 0/1
+  7.1026700       3.5552820       13.344282        # d04 d-vector, labels: 0/1
+  2.8003570       1.1628770       16.555934        # d05 d-vector, labels: 1/2
+  4.1849630       3.7310920       16.672486        # d06 d-vector, labels: 1/2
+  5.5744650       1.1628770       16.671606        # d07 d-vector, labels: 1/2
+  6.9590700       3.7310920       16.788157        # d08 d-vector, labels: 1/2
+ 3-nary case
+   1   1 # Starting and ending cell sizes for search
+ 0.10000000E-02 # Epsilon (finite precision parameter)
+Concentration check:
+    T
+Including only structures of which the concentration   of each atom is in the range:
+Type 1:    1/   4 --    1/   4
+Type 2:    1/   2 --    1/   2
+Type 3:    1/   4 --    1/   4
+full list of labelings (including incomplete labelings) is used
+(Non)Equivalency list: 1  2  3  4  5  6  7  8
+start   #tot      HNF     Hdegn   labdegn   Totdegn   #size idx    pg    SNF             HNF                 Left transform                          labeling
+          1         1       1        4        4           1   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   00111122
+          2         1       1        8        8           2   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01011122
+          3         1       1        8        8           3   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01101122
+          4         1       1        4        4           4   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   00111212
+          5         1       1        8        8           5   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01011212
+          6         1       1        4        4           6   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01101212
+          7         1       1        8        8           7   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   00111221
+          8         1       1        4        4           8   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01011221
+          9         1       1        8        8           9   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01101221
+         10         1       1        8        8          10   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01102112
+         11         1       1        4        4          11   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   01012121
+         12         1       1        4        4          12   1     8   1  1  1    1  0  1  0  0  1      1    0    0    0    1    0    0    0    1   00112211

@@ -1,0 +1,20 @@
+Title: Na1.5 Li4 Ni8 O14                                                               
+Lattice type (bulk or surface): BULK
+  5.548   1.385   0.000
+  0.000   2.568   0.000
+  0.231   0.117  33.323
+Number of labels:  2
+Number of d-vectors:   4
+  2.9440   0.9871  13.1121 0/1/
+  5.7181   0.9871  13.2277 0/1/
+  2.8004   1.1629  16.5559 1/
+  5.5745   1.1629  16.6716 1/
+Min and Max cell sizes:  2  2
+Epsilon:   0.1000E-02
+full/part mode: FULL
+Concentration ranges are specified. Will run with using  the fixed-concentration algorithm.
+Type 1 conc:30/80--30/80
+Type 2 conc:50/80--50/80
+
+--<< Successfully read the struct_enum.in file >>--
+

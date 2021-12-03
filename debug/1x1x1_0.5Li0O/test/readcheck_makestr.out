@@ -1,0 +1,61 @@
+
+
+
+
+
+This file echoes the input for the makestr.x program and
+prints some of the computed quantities as well. It is intended to
+be useful for debugging and fixing bad input
+***************************************************
+Title: Na0.5 Li2                                                                       
+bulk/surf: b
+Parent lattice:
+  2.774  0.000  0.116
+  1.385  2.568  0.117
+  0.000  0.000 33.323
+
+Parent lattice inverse matrix:
+  0.360  0.000 -0.001
+ -0.194  0.389 -0.001
+  0.000  0.000  0.030
+
+d-vectors:
+  2.9440  0.9871 13.1121
+  2.8004  1.1629 16.5559
+
+Spectators:
+
+Number of labels (k):  2
+Finite precision parameter (epsilon):  0.1000000000E-02
+Found "start" label. Now skipping lines to struct #:        100
+Skipped to the        100-nth line in struct_enum.out                                                                 
+strN, hnfN, sizeN, n, pgOps, diag, a,b,c,d,e,f, L, labeling
+        100      21      100  4  2   1   2   2    1   1   2   0   0   2    1   0   0  -1   1   0   0   0   1  01111110                                
+New labeling with spectators added: 01111110                                
+HNF from file   1   1   2   0   0   2
+
+
+New inverse after reduction
+ -0.180   0.292   0.000
+ -0.001  -0.000   0.015
+  0.180   0.097   0.015
+
+Atom #:  1 given label # 1 label: 0
+Atom #:  8 given label # 2 label: 0
+  2 atoms of label type  0 found
+Atom #:  2 given label # 1 label: 1
+Atom #:  3 given label # 2 label: 1
+Atom #:  4 given label # 3 label: 1
+Atom #:  5 given label # 4 label: 1
+Atom #:  6 given label # 5 label: 1
+Atom #:  7 given label # 6 label: 1
+  6 atoms of label type  1 found
+Finished counting the atoms of each type
+At. #:  1 position:  0.757   0.195   0.821 <0>
+At. #:  8 position:  0.335   0.746   0.864 <0>
+At. #:  2 position:  0.757   0.695   0.321 <1>
+At. #:  3 position:  0.257   0.195   0.321 <1>
+At. #:  4 position:  0.257   0.695   0.821 <1>
+At. #:  5 position:  0.835   0.246   0.864 <1>
+At. #:  6 position:  0.835   0.746   0.364 <1>
+At. #:  7 position:  0.335   0.246   0.364 <1>
