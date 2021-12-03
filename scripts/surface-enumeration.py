@@ -14,10 +14,10 @@ __date__ = "2021-12-03"
 import argparse
 import os
 
-from pymatgen.core.structure import Structure
-from pymatgen.core.periodic_table import Species
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_matcher import StructureMatcher
+from pymatgen.core.periodic_table import Species
+from pymatgen.core.structure import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from surface_pd.surface_enum import (surface_substitute,
                                      layer_classification,

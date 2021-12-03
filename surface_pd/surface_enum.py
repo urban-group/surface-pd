@@ -4,8 +4,8 @@ Important functions are here.
 """
 
 import copy
-import numpy as np
 
+import numpy as np
 from pymatgen.core import Structure
 from pymatgen.core.surface import get_slab_regions
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
