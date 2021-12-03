@@ -1,1 +1,0 @@
-992 distinct structures are found totally.
