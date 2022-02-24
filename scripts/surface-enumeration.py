@@ -14,8 +14,10 @@ __date__ = "2021-12-03"
 import argparse
 import os
 
+import numpy as np
+
 from pymatgen.analysis.structure_matcher import StructureMatcher
-from pymatgen.core.periodic_table import Species
+from pymatgen.core.periodic_table import Species, DummySpecies
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
@@ -123,6 +125,11 @@ def automate_surface(target_slab,
     # models by composition
     enumerated_slabs_by_composition = {}
 
+    # Initialize a dictionary to store the number of occurance for different
+    # space group among all the enumerated structures
+    import collections
+    sg_by_numbers = collections.defaultdict(int)
+
     # Begin to enumerate
     for i in composition_O:
         for j in composition_Li:
@@ -219,7 +226,7 @@ def automate_surface(target_slab,
                                                            structure2]
                     # Check whether supplemental structures are symmetry or not
                     for struct in supplemental_structures:
-                        sga = SpacegroupAnalyzer(struct, symprec=0.1)
+                        sga = SpacegroupAnalyzer(struct, symprec=1e-1)
                         if not sga.is_laue():
                             print("The supplemental structures are not all "
                                   "symmetric!")
@@ -339,6 +346,7 @@ def automate_surface(target_slab,
                                     s.properties = {
                                         'selective_dynamics': [False, False,
                                                                False]}
+
                     # Shift the inversion symmetry center
                     if shift_isc:
                         shifted_structure = []
@@ -355,13 +363,81 @@ def automate_surface(target_slab,
 
                     # Generate slab models
                     if to_vasp:
+                        # Make directories
                         dirname = str(j) + 'Li' + str(i) + 'O'
                         if not os.path.exists(dirname):
                             os.makedirs(dirname)
-                        for k, s in enumerate(shifted_structure):
-                            s.to(fmt='poscar', filename=os.path.join(
-                                dirname, "structure-{}.vasp".format(k)))
+                        refined_dirs = os.path.join(dirname, "refined-dirs")
+                        if not os.path.exists(refined_dirs):
+                            os.makedirs(refined_dirs)
 
+                        for k, s in enumerate(shifted_structure):
+                            # if k == 4:
+                                sga = SpacegroupAnalyzer(s, symprec=0.1)
+                                # print(sga.get_space_group_symbol(), k)
+                                sg_by_numbers[sga.get_space_group_symbol()] \
+                                    += 1
+                                ops = sga.get_symmetry_operations()
+
+                                # if sga.get_space_group_symbol() != "P-1":
+                                for num_ops in range(len(ops)):
+                                    inversion = ops[num_ops]
+                                    # print(inversion)
+                                    if np.any(inversion.rotation_matrix != \
+                                            np.identity(3)):
+                                        origin1 = \
+                                            inversion.translation_vector
+                                        # print(origin1)
+                                        test_structure_1 = s.copy()
+                                        dummy_species = DummySpecies()
+                                        test_structure_1.append(
+                                            species=dummy_species,
+                                            coords=origin1,
+                                            properties={'selective_dynamics':
+                                                            [False, False,
+                                                               False]}
+                                        )
+
+
+                                        test_structure_1.to(
+                                            fmt="POSCAR",
+                                            filename="structure_with_"
+                                                     "center_labeled_{}.vasp"
+                                        .format(str(num_ops)))
+                                # assert (np.all(
+                                #     inversion.rotation_matrix == -np.identity(3)))
+                                # origin1 = inversion.translation_vector / 2
+                                # print(origin1)
+                                refined_structure = sga.get_refined_structure()
+                                sga2 = SpacegroupAnalyzer(refined_structure,
+                                                          symprec=0.00001)
+                                # print(sga2.is_laue())
+                                # ops = sga2.get_symmetry_operations()
+                                # # print("after refine:", ops)
+                                # inversion = ops[1]
+                                # assert (np.all(
+                                #     inversion.rotation_matrix == -np.identity(3)))
+                                # origin2 = inversion.translation_vector / 2
+
+                                # print(origin2)
+
+                                s.to(fmt='poscar', filename=os.path.join(
+                                    dirname, "structure-{}.vasp".format(k)))
+                                refined_structure.to(
+                                    fmt='poscar', filename=os.path.join(
+                                        refined_dirs, "refined-structure-{"
+                                                 "}.vasp".format(k)))
+
+                                # if sga.get_space_group_symbol() == "P2_1/c":
+                                # sg = []
+                                # if refined_structure.num_sites > 80:
+                                #     os.system("open "+os.path.join(
+                                #         dirname, "structure-{}.vasp".format(k)))
+                                #     os.system("open " + os.path.join(
+                                #         refined_dirs, "refined-structure-{"
+                                #                  "}.vasp".format(k)))
+                                # print(sg)
+                print(sg_by_numbers)
             # Calculate total number of enumerated structures
             num += len(symmetrized_structures)
 
@@ -369,6 +445,7 @@ def automate_surface(target_slab,
             print(f'The enumeration found {len(symmetrized_structures)} '
                   f'({prev}+{len(supplemental_structures)}) '
                   f'distinct structures for {j * 100}% Li and {i * 100}% O.')
+
     print(f'{num} distinct structures are found totally.')
     if shift_isc:
         print(f'The isc of {num} structures are all shifted.')

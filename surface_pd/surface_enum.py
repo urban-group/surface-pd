@@ -310,7 +310,7 @@ def remove_sites(structure_model,
     return copy_structure
 
 
-def symmetrize_top_base(target_slab, symprec=0.1, direction=2, tol=0.01):
+def symmetrize_top_base(target_slab, symprec=1e-4, direction=2, tol=0.01):
     """
     This function is used to symmetrize the enumerated slab models using
     top surface as base. The inversion symmetry center is determined based
@@ -472,19 +472,20 @@ def surface_substitute(target_slab, subs1, subs2,
     return slab_surface_substitute
 
 
-def shift_inversion_symmetry_center(file):
+def shift_inversion_symmetry_center(file, symprec=1e-1):
     """
     This function is used to shift the inversion symmetry center to the (0,
     0, 0) point of the unit cell. This will facilitate VASP code to detect
     the symmetry of the slab model and can probably accelerate the convergence.
     Args:
+        symprec (float): 
         file: enumerated slab model
 
     Returns: enumerated slab model with inversion symmetry center shifted
 
     """
     structure = file
-    sga = SpacegroupAnalyzer(structure, symprec=0.1)
+    sga = SpacegroupAnalyzer(structure, symprec=symprec)
     if not sga.is_laue():
         raise ValueError("{} is not symmetric".format(str(file)))
     ops = sga.get_symmetry_operations()
@@ -494,7 +495,7 @@ def shift_inversion_symmetry_center(file):
     structure_copy = structure.copy()
     for site in structure_copy:
         site.frac_coords = site.frac_coords - origin
-    sga = SpacegroupAnalyzer(structure_copy, symprec=0.1)
+    sga = SpacegroupAnalyzer(structure_copy, symprec=symprec)
     ops = sga.get_symmetry_operations()
     inversion = ops[1]
     assert (np.all(inversion.rotation_matrix == -np.identity(3)))
