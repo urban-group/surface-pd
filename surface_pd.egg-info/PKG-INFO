@@ -1,4 +1,4 @@
-Metadata-Version: 1.1
+Metadata-Version: 2.1
 Name: surface-pd
 Version: 0.1.0
 Summary: Generation of surface phase diagrams
@@ -6,9 +6,6 @@ Home-page: UNKNOWN
 Author: Xinhao Li
 Author-email: xl2778@columbia.edu
 License: MIT
-Description: # surface-pd
-        test
-        
 Keywords: materials science,phase diagrams
 Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
@@ -18,3 +15,8 @@ Classifier: Topic :: Scientific/Engineering :: Physics
 Classifier: Topic :: Scientific/Engineering :: Chemistry
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
+
+# surface-pd
+test
+
+
