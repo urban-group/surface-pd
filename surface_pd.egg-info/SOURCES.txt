@@ -1,6 +1,7 @@
 README.md
 setup.py
 scripts/surface-enumeration.py
+scripts/surface-pd-plot.py
 surface_pd/__init__.py
 surface_pd/surface_enum.py
 surface_pd.egg-info/PKG-INFO

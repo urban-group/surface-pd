@@ -522,7 +522,7 @@ def slab_size_check(
     if enumerated_num_sites > total_num_sites:
         refined_prim = refined_structure.copy()
         refined_prim = refined_prim.get_primitive_structure() \
-            .get_reduced_structure()
+            .get_reduced_structure().get_sorted_structure()
         return -1, refined_prim
     elif enumerated_num_sites < total_num_sites:
         if total_num_sites % enumerated_num_sites != 0:
@@ -533,12 +533,13 @@ def slab_size_check(
             # scaling_matrix = define_scaling_matrix(a, b, multiple)
             # refined_super = refined_structure.copy()
             # refined_super.make_supercell(scaling_matrix)
-        return 1, refined_structure
+        else:
+            return 1, refined_structure
     else:
         if max(refined_structure.lattice.abc) > input_c * 2 - 5:
             refined_prim = refined_structure.copy()
             refined_prim = refined_prim.get_primitive_structure() \
-                .get_reduced_structure()
+                .get_reduced_structure().get_sorted_structure()
             return -1, refined_prim
         if (max(refined_structure.lattice.abc) != refined_structure.lattice.c):
             if (max(refined_structure.lattice.abc) ==

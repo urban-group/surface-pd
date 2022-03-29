@@ -264,7 +264,8 @@ def automate_surface(target_slab,
                 num_sites = refined_structure.num_sites
 
                 indicator = 0
-                while ((max(refined_structure.lattice.abc) > c * 2 - 5) or
+                while ((num_sites > total_num_sites) or
+                       (max(refined_structure.lattice.abc) > c * 2 - 5) or
                        (max(refined_structure.lattice.abc) !=
                         refined_structure.lattice.c)):
                     indicator, refined_structure = slab_size_check(
@@ -272,12 +273,12 @@ def automate_surface(target_slab,
                         total_num_sites,
                         num_sites,
                         c)
+                    num_sites = refined_structure.num_sites
 
-                num_sites = refined_structure.num_sites
-                if num_sites < total_num_sites:
-                    if total_num_sites % num_sites != 0:
-                        raise ValueError("Check primitive structure finder.")
-                    indicator = 1
+                # if num_sites < total_num_sites:
+                #     if total_num_sites % num_sites != 0:
+                #         raise ValueError("Check primitive structure finder.")
+                #     indicator = 1
 
                 # Add selective dynamics
                 min_c, max_c = get_max_min_c_frac(refined_structure)
@@ -366,17 +367,17 @@ if __name__ == "__main__":
         default=1)
 
     parser.add_argument(
-        "--oxygen-composition", "-o",
-        nargs="+",
-        type=float,
-        help="All desired surface oxygen composition.",
-        default=[1.0, 0.75, 0.5, 0.25, 0.0])
-
-    parser.add_argument(
         "--lithium-composition", "-L",
         help="All desired surface lithium composition.",
         nargs="+",
         type=float,
+        default=[1.0, 0.75, 0.5, 0.25, 0.0])
+
+    parser.add_argument(
+        "--oxygen-composition", "-o",
+        nargs="+",
+        type=float,
+        help="All desired surface oxygen composition.",
         default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
