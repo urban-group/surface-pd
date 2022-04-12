@@ -6,13 +6,14 @@ This code will be used to construct the surface phase diagram.
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
-__date__ = "2022-03-22"
+__date__ = "2022-03-29"
 
 import argparse
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+
 rcparams = {"font.size": 16,
             "legend.frameon": False,
             "xtick.top": True,
@@ -28,34 +29,61 @@ rcparams = {"font.size": 16,
 
 from surface_pd.surface_plot import (convert_numbers, get_ticks_and_levels,
                                      get_surface_energy, find_stable_phases,
-                                     get_labels)
+                                     get_labels, get_check_phases,
+                                     get_the_shift_energy)
 
-def surface_pd_plot(data,
+
+def surface_pd_plot(data_files,
                     color_Li=False,
                     color_O=False,
                     functional="PBE+U"):
-    # Read data file
-    df = pd.read_table(data, sep="\s+", index_col=0)
-
     # Create x and y axis
     V = np.linspace(0.0, 5.0, 1000)
-    T = np.linspace(1.0, 2000.0, 400)
+    T = np.linspace(1.0, 1500.0, 400)
     V_mesh, T_mesh = np.meshgrid(V, T)
 
-    # Get surface energy
-    G = get_surface_energy(df, V_mesh, T_mesh, functional=functional)
+    if len(data_files) != 1:
+        check_phases = []
+        df = []
+        for data in data_files:
+            temp_df = pd.read_table(data, sep="\s+", index_col=0)
+            check_phases.append(get_check_phases(temp_df))
+            df.append(temp_df)
+        df = pd.concat(df)
+
+        # Calculate the shift energy for the polar surface only
+        shift_energy = get_the_shift_energy(check_phases, functional)
+        # Get surface energy
+        temp_G = get_surface_energy(df, V_mesh, T_mesh, functional=functional)
+        shifted_G = temp_G[int(len(temp_G) / len(data_files)):] + shift_energy
+        G = np.append(temp_G[0:int(len(temp_G) / len(data_files))], shifted_G)
+    else:
+        # Read data file
+        df = pd.read_table(data_files[0], sep="\s+", index_col=0)
+        # Get surface energy
+        G = get_surface_energy(df, V_mesh, T_mesh, functional=functional)
 
     # Split an array into multiple sub-arrays
     stable_phases_index = find_stable_phases(G, df)
+
     ticks = np.unique([stable_phases_index])
+    # print(ticks)
     converted_stable_phases_index = convert_numbers(stable_phases_index, ticks)
-    #
+    ticky, global_levels = get_ticks_and_levels(converted_stable_phases_index)
+
     stable_phases_reshaped_global = np.reshape(converted_stable_phases_index,
-                                        (T.size, V.size))
+                                               (T.size, V.size))
 
     if color_Li:
-        stable_phases_index = stable_phases_index % 5
-
+        if len(data_files) != 1:
+            boundary = int(len(df) / len(data_files))
+            for i in range(len(stable_phases_index)):
+                if stable_phases_index[i] < boundary:
+                    stable_phases_index[i] %= 5
+                else:
+                    stable_phases_index[i] = stable_phases_index[i] % 5 + 25
+        else:
+            stable_phases_index = stable_phases_index % 5
         ticks = np.unique([stable_phases_index])
         converted_stable_phases_index = convert_numbers(stable_phases_index,
                                                         ticks)
@@ -65,11 +93,23 @@ def surface_pd_plot(data,
 
         # plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(df, species=["Li"], ticks=ticks)
+        labels = get_labels(data_files, df, species=["Li"], ticks=ticks)
         cmap = "Greens_r"
         fig = plt.figure(figsize=(9.5, 6))
     elif color_O:
+        # if len(data_files) != 1:
+        #     boundary = int(len(df) / len(data_files))
+        #     for i in range(len(stable_phases_index)):
+        #         if stable_phases_index[i] < boundary:
+        #             stable_phases_index[i] = stable_phases_index[i] // 5 * 5
+        #         else:
+        #             stable_phases_index[i] = (stable_phases_index[i] // 5 *
+        #                                       5 + 25)
+        # else:
+        #     stable_phases_index = stable_phases_index % 5
         stable_phases_index = stable_phases_index // 5 * 5
+        stable_phases_index = [x - 5 if x == 25 else x for x in
+                               stable_phases_index]
 
         ticks = np.unique([stable_phases_index])
         converted_stable_phases_index = convert_numbers(stable_phases_index,
@@ -80,22 +120,23 @@ def surface_pd_plot(data,
 
         # plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(df, species=["O"], ticks=ticks)
+        labels = get_labels(data_files, df, species=["O"], ticks=ticks)
         cmap = "Reds_r"
         fig = plt.figure(figsize=(9.5, 6))
     else:
         stable_phases_reshaped = stable_phases_reshaped_global
         # plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(df, species=["Li", "O"], ticks=ticks)
+        labels = get_labels(data_files, df, species=["Li", "O"], ticks=ticks)
         # print(labels)
         cmap = 'tab20c'
         fig = plt.figure(figsize=(10.5, 6))
 
     plt.rcParams.update(rcparams)
     ax = fig.add_subplot(111)
-    ax.contour(V, T, stable_phases_reshaped_global,
-               colors="black", linewidths=1.5)
+    # ax = plt.axes(projection='3d')
+    ax.contour(V, T, stable_phases_reshaped_global, levels=global_levels,
+               colors="black", linewidths=2)
     PD = ax.contourf(V, T, stable_phases_reshaped,
                      levels=levels, cmap=cmap)
     ax.set_xlabel('Potential vs. Li/Li$^+$ (V)')
@@ -108,16 +149,17 @@ def surface_pd_plot(data,
     plt.show()
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=__doc__ + "\n{}{}".format(__date__, __author__),
+        description=__doc__ + "\n{} {}".format(__date__, __author__),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
     parser.add_argument(
         "surface_pd_data",
-        help="Path to the surface pd data."
+        help="Path to the surface pd data.",
+        nargs="+",
+        type=str
     )
 
     parser.add_argument(
