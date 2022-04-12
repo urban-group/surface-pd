@@ -67,10 +67,10 @@ def automate_surface(target_slab,
     surface_oxygen_composition.sort(reverse=True)
     surface_lithium_composition.sort(reverse=True)
     print("target_cell_size = {}".format(target_cell_size))
-    print("Composition of oxygen on the surface will be {}.".format(
-        surface_oxygen_composition))
     print("Composition of lithium on the surface will be {}.".format(
         surface_lithium_composition))
+    print("Composition of oxygen on the surface will be {}.".format(
+        surface_oxygen_composition))
 
     # Load initial slab model with no lithium and oxygen vacancies on the
     # surface
