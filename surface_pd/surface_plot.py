@@ -4,6 +4,7 @@ Functions used to plot surface pd
 
 import numpy as np
 import collections
+import surface_substitute
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"

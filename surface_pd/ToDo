@@ -1,0 +1,2 @@
+1. Re-write the surface_enum.py module and see whether the current Slab class
+construction works. --> It works, no need to construct new classes now.
