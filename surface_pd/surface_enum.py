@@ -17,7 +17,7 @@ from pymatgen.transformations.standard_transformations \
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
-__date__ = "2022-03-15"
+__date__ = "2022-05-25"
 
 # %% Wrap back and equal lattices check
 EPS = np.finfo(np.double).eps
@@ -32,6 +32,7 @@ class NoInversionSymmetryError(Exception):
 
 
 def wrap_pbc(coo, slab_direction=2, tolerance=0.01):
+    # core - slab
     """
     Wrap fractional coordinates back into the unit cell.
 
@@ -57,6 +58,7 @@ def wrap_pbc(coo, slab_direction=2, tolerance=0.01):
 
 
 def equal_lattices(lat1, lat2, dtol=0.001, atol=0.01):
+    # slab_check
     lencheck = not np.any(
         np.abs(np.array(lat1.lengths) - np.array(lat2.lengths)) > dtol)
     angcheck = not np.any(
@@ -65,6 +67,7 @@ def equal_lattices(lat1, lat2, dtol=0.001, atol=0.01):
 
 
 def group_atoms_by_layer(o_layer, diff=0.01, max_diff=0.03):
+    # slab_analysis
     """
     This function is used to group misclassified atoms into the right
     layers. For example, c_atom1 = 0.01, c_atoms2 = 0.02, they should be
@@ -102,6 +105,7 @@ def group_atoms_by_layer(o_layer, diff=0.01, max_diff=0.03):
 
 
 def layer_classification(input_structure):
+    # core, Slab class
     """
     This function is used to classify different layers in the slab model. For
     the (001) surface, it will be classified as Li-plane, TM-plane,
@@ -188,6 +192,7 @@ def enum_with_composition(structure_model,
                           subs_li, li_composition,
                           subs_o, o_composition,
                           cell_size):
+    # core - Enum class
     """
     This function is used to enumerate the slab model which the target
     surface atoms have been substituted by the dummy species.
@@ -219,6 +224,7 @@ def enum_with_composition(structure_model,
 
 
 def index_extraction(structure_model, tol=0.01):
+    # core - Slab class
     """
     This function is used to get the index of the first and second layers
     which containing Li atoms, surface oxygen atoms as well as the relaxed
@@ -284,6 +290,7 @@ def remove_sites(structure_model,
                  index,
                  scaling=True,
                  scaling_matrix=None):
+    # core - Slab class
     """
     This function is used to remove atoms in the slab model first and
     then make a supercell based on the scaling matrix.
@@ -307,6 +314,7 @@ def remove_sites(structure_model,
 
 
 def symmetrize_top_base(target_slab, symprec=1e-4, direction=2, tol=0.01):
+    # core -- Slab class
     """
     This function is used to symmetrize the enumerated slab models using
     top surface as base. The inversion symmetry center is determined based
@@ -404,6 +412,7 @@ def symmetrize_top_base(target_slab, symprec=1e-4, direction=2, tol=0.01):
 
 def surface_substitute(target_slab, subs1, subs2,
                        direction=2, tol=0.02):
+    # core -- Slab class
     """
     This function is used to substitute surface Li and O atoms with "dummy
     species" which will facilitate the enumeration code to detect target atoms.
@@ -472,6 +481,7 @@ def surface_substitute(target_slab, subs1, subs2,
 def get_num_sites(lithiated_structure, slab_substituted,
                   cell_size,
                   Li_composition, O_composition):
+    # slab_analysis
     """
     Get number of sites in the slab model after enumeration
     Args:
@@ -506,6 +516,7 @@ def slab_size_check(
         total_num_sites,
         enumerated_num_sites,
         input_c):
+    # slab_check
     """
     Check whether the after refined structure has the right geometry that we
     expect
@@ -570,6 +581,7 @@ def final_check(structure,
                 index,
                 tol=0.5,
                 symprec=1e-5):
+    # slab_check
     """
     Perform final check to see whether the generated slab models are correct.
     1. has the correct geometry
@@ -611,6 +623,7 @@ def final_check(structure,
 
 
 def define_scaling_matrix(a, b, multiple):
+    # util
     """
     Generate the scaling matrix based on the differect values of the
     lattice parameters a and b
@@ -635,6 +648,7 @@ def define_scaling_matrix(a, b, multiple):
 
 
 def get_max_min_c_frac(structure):
+    # core - Slab class
     """
     Get the maximum and minimum values of the c fractional coordinates for
     all sites. This is used to make sure whether the slab region is in the
@@ -655,6 +669,7 @@ def get_max_min_c_frac(structure):
 
 
 def Li_TM_layers_finder(structure):
+    # core -- Slab class
     """
     This function is used to determine the c fractional coordinates of
     central region of the slab models as well as the surface metal and O
@@ -692,6 +707,7 @@ def Li_TM_layers_finder(structure):
 def boundary_define(parent_structure,
                     enumed_structure,
                     num_relaxed):
+    # slab_analysis
     """
     Get the boundary of the central fixed slab
     Args:
@@ -762,6 +778,7 @@ def boundary_define(parent_structure,
 def add_selective_dynamics(parent_structure,
                            enumed_structure,
                            num_relaxed):
+    # slab_analysis
     """
     Add selective dynamics to the after refined slab model based on number
     of layers that will be relaxed on the surface
@@ -787,6 +804,7 @@ def add_selective_dynamics(parent_structure,
 def temp_shift_isc_back(before_refine_structure,
                         after_refine_structure,
                         shift=True):
+    # util
     """
     Shift / shift back the inversion symmetry center
     Args:

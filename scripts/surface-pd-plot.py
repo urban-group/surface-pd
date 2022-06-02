@@ -63,6 +63,7 @@ def surface_pd_plot(data_files,
         shift_energy = get_the_shift_energy(check_phases,
                                             TM_species,
                                             functional)
+        print(shift_energy)
         # Get surface energy
         temp_G = get_surface_energy(df, TM_species,
                                     V_mesh, T_mesh,

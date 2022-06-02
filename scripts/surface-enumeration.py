@@ -43,6 +43,7 @@ def automate_surface(target_slab,
                      num_layers_relaxed,
                      to_vasp=False):
     """
+    ToDo: generalize the composition of surface atoms (not just Li and O)
     This function contains the general framework to enumerate the parent
     slab model with different composition of lithium and oxygen vacancies.
     Args:
