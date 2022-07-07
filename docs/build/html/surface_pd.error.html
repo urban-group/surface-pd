@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>surface_pd.error package &mdash; surface-pd 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> surface-pd
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">surface-pd</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>surface_pd.error package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/surface_pd.error.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="surface-pd-error-package">
+<h1>surface_pd.error package<a class="headerlink" href="#surface-pd-error-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-surface_pd.error.error">
+<span id="surface-pd-error-error-module"></span><h2>surface_pd.error.error module<a class="headerlink" href="#module-surface_pd.error.error" title="Permalink to this headline"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NoInversionSymmetryError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NoInversionSymmetryError</span></span><a class="headerlink" href="#surface_pd.error.error.NoInversionSymmetryError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for not finding the inversion symmetry center.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NonCentralInversionSymmetryError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonCentralInversionSymmetryError</span></span><a class="headerlink" href="#surface_pd.error.error.NonCentralInversionSymmetryError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the slab model which does not have the
+inversion symmetry center located at the origin.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NonDefinedSelectiveDynamicsError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonDefinedSelectiveDynamicsError</span></span><a class="headerlink" href="#surface_pd.error.error.NonDefinedSelectiveDynamicsError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the slab model that does not have selective
+dynamics defined for all sites.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NonPolarSurfaceError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonPolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.error.error.NonPolarSurfaceError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the non-polar surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
+<li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NonSlabError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonSlabError</span></span><a class="headerlink" href="#surface_pd.error.error.NonSlabError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the structure that is not a slab model.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.PolarSurfaceError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">PolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.error.error.PolarSurfaceError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the polar surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
+<li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.PrimitiveStructureFinderError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">PrimitiveStructureFinderError</span></span><a class="headerlink" href="#surface_pd.error.error.PrimitiveStructureFinderError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for wrong refined structure (some sites are lost or
+redundant).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.SlabOrientationError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">SlabOrientationError</span></span><a class="headerlink" href="#surface_pd.error.error.SlabOrientationError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for wrong slab orientation error.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.TooLargeSlabError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">TooLargeSlabError</span></span><a class="headerlink" href="#surface_pd.error.error.TooLargeSlabError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the too large slab model.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Xinhao Li.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

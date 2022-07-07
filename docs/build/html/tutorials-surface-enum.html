@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slab Model Surface Enumeration &mdash; surface-pd 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Surface Phase Diagram Construction" href="tutorials-surface-plot.html" />
+    <link rel="prev" title="Tutorials" href="tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> surface-pd
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Slab Model Surface Enumeration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slab-model-preparation">Slab model preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-execution">Command line execution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials-surface-plot.html">Surface Phase Diagram Construction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">surface-pd</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="tutorials.html">Tutorials</a> &raquo;</li>
+      <li>Slab Model Surface Enumeration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorials-surface-enum.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="slab-model-surface-enumeration">
+<h1>Slab Model Surface Enumeration<a class="headerlink" href="#slab-model-surface-enumeration" title="Permalink to this headline"></a></h1>
+<section id="slab-model-preparation">
+<h2>Slab model preparation<a class="headerlink" href="#slab-model-preparation" title="Permalink to this headline"></a></h2>
+<p>The slab model can be truncated from the bulk structure model. Assume now,
+you already have a slab model. The DFT structure input file in VASP format
+should like this.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Li4</span> <span class="n">Co3</span> <span class="n">O8</span>
+<span class="mf">1.0</span>
+<span class="mf">2.832550</span> <span class="mf">0.000000</span> <span class="mf">0.000000</span>
+<span class="o">-</span><span class="mf">1.416275</span> <span class="mf">2.453061</span> <span class="mf">0.000000</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">31.000000</span>
+<span class="n">Li</span> <span class="n">Co</span> <span class="n">O</span>
+<span class="mi">4</span> <span class="mi">3</span> <span class="mi">8</span>
+<span class="n">Selective</span> <span class="n">dynamics</span>
+<span class="n">direct</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.199664</span> <span class="n">F</span> <span class="n">F</span> <span class="n">F</span> <span class="n">Li</span> <span class="c1"># atom index = 0</span>
+<span class="mf">0.333333</span> <span class="mf">0.666667</span> <span class="mf">0.047755</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">Li</span> <span class="c1"># atom index = 1</span>
+<span class="mf">0.666667</span> <span class="mf">0.333333</span> <span class="mf">0.351573</span> <span class="n">F</span> <span class="n">F</span> <span class="n">F</span> <span class="n">Li</span> <span class="c1"># atom index = 2</span>
+<span class="mf">0.333333</span> <span class="mf">0.666667</span> <span class="mf">0.503483</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">Li</span> <span class="c1"># atom index = 3</span>
+<span class="mf">0.666667</span> <span class="mf">0.333333</span> <span class="mf">0.123709</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">Co</span> <span class="c1"># atom index = 4</span>
+<span class="mf">0.333333</span> <span class="mf">0.666667</span> <span class="mf">0.275619</span> <span class="n">F</span> <span class="n">F</span> <span class="n">F</span> <span class="n">Co</span> <span class="c1"># atom index = 5</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.427529</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">Co</span> <span class="c1"># atom index = 6</span>
+<span class="mf">0.333333</span> <span class="mf">0.666667</span> <span class="mf">0.156909</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 7</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.090509</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 8</span>
+<span class="mf">0.666667</span> <span class="mf">0.333333</span> <span class="mf">0.242419</span> <span class="n">F</span> <span class="n">F</span> <span class="n">F</span> <span class="n">O</span>  <span class="c1"># atom index = 9</span>
+<span class="mf">0.666667</span> <span class="mf">0.333333</span> <span class="mf">0.005000</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 10</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.546237</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 11</span>
+<span class="mf">0.000000</span> <span class="mf">0.000000</span> <span class="mf">0.308819</span> <span class="n">F</span> <span class="n">F</span> <span class="n">F</span> <span class="n">O</span>  <span class="c1"># atom index = 12</span>
+<span class="mf">0.666667</span> <span class="mf">0.333333</span> <span class="mf">0.460728</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 13</span>
+<span class="mf">0.333333</span> <span class="mf">0.666667</span> <span class="mf">0.394328</span> <span class="n">T</span> <span class="n">T</span> <span class="n">T</span> <span class="n">O</span>  <span class="c1"># atom index = 14</span>
+</pre></div>
+</div>
+<p>Note that the surface regions are defined by having the selective dynamics
+labeled at the end, represented by “T T T” as relaxed and “F F F” as fixed.
+These properties are required to build a slab model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please make sure that
+the input slab model has the statement of constraints because the code takes
+use of the constraints to distinguish relaxed and fixed regions in the slab
+model.</p>
+</div>
+<p>The following figures show the example (001) and (104) surface slab models
+of LiCoO<sub>2</sub>.</p>
+<a class="reference internal image-reference" href="_images/slab-model-demo.png"><img alt="_images/slab-model-demo.png" class="align-center" src="_images/slab-model-demo.png" style="width: 400px;" /></a>
+<p></p>
+</section>
+<section id="command-line-execution">
+<h2>Command line execution<a class="headerlink" href="#command-line-execution" title="Permalink to this headline"></a></h2>
+<p>The general usage of the code can be seen by calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py --help
+</pre></div>
+</div>
+<p>All of the available options and their default values will be shown.</p>
+<p>General long format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py &#39;slab model&#39; --target-cell-size &#39;int&#39; --lithium-composition &#39;float(0&lt;=x&lt;=1)&#39; --oxygen-composition &#39;float(0&lt;=y&lt;=1)&#39; --generate-poscar
+</pre></div>
+</div>
+<p>General short format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py &#39;slab model&#39; -s &#39;int&#39; -L &#39;float(0&lt;=x&lt;=1)&#39; -O &#39;float(0&lt;=y&lt;=1)&#39; -g
+</pre></div>
+</div>
+<p>For example, you can go to <code class="docutils literal notranslate"><span class="pre">surface-pd/example/enumeration-examples/LCO</span></code>
+and try to do a full enumeration on the (104) surface slab model of
+LiCoO<sub>2</sub>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py LCO_terminated_LCO_10L15A.vasp -s 2
+</pre></div>
+</div>
+<p>For this slab model, it has 2 Li and O atoms in the surface
+relaxed region. Since the target number of Li and O atoms is set to 4 for
+this example case, you can always see the <code class="docutils literal notranslate"><span class="pre">--target-cell-size</span></code> option
+turns on and is set to 2 in the following examples in order to create the
+supercell.</p>
+<p>If everything goes well, you should see the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">target_cell_size</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Composition</span> <span class="n">of</span> <span class="n">lithium</span> <span class="n">on</span> <span class="n">the</span> <span class="n">surface</span> <span class="n">will</span> <span class="n">be</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span><span class="o">.</span>
+<span class="n">Composition</span> <span class="n">of</span> <span class="n">oxygen</span> <span class="n">on</span> <span class="n">the</span> <span class="n">surface</span> <span class="n">will</span> <span class="n">be</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span><span class="o">.</span>
+<span class="n">Scaling</span> <span class="n">matrix</span> <span class="n">used</span> <span class="n">here</span> <span class="ow">is</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">6</span> <span class="p">(</span><span class="mi">6</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">16</span> <span class="p">(</span><span class="mi">16</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">24</span> <span class="p">(</span><span class="mi">24</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">16</span> <span class="p">(</span><span class="mi">16</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">6</span> <span class="p">(</span><span class="mi">6</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">24</span> <span class="p">(</span><span class="mi">24</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">36</span> <span class="p">(</span><span class="mi">36</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">24</span> <span class="p">(</span><span class="mi">24</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">6</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">6</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">16</span> <span class="p">(</span><span class="mi">16</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">24</span> <span class="p">(</span><span class="mi">24</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">16</span> <span class="p">(</span><span class="mi">16</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">100.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">75.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">6</span> <span class="p">(</span><span class="mi">6</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">50.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">4</span> <span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">25.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="n">The</span> <span class="n">enumeration</span> <span class="n">found</span> <span class="mi">1</span> <span class="p">(</span><span class="mi">0</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="k">for</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">Li</span> <span class="ow">and</span> <span class="mf">0.0</span><span class="o">%</span> <span class="n">O</span><span class="o">.</span>
+<span class="mi">256</span> <span class="n">distinct</span> <span class="n">structures</span> <span class="n">are</span> <span class="n">found</span> <span class="n">totally</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>If you only want to enumerate the slab model with 50% coverage of Li and O
+atoms on the surface relaxed region, you can try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py LCO_terminated_LCO_10L15A.vasp -s 2 -L 0.5 -O 0.5
+</pre></div>
+</div>
+<p>If the <code class="docutils literal notranslate"><span class="pre">--generate-poscar</span></code> optional argument is defined, you should be
+able to see the saved enumerated slab models locally. The slab models are
+stored in <strong>VESTA</strong> format and should be able visualize via
+<a class="reference external" href="https://jp-minerals.org/vesta/en/">VESTA</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials-surface-plot.html" class="btn btn-neutral float-right" title="Surface Phase Diagram Construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Xinhao Li.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

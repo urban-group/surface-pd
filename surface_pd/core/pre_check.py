@@ -7,18 +7,21 @@ from surface_pd.error import *
 
 class PreCheck(object):
     """
+    PreCheck class to check whether the input slab model is valid.
+
+    Args:
+        structure: Input slab model.
 
     """
 
     def __init__(self, structure: Structure):
-        """
-
-        Args:
-            structure:
-        """
         self.structure = structure
 
     def is_not_slab(self):
+        """
+        Check whether the input structure is a slab.
+
+        """
         try:
             ranges = get_slab_regions(self.structure)
         except ValueError:
@@ -35,8 +38,7 @@ class PreCheck(object):
 
     def is_not_cuboid(self):
         """
-
-        Returns:
+        Check whether the input structure is a cuboid.
 
         """
         if max(self.structure.lattice.abc) != self.structure.lattice.c:
@@ -46,8 +48,7 @@ class PreCheck(object):
 
     def not_all_has_selective_dynamics(self):
         """
-
-        Returns:
+        Check if all sites have selective dynamics as the site properties.
 
         """
         for site in self.structure:
@@ -63,11 +64,11 @@ class PreCheck(object):
 
     def has_no_inversion_symmetry(self, symprec=0.1):
         """
+        Check if the input structure has inversion symmetry.
 
         Args:
-            symprec:
-
-        Returns:
+            symprec: Symmetry detection tolerance. Defaults to 0.1. (
+                relatively loose).
 
         """
         sga = SpacegroupAnalyzer(self.structure, symprec=symprec)

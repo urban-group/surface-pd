@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core &mdash; surface-pd 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="error" href="error.html" />
+    <link rel="prev" title="Modules" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> surface-pd
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">core</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#enumwithcomposition-class"><code class="docutils literal notranslate"><span class="pre">EnumWithComposition</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slab-class"><code class="docutils literal notranslate"><span class="pre">Slab</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#precheck-class"><code class="docutils literal notranslate"><span class="pre">PreCheck</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#postcheck-class"><code class="docutils literal notranslate"><span class="pre">PostCheck</span></code> class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="error.html">error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html">analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html">plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="util.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">surface-pd</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+      <li>core</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/core.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core">
+<h1>core<a class="headerlink" href="#core" title="Permalink to this headline"></a></h1>
+<section id="enumwithcomposition-class">
+<h2><code class="docutils literal notranslate"><span class="pre">EnumWithComposition</span></code> class<a class="headerlink" href="#enumwithcomposition-class" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.EnumWithComposition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.</span></span><span class="sig-name descname"><span class="pre">EnumWithComposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_composition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cell_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cell_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum_precision_parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.EnumWithComposition" title="Permalink to this definition"></a></dt>
+<dd><p>EnumWithComposition class to enumerate the parent slab model with
+defined composition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subs_species</strong> (<em>list</em>) – to-be-enumerated species.</p></li>
+<li><p><strong>subs_composition</strong> (<em>list</em>) – target composition.</p></li>
+<li><p><strong>min_cell_size</strong> (<em>int</em>) – The minimum cell size. Must be an int.
+Defaults to 1.</p></li>
+<li><p><strong>max_cell_size</strong> (<em>int</em>) – The maximum cell size. Must be an int.
+Defaults to 1.</p></li>
+<li><p><strong>enum_precision_parameter</strong> (<em>float</em>) – Finite precision parameter for
+enumlib.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.EnumWithComposition.apply_enumeration">
+<span class="sig-name descname"><span class="pre">apply_enumeration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymatgen.core.structure.Structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.EnumWithComposition.apply_enumeration" title="Permalink to this definition"></a></dt>
+<dd><p>Apply enumeration to parent slab model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>structure</strong> (<em>Structure</em>) – parent slab model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A sequence of all enumerated structures.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="slab-class">
+<h2><code class="docutils literal notranslate"><span class="pre">Slab</span></code> class<a class="headerlink" href="#slab-class" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.Slab">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.</span></span><span class="sig-name descname"><span class="pre">Slab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lattice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.lattice.Lattice</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.periodic_table.Element</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.periodic_table.Species</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.periodic_table.DummySpecies</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.composition.Composition</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_proximity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_unit_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_are_cartesian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab" title="Permalink to this definition"></a></dt>
+<dd><p>Constructor of periodic Slab class.
+This child class is inherited from the pymatgen.core.structure.Structure.
+The args defined have the same meaning as in the pymatgen
+documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>Union</em>) – Either a pymatgen.core.lattice.Lattice or any 2D
+array.</p></li>
+<li><p><strong>species</strong> (<em>Sequence</em>) – List of species on each site.</p></li>
+<li><p><strong>coords</strong> (<em>Sequence</em>) – List of fractional or cartesian coordinates of each
+species.</p></li>
+<li><p><strong>charge</strong> (<em>float</em>) – Overall charge of the structure.</p></li>
+<li><p><strong>validate_proximity</strong> (<em>bool</em>) – Whether to check if the distance between
+two sites is two close, i.e. less than 0.01 Ang. Defaults to False.</p></li>
+<li><p><strong>to_unit_cell</strong> (<em>bool</em>) – Whether to wrap fractional coordinates back
+into the unit cell. Defaults to False.</p></li>
+<li><p><strong>coords_are_cartesian</strong> (<em>bool</em>) – Whether the coordinates of sites are
+provided in cartesian coordinates. Defaults to False.</p></li>
+<li><p><strong>site_properties</strong> (<em>dict</em>) – Properties of each site in the slab model as a
+dict of sequences.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.Li_TM_layers_finder">
+<span class="sig-name descname"><span class="pre">Li_TM_layers_finder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.Li_TM_layers_finder" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to find the c fractional coordinates of Li, TM,
+and O layers as well as number of atoms in each layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict which c fractional coordinates as the key and number of
+atoms as the value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.get_max_min_c_frac">
+<span class="sig-name descname"><span class="pre">get_max_min_c_frac</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.get_max_min_c_frac" title="Permalink to this definition"></a></dt>
+<dd><p>Get the maximum and minimum values of the c fractional coordinates for
+all sites. This is used to find the location of the slab region in
+the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>maximum and minimum c fractional coordinates of a slab model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.group_atoms_by_layer">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">group_atoms_by_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o_layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.group_atoms_by_layer" title="Permalink to this definition"></a></dt>
+<dd><p>Group misclassified atoms into the right layers.
+For example, c_atom1 = 0.01, c_atoms2 = 0.02, they should be
+classified in one layer. But actually they are not. So this function
+here will search the difference between two closest atoms, if the
+difference is smaller than diff, they will be regrouped in the same
+layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>o_layer</strong> – Dict which contains different c fractional
+coordinates as keys and number of atoms as values.</p></li>
+<li><p><strong>diff</strong> – Accepted c fractional coordinates difference between two
+atoms. Defaults to 0.01.</p></li>
+<li><p><strong>max_diff</strong> – Maximum accepted c fractional coordinates difference
+between two atoms. Defaults to 0.03.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict which contains different c fractional
+coordinates as keys and number of atoms as values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.index_extraction">
+<span class="sig-name descname"><span class="pre">index_extraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.index_extraction" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to get the index of atoms in the relaxed
+surface layers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tol</strong> – Maximum spread (in fractional coordinates) that atoms in the
+same plane may exhibit. Defaults to 0.01.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Index of Li and O atoms in the relaxed surface layers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.layer_distinguisher">
+<span class="sig-name descname"><span class="pre">layer_distinguisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.layer_distinguisher" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to distinguish different layers in the slab
+model.
+For the (001) surface, it will be distinguished as Li-plane,
+TM-plane, and O-plane.
+For the (104) surface, only the Li-TM-O plane will exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>precision</strong> – Round c fraction coordinates to a given precision in
+decimal digits. Defaults to 2.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>c fractional coordinates of the upper and lower boundaries
+of the central fixed region. (1, 2)</p>
+<p>c fractional coordinates of the surface Li/TM and O atoms
+(for the (104) surface, these two values can be the same).
+(3, 4)</p>
+<p>Dict where c fractional coordinates as key
+and number of atoms at this layer as values (Li layers,
+O layers, and TM layers, respectively). (5, 7, and 8)</p>
+<p>List which has the c-fractional coordinates of each layer. (6)</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.remove_sites_with_scaling">
+<span class="sig-name descname"><span class="pre">remove_sites_with_scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.remove_sites_with_scaling" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to remove sites in the slab model and
+then create a supercell based on the scaling matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – Indices of the atoms that are going to be removed.</p></li>
+<li><p><strong>scaling</strong> – Whether to create a supercell of the slab model with
+existing vacancies. Defaults to True.</p></li>
+<li><p><strong>scaling_matrix</strong> – Scaling matrix to be used to create the
+supercell. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Supercell slab model with sites removed on the surface.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.surface_substitute">
+<span class="sig-name descname"><span class="pre">surface_substitute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.surface_substitute" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to substitute surface Li and O atoms with “dummy
+species”. This will facilitate the EnumWithComposition class to detect
+to-be-enumerated atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subs1</strong> – Substitution atom for Li atom.</p></li>
+<li><p><strong>subs2</strong> – Substitution atom for O atom.</p></li>
+<li><p><strong>direction</strong> – Define the direction which is parallel to the c
+lattice parameter. Defaults to 2.</p></li>
+<li><p><strong>tol</strong> – Maximum spread (in fractional coordinates) that atoms in the
+same plane may exhibit. Defaults to 0.02.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Substituted slab model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.symmetrize_top_base">
+<span class="sig-name descname"><span class="pre">symmetrize_top_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.symmetrize_top_base" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to symmetrize the top surface enumerated slab
+model on the basis of the inversion symmetry center to create a
+fully enumerated slab model. The inversion symmetry center is
+determined based on the central fixed region only because the input
+slab model is not symmetric since on the one hand, the top surface
+of the slab is substituted by other dummy species,
+on the other hand, it has been enumerated with different Li and O
+compositions on the surface. Therefore, using the whole slab to
+detect the inversion symmetry does not work.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symprec</strong> – Tolerance for the symmetry detection. Defaults to 1e-4.</p></li>
+<li><p><strong>direction</strong> – Lattice direction perpendicular to the surface,
+i.e. parallel to the c lattice parameter. Defaults to 2.</p></li>
+<li><p><strong>tol</strong> – Tolerance to determine the central fixed region. Defaults
+to 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Symmetrized slab model with equivalent top and bottom
+surfaces.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.Slab.wrap_pbc">
+<span class="sig-name descname"><span class="pre">wrap_pbc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slab_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.wrap_pbc" title="Permalink to this definition"></a></dt>
+<dd><p>Wrap fractional coordinates back into the unit cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slab_direction</strong> – Lattice direction perpendicular to the surface,
+i.e. parallel to the c lattice parameter. Defaults to 2.</p></li>
+<li><p><strong>tolerance</strong> – Tolerance in multiples of the lattice vector
+applied when wrapping in direction of the slab, so that atoms at
+the bottom of the slab are not wrapped to the top of the unit
+cell. Defaults to 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Slab model with all sites in the unit cell</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="precheck-class">
+<h2><code class="docutils literal notranslate"><span class="pre">PreCheck</span></code> class<a class="headerlink" href="#precheck-class" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.PreCheck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.</span></span><span class="sig-name descname"><span class="pre">PreCheck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymatgen.core.structure.Structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PreCheck" title="Permalink to this definition"></a></dt>
+<dd><p>PreCheck class to check whether the input slab model is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>structure</strong> – Input slab model.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PreCheck.has_no_inversion_symmetry">
+<span class="sig-name descname"><span class="pre">has_no_inversion_symmetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PreCheck.has_no_inversion_symmetry" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the input structure has inversion symmetry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>symprec</strong> – Symmetry detection tolerance. Defaults to 0.1. (
+relatively loose).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PreCheck.is_not_cuboid">
+<span class="sig-name descname"><span class="pre">is_not_cuboid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.PreCheck.is_not_cuboid" title="Permalink to this definition"></a></dt>
+<dd><p>Check whether the input structure is a cuboid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PreCheck.is_not_slab">
+<span class="sig-name descname"><span class="pre">is_not_slab</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.PreCheck.is_not_slab" title="Permalink to this definition"></a></dt>
+<dd><p>Check whether the input structure is a slab.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PreCheck.not_all_has_selective_dynamics">
+<span class="sig-name descname"><span class="pre">not_all_has_selective_dynamics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.PreCheck.not_all_has_selective_dynamics" title="Permalink to this definition"></a></dt>
+<dd><p>Check if all sites have selective dynamics as the site properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="postcheck-class">
+<h2><code class="docutils literal notranslate"><span class="pre">PostCheck</span></code> class<a class="headerlink" href="#postcheck-class" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.PostCheck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.</span></span><span class="sig-name descname"><span class="pre">PostCheck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refined_structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymatgen.core.structure.Structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PostCheck" title="Permalink to this definition"></a></dt>
+<dd><p>PostCheck class to check whether the output slab model is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>refined_structure</strong> – After refined structure, to be checked</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PostCheck.final_check">
+<span class="sig-name descname"><span class="pre">final_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Li_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">O_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PostCheck.final_check" title="Permalink to this definition"></a></dt>
+<dd><p>Perform final check to see whether the generated slab models are
+correct.</p>
+<ol class="arabic simple">
+<li><p>Has the correct geometry.</p></li>
+</ol>
+<p>2. Has the inversion symmetry center even with a quite high symmetry
+detection parameter.</p>
+<p>3. Has the inversion symmetry center shifted to the origin (0,
+0, 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Li_composition</strong> – Surface Li composition of the slab model.</p></li>
+<li><p><strong>O_composition</strong> – Surface O composition of the slab model.</p></li>
+<li><p><strong>index</strong> – Index of the slab model in the dataset.</p></li>
+<li><p><strong>symprec</strong> – Symmetry detection tolerance. Defaults to 1e-5 (tight
+tolerance is used here).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If everything is fine, it will just pass. If something
+unexpected happens, the specific error report will generate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.PostCheck.slab_size_check">
+<span class="sig-name descname"><span class="pre">slab_size_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_num_sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enumerated_num_sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PostCheck.slab_size_check" title="Permalink to this definition"></a></dt>
+<dd><p>Check whether the after refined structure has the right geometry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_num_sites</strong> – Number of sites that should be after enumeration</p></li>
+<li><p><strong>enumerated_num_sites</strong> – Actual number of sites for the enumerated
+slab model</p></li>
+<li><p><strong>input_c</strong> – c lattice parameter of the input(parent) slab model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>indicator and after-operated structure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="error.html" class="btn btn-neutral float-right" title="error" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Xinhao Li.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

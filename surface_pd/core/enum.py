@@ -12,22 +12,24 @@ class EnumWithComposition(object):
     """
     EnumWithComposition class to enumerate the parent slab model with
     defined composition.
-    """
-    def __init__(self,
-                 subs_species: list=None,
-                 subs_composition: list=None,
-                 min_cell_size: float=1,
-                 max_cell_size: int=None,
-                 enum_precision_parameter: float=0.00001):
-        """
 
-        Args:
-            subs_species: to-be-enumerated species
-            subs_composition: target composition
-            min_cell_size:
-            max_cell_size:
-            enum_precision_parameter:
-        """
+    Args:
+        subs_species (list): to-be-enumerated species.
+        subs_composition (list): target composition.
+        min_cell_size (int): The minimum cell size. Must be an int.
+            Defaults to 1.
+        max_cell_size (int): The maximum cell size. Must be an int.
+            Defaults to 1.
+        enum_precision_parameter (float): Finite precision parameter for
+            enumlib.
+    """
+
+    def __init__(self,
+                 subs_species: list = None,
+                 subs_composition: list = None,
+                 min_cell_size: int = 1,
+                 max_cell_size: int = 1,
+                 enum_precision_parameter: float = 1e-5):
         self.subs_species = subs_species
         self.subs_composition = subs_composition
         self.min_cell_size = min_cell_size
@@ -36,12 +38,13 @@ class EnumWithComposition(object):
 
     def apply_enumeration(self, structure: Structure):
         """
+        Apply enumeration to parent slab model.
 
         Args:
-            structure: parent slab model
+            structure (Structure): parent slab model.
 
         Returns:
-
+            A sequence of all enumerated structures.
         """
         num_subs = len(self.subs_species)
 
