@@ -22,26 +22,10 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.periodic_table import Species, DummySpecies
 from pymatgen.analysis.structure_matcher import StructureMatcher
 
-# from surface_pd.surface_enum import (surface_substitute,
-#                                      layer_classification,
-#                                      enum_with_composition,
-#                                      index_extraction,
-#                                      remove_sites,
-#                                      symmetrize_top_base,
-#                                      get_num_sites,
-#                                      slab_size_check,
-#                                      final_check,
-#                                      define_scaling_matrix,
-#                                      get_max_min_c_frac,
-#                                      add_selective_dynamics,
-#                                      temp_shift_isc_back)
-
-from surface_pd.core import Slab, EnumWithComposition, PreCheck
+from surface_pd.core import Slab, EnumWithComposition, PreCheck, PostCheck
 from surface_pd.analysis.slab_analysis import (get_num_sites,
                                                add_selective_dynamics)
-from surface_pd.analysis import slab_size_check, final_check
-from surface_pd.util import (define_scaling_matrix,
-                             temp_shift_isc_back)
+from surface_pd.util import (define_scaling_matrix, temp_shift_isc_back)
 from surface_pd.error import *
 
 
@@ -128,7 +112,7 @@ def automate_surface(target_slab_path,
     # c_fractional coordinates of the lower and upper boundaries of the
     # fixed region in the centeral slab
     [center_bottom, center_top,
-     _, _, _, _, _, _] = input_structure.layer_classification()
+     _, _, _, _, _, _] = input_structure.layer_distinguisher()
 
     # Get indices of the relaxed Li atoms as well as the surface oxygen atoms
     # in the slab model
@@ -327,11 +311,11 @@ def automate_surface(target_slab_path,
                        (max(refined_structure.lattice.abc) > c * 2 - 5) or
                        (max(refined_structure.lattice.abc) !=
                         refined_structure.lattice.c)):
-                    indicator, refined_structure = slab_size_check(
-                        refined_structure,
-                        total_num_sites,
-                        num_sites,
-                        c
+                    pc = PostCheck(refined_structure)
+                    indicator, refined_structure = pc.slab_size_check(
+                        total_num_sites=total_num_sites,
+                        enumerated_num_sites=num_sites,
+                        input_c=c
                     )
                     num_sites = refined_structure.num_sites
 
@@ -341,8 +325,8 @@ def automate_surface(target_slab_path,
                 # min_c, max_c = get_max_min_c_frac(refined_structure)
                 if max_c - min_c > 0.8:
                     refined_structure = temp_shift_isc_back(
-                        before_refine_structure=symmetrized_structure,
-                        after_refine_structure=refined_structure,
+                        before_refined_structure=symmetrized_structure,
+                        after_refined_structure=refined_structure,
                         shift=True
                     )
                     refined_structure = add_selective_dynamics(
@@ -351,8 +335,8 @@ def automate_surface(target_slab_path,
                         num_relaxed=num_layers_relaxed
                     )
                     refined_structure = temp_shift_isc_back(
-                        before_refine_structure=symmetrized_structure,
-                        after_refine_structure=refined_structure,
+                        before_refined_structure=symmetrized_structure,
+                        after_refined_structure=refined_structure,
                         shift=False
                     )
                 else:
@@ -363,7 +347,12 @@ def automate_surface(target_slab_path,
                     )
 
                 # Perform final check
-                final_check(refined_structure, c, i, j, k)
+                pc = PostCheck(refined_structure)
+                pc.final_check(
+                    Li_composition=i,
+                    O_composition=j,
+                    index=k
+                )
 
                 # Generate slab models
                 if to_vasp:
@@ -425,21 +414,24 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--lithium-composition", "-L",
-        help="All desired surface lithium composition.",
+        help="All desired surface lithium composition "
+             "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
         nargs="+",
         type=float,
         default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
-        "--oxygen-composition", "-o",
+        "--oxygen-composition", "-O",
         nargs="+",
         type=float,
-        help="All desired surface oxygen composition.",
+        help="All desired surface oxygen composition "
+             "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
         default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
         "--num-of-relaxed-layers", "-nr",
-        help="Number of layers that will be relaxed on the surface.",
+        help="Number of layers that will be relaxed on the surface "
+             "(default: 2).",
         type=int,
         default=2
     )

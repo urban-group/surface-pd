@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-rcparams = {"font.size": 16,
+rcparams = {"font.size": 20,
             "legend.frameon": False,
             "xtick.top": True,
             "xtick.direction": "in",
@@ -170,8 +170,8 @@ def surface_pd_plot(data_files,
                colors="black", linewidths=2)
     PD = ax.contourf(V, T, stable_phases_reshaped,
                      levels=levels, cmap=cmap)
-    ax.set_xlabel('Potential vs. Li/Li$^+$ (V)')
-    ax.set_ylabel('Temperature (K)')
+    ax.set_xlabel('Potential vs. Li/Li$^+$ (V)', fontsize=20)
+    ax.set_ylabel('Temperature (K)', fontsize=20)
     colorbar = fig.colorbar(PD, ticks=ticky, pad=0.05)
     colorbar.ax.set_yticklabels(labels)
     colorbar.ax.tick_params(size=0)

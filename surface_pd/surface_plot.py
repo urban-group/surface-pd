@@ -4,7 +4,7 @@ Functions used to plot surface pd
 
 import numpy as np
 import collections
-import surface_substitute
+# import surface_substitute
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
@@ -15,17 +15,20 @@ from os.path import splitext
 
 
 E_Li_by_funtional = {"PBE+U": -1.89965,
-                     "SCAN+rVV10+U": -2.33333}
+                     "SCAN+rVV10+U": -2.33333,
+                     "r2SCAN+rVV10+U": -2.32338}
 
 E_O2_by_funtional = {"PBE+U": -9.86018 + 1.36,
-                     "SCAN+rVV10+U": -12.00701}
+                     "SCAN+rVV10+U": -12.00701,
+                     "r2SCAN+rVV10+U": -11.54833}
 
 E_bulk_by_funtional = {'Ni':
                            {"PBE+U": -19.92283375,
                             "SCAN+rVV10+U": -36.8133525},
                        'Co':
                            {"PBE+U": -22.69242,
-                            "SCAN+rVV10+U": 0}
+                            "SCAN+rVV10+U": -37.2001966667,
+                            "r2SCAN+rVV10+U": -32.5698933333}
                        }
 
 

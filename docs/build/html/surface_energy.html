@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surface energy &mdash; surface-pd 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Surface enumeration" href="surface_enum.html" />
+    <link rel="prev" title="Theory" href="theory.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> surface-pd
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="theory.html">Theory</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Surface energy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="surface_enum.html">Surface enumeration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">surface-pd</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="theory.html">Theory</a> &raquo;</li>
+      <li>Surface energy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/surface_energy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>The brief overview of how the surface energy is calculated for the both
+non-polar and polar surface facets is described here.
+For a detailed description of how all the equations listed below are
+derived, please refer to the paper.</p>
+<p><a class="reference external" href="https://pubs.acs.org/doi/10.1021/acsaem.2c00012">Understanding the Onset of Surface Degradation in LiNiO2 Cathodes</a></p>
+<section id="surface-energy">
+<h1>Surface energy<a class="headerlink" href="#surface-energy" title="Permalink to this headline"></a></h1>
+<p>In thermodynamic equilibrium, the LiTMO<sub>2</sub> (TM represents transition metal
+species) layered surface
+forms the reconstruction
+with the lowest Gibbs free energy for the given conditions.
+The grand-canonical surface phase diagram is thus determined by the surface
+free energies of all possible surface structures with different arrangements of
+lithium and oxygen vacancies, subject to the chemical potentials of lithium and
+oxygen.</p>
+<p>To derive an expression of the surface free energy, we consider the formal
+truncation of the extended LiTMO<sub>2</sub> crystal structure along a lattice plane.
+In thermodynamic equilibrium with oxygen and lithium reservoirs (e.g., the
+reactants during the synthesis of the material), the surfaces may absorb or
+release Li and O atoms, so that the surface stoichiometry can differ from the
+stoichiometry of the LiTMO<sub>2</sub> bulk.
+A surface slab model of any surface, whether ideal stoichiometric or
+reconstructed, can thus be thought of as the result of the formal formation
+reaction:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{n_\text{TM}^\text{slab}}{n_\text{TM}^\text{bulk}}\text{LiTMO}_2^{\text
+   {bulk}}
+   + \Bigg(n_\text{Li}^\text{slab} -
+           \frac{n_{\text{TM}}^{\text{slab}}}{n_{\text{TM}}^{\text{bulk}}}n_
+   {\text{Li}}^{\text{bulk}}
+   \Bigg)\text{Li}
+   + \\
+   \frac{1}{2} \Bigg(n_\text{O}^\text{slab} -
+           \frac{n_\text{TM}^\text{slab}}{n_\text{TM}^\text{bulk}}n_{\text{O
+   }}^{\text{bulk}}
+   \Bigg)\text{O}_2
+   \rightarrow
+   \text{Li}_{n_{\text{Li}}^{\text{slab}}}\text{TM}_{n_{\text{TM}}^{\text{slab
+   }}}O_{n_{\text{O}}^{\text{slab}}}\end{split}\]</div>
+<p>The <cite>surface free energy</cite> is the reaction free energy normalized by the
+surface area <cite>A</cite> and is given by:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = \frac{1}{2\text{A}}\Bigg[
+G_{\text{slab}} - \frac{n_{\text{TM}}^{\text{slab}}}{n_{\text{TM}}^{\text
+  {bulk}}} G_{\text{bulk}}
+      - \sum_{{i}}^{\text{Li},
+\text{O}}(n_{{i}}^{\text{slab}} -
+\frac{n_{\text{TM}}^{\text{slab}}}{n_{\text{TM}}^{\text{bulk}}}
+n_{{i}}^{\text{bulk}}) \mu_{\text{i}}
+\Bigg]\]</div>
+<p>where <span class="math notranslate nohighlight">\(n_{i}^{\text{slab}}\)</span> and <span class="math notranslate nohighlight">\(n_{i}^{\text{bulk}}\)</span> are the
+number of atoms of species <span class="math notranslate nohighlight">\(i\)</span> (O and Li) in the slab and bulk
+models, respectively. <span class="math notranslate nohighlight">\(G_{\text{slab}} = G
+(\text{Li}_{n_{\text{Li}}^{\text{slab}}}\text{TM}_{n_{\text{TM}}^{\text{slab
+}}}O_{n_{\text{O}}^{\text{slab}}})\)</span>
+and <span class="math notranslate nohighlight">\(G_{\text{bulk}}=G(\text{LiTMO}_2^{\text{bulk}})\)</span>
+are the Gibbs free energy of the slab and
+bulk models, respectively, and the TM content is
+assumed to be constant.
+Neglecting the temperature dependence of the solids, <span class="math notranslate nohighlight">\(G_\text{slab}\)</span>
+and <span class="math notranslate nohighlight">\(G_\text{bulk}\)</span> can be obtained from DFT calculations,
+representing the energies of the slab
+model and the bulk structure (one LiTMO<sub>2</sub> formula unit).</p>
+<p>In equilibrium, the chemical potential of Li can be calculated as:</p>
+<div class="math notranslate nohighlight">
+\[\mu_{\text{Li}}=E(\text{Li}_{\text{bcc}})- F\, V\]</div>
+<p>where <span class="math notranslate nohighlight">\(E(\text{Li}_{\text{bcc}})\)</span> is the free energy of Li metal
+in the body-centered cubic structure, which is also approximated with the
+zero-Kelvin DFT energy.
+<cite>F</cite> and <cite>V</cite> are Faraday’s constant and cell potential, respectively.</p>
+<p>The chemical potential of oxygen depends, in principle, on the temperature and
+pressure, though the pressure dependence is negligible compared to the
+temperature dependence. Thus, we ignore the impact of pressure.</p>
+<div class="math notranslate nohighlight">
+\[\mu_{\text{O}}(T) = \frac{1}{2}\Bigg\{
+\mu_{\text{O}_2}^{0\text{K}} + \Bigg[ \Delta H^{\circ} + \Delta H(T) \Bigg]
+- T\Bigg[ S^{\circ} + \Delta S(T) \Bigg]
+\Bigg\}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\frac{1}{2}\)</span> is a normalization factor accounting for the two
+oxygen atoms in each O<sub>2</sub> molecule, and <span class="math notranslate nohighlight">\(\mu_{\text{O}_2}^{0\text{K}}\)</span>
+is the oxygen chemical potential at 0 Kelvin (equal to the enthalpy),
+which was obtained from DFT calculations as described above.
+The remaining terms are the enthalpy and entropy contributions to the
+relative oxygen chemical potential.</p>
+<p>Finally, taken together, the surface energy of any LiTMO<sub>2</sub> surface
+(ideal stoichiometric or defected/reconstructed) can be approximated as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\gamma(T, V)
+      \approx \frac{1}{2A} \Bigg\{
+  E_{\text{slab}}
+  + (n_{\text{TM}} - n_{\text{Li}}) \Bigg[
+  E(\text{Li}_{\text{bcc}})
+  - F\, V
+  \Bigg] \\
+  + \frac{1}{2} (2n_{\text{TM}} - n_{\text{O}}) \mu_{\text{O}_2}(T)
+      - n_{\text{TM}} E(\text{LiTMO}_2)
+\Bigg\}\end{split}\]</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="theory.html" class="btn btn-neutral float-left" title="Theory" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="surface_enum.html" class="btn btn-neutral float-right" title="Surface enumeration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Xinhao Li.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

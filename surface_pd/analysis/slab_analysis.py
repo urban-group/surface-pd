@@ -4,23 +4,29 @@
 from surface_pd.core import Slab
 from surface_pd.error import PolarSurfaceError, NonPolarSurfaceError
 
+
 def get_num_sites(lithiated_structure, slab_substituted,
                   Li_replacement, Li_composition,
                   O_replacement, O_composition,
                   cell_size):
     """
-    Get the right number of sites in the slab model after enumeration
-    Args:
-        lithiated_structure: fully lithiated structure (input structure)
-        slab_substituted: the slab model where the surface Li and O atoms
-        are substituted
-        cell_size: maximum cell size
-        Li_composition: enumerated Li composition
-        O_composition: enumerated O composition
+    Get the right number of sites in the slab model after enumeration.
 
-    Returns: number of sites that should be after the enumeration
+    Args:
+        lithiated_structure: Fully lithiated structure (input structure).
+        slab_substituted: Slab model where the surface Li and O atoms
+            are substituted.
+        Li_replacement: Substitution atom for Li atom.
+        Li_composition: Enumerated Li composition.
+        O_replacement: Substitution atom for O atom.
+        O_composition: Enumerated O composition.
+        cell_size: Maximum cell size.
+
+    Returns:
+        Number of sites that should be after the enumeration.
 
     """
+
     # Get number of lithium, TM, oxygen atoms in the fully lithiated slabs
     # after scaling
     enum_Li, enum_O = [
@@ -43,14 +49,16 @@ def boundary_define(parent_structure,
                     enumed_structure,
                     num_relaxed):
     """
-    Get the boundary of the central fixed slab without the "selective
-    dynamics" labeled
+    Get the boundary of the central fixed region without having the "selective
+    dynamics" labeled.
+
     Args:
-        parent_structure:
-        enumed_structure:
-        num_relaxed:
+        parent_structure: Input structure.
+        enumed_structure: After enumerated structure.
+        num_relaxed: User defined number of relaxed layers on the surface.
 
     Returns:
+        Lower and upper boundary of the central fixed region in the slab.
 
     """
     parent_structure = Slab.from_sites(parent_structure)
@@ -114,13 +122,15 @@ def add_selective_dynamics(parent_structure,
                            num_relaxed):
     """
     Add selective dynamics to the after refined slab model based on number
-    of layers that will be relaxed on the surface
+    of layers that will be relaxed on the surface.
+
     Args:
-        parent_structure:
-        enumed_structure:
-        num_relaxed:
+        parent_structure: Input structure.
+        enumed_structure: After enumerated structure.
+        num_relaxed: User defined number of relaxed layers on the surface.
 
     Returns:
+        Enumerated slab model with "selective dynamics" labeled.
 
     """
     lower_limit, upper_limit = boundary_define(parent_structure,
