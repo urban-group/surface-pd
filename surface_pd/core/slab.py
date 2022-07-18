@@ -50,6 +50,8 @@ class Slab(Structure):
                          charge, validate_proximity,
                          to_unit_cell, coords_are_cartesian,
                          site_properties)
+        
+        self.slab_direction = slab_direction  # Questions: How about defining this instance variable? because the slab_direction is used in many instance functions
 
     @staticmethod
     def group_atoms_by_layer(o_layer,
@@ -76,19 +78,35 @@ class Slab(Structure):
             coordinates as keys and number of atoms as values.
 
         """
-        height_sorted = sorted(o_layer.keys(), reverse=True)
+#         height_sorted = sorted(o_layer.keys(), reverse=True)
+#         res = dict()
+#         excluded_heights = set()
+#         for height in height_sorted:
+#             if height in excluded_heights:
+#                 continue
+#             res[height] = o_layer[height]
+#             for i in range(1, int(max_diff / diff) + 1):
+#                 curr_height = height - i * diff  # Questions: Why do you only check it in units of diff (0.01)? The diff value may have to be consistent with the value used in proximity check. 
+#                 if curr_height not in o_layer:
+#                     break
+#                 res[height] += o_layer[curr_height]
+#                 excluded_heights.add(curr_height)
+
+        # Suggestions (check and reflect it if this suggestion looks better):
         res = dict()
-        excluded_heights = set()
-        for height in height_sorted:
-            if height in excluded_heights:
+        o_layer_sorted = dict(sorted(o_layer.items(), key=lambda x: x[0], reverse=True))
+        for i, (height_, num_) in enumerate(o_layer_sorted.items()):
+            if i == 0:
+                res[height_] = num_
+                previous_height = height_
                 continue
-            res[height] = o_layer[height]
-            for i in range(1, int(max_diff / diff) + 1):
-                curr_height = height - i * diff
-                if curr_height not in o_layer:
-                    break
-                res[height] += o_layer[curr_height]
-                excluded_heights.add(curr_height)
+
+            if abs(previous_height - height_) <= max_diff:
+                res[previous_height] += num_
+            else:
+                res[height_] = num_
+                previous_height = height_
+            
         return res
 
     def wrap_pbc(self,
@@ -114,7 +132,7 @@ class Slab(Structure):
             bounds = np.array([0.0, 0.0, 0.0])
             bounds[slab_direction] = tolerance
             for i in range(3):
-                while site.frac_coords[i] < -bounds[i]:
+                while site.frac_coords[i] < -bounds[i]:  # Questions: I cannot understand what this part is for. I think it is enough to take the positive decimal fraction making use of the "np.modf" function 
                     site.frac_coords[i] += 1.0
                 while site.frac_coords[i] >= (1.0 - bounds[i] - EPS):
                     site.frac_coords[i] -= 1.0
@@ -151,6 +169,8 @@ class Slab(Structure):
         TM_layers = collections.defaultdict(int)
         O_layers = collections.defaultdict(int)
 
+        # Questions 1: The following lines are only applicable to Li-TM-O assuming that the Li and TM are mixed. Do you think it is enough to only consider the ternary Li-TM-O?
+        # Questions 2: The following lines are assuming that the surface normal direction is parallel to the c lattice. However, the possibility that the surface normal direction is along a or b lattice should also be considered using the "slab_direction" argument as in self.wrap_pbc
         for s in self:
             if 'Li' in s:
                 # Since the c fractional coordinates of atoms even in the
@@ -169,10 +189,11 @@ class Slab(Structure):
         TM_layers = self.group_atoms_by_layer(TM_layers)
         O_layers = self.group_atoms_by_layer(O_layers)
 
-        layers = sorted({**Li_layers, **TM_layers})
+        # Get the fractional coordinates of distinct vertical layers for Metals and Oxygen
+        M_layers_c_frac = sorted({**Li_layers, **TM_layers})
         O_layers_c_frac = sorted(O_layers)
 
-        # Collect the central layers based on the "selective_dynamics"
+        # Collect the central layers based on the "selective_dynamics" tag: atoms with the "F" property are assigned into the central layers 
         center_sites = []
         for s in self:
             if ('selective_dynamics' in s.properties
@@ -185,25 +206,26 @@ class Slab(Structure):
         lower_limit, upper_limit = center_region[0]
 
         # Li-terminated slab model -- (001) surface
+        # Questions: Is it okay that the terminated metal species are determined by the number of Li and TM atoms as follows? I think this algorithm depends on the assumption that the given structure is "Layered" and the number of metal atoms on each layer is the same.
         if len(Li_layers) > len(TM_layers):
             c_max_surface_Li = sorted(Li_layers.items())[-1][0]
             c_max_surface_O = sorted(O_layers.items())[-1][0]
             return [lower_limit, upper_limit, c_max_surface_Li,
-                    c_max_surface_O, Li_layers, layers,
+                    c_max_surface_O, Li_layers, M_layers_c_frac,
                     O_layers_c_frac, TM_layers]
         # TM terminated slab model -- (001) surface
         elif len(Li_layers) < len(TM_layers):
             c_surface_TM = sorted(TM_layers.items())[-1][0]
             c_max_surface_O = sorted(O_layers.items())[-1][0]
             return [lower_limit, upper_limit, c_surface_TM,
-                    c_max_surface_O, Li_layers, layers,
+                    c_max_surface_O, Li_layers, M_layers_c_frac,
                     O_layers_c_frac, TM_layers]
         # Li-TM-O terminated slab model -- (104) surface
         else:
             c_surface_TM_Li = sorted(Li_layers.items())[-1][0]
             c_max_surface_O = sorted(O_layers.items())[-1][0]
             return [lower_limit, upper_limit, c_surface_TM_Li,
-                    c_max_surface_O, Li_layers, layers,
+                    c_max_surface_O, Li_layers, M_layers_c_frac,
                     O_layers_c_frac, TM_layers]
 
     def index_extraction(self,
@@ -226,6 +248,9 @@ class Slab(Structure):
         # Get indices of the first and second Li layers as well as the surface
         # oxygen layers
         relaxed_li_index, oxygen_index = [], []
+        # Questions 1: The following lines are only applicable to Li-TM-O assuming that the Li and TM are mixed. Do you think it is enough to only consider the ternary Li-TM-O?
+        # Questions 2: The following lines are assuming that the surface normal direction is parallel to the c lattice. However, the possibility that the surface normal direction is along a or b lattice should also be considered using the "slab_direction" argument as in self.wrap_pbc
+        for s in self:
         for index, site in enumerate(self):
             # Surface Li atoms index extraction
             if 'Li' in site:
@@ -236,7 +261,7 @@ class Slab(Structure):
             # atoms are all included)
             elif 'O' in site:
                 if (site.frac_coords[2] >= c_max_surface_O - tol) or \
-                        (site.frac_coords[2] <= O_layers_c_frac[0] + tol):
+                        (site.frac_coords[2] <= O_layers_c_frac[0] + tol):  # Questions 3: Although the "O_layers" and "O_layers_c_frac" are given after calling the self.group_atoms_by_layer in self.layer_distinguisher, why this "tol" is needed? Or I think the use of the same value as "max_diff" in self.group_atoms_by_layer is more appropriate than this independent "tol" value.
                     oxygen_index.append(index)
 
         return relaxed_li_index, oxygen_index
@@ -270,7 +295,7 @@ class Slab(Structure):
 
     def symmetrize_top_base(self,
                             symprec=1e-4,
-                            direction=2,
+                            direction=2,  # Questions 1: How about defining the slab_direction as instance varialbe of Slab Class instead of separatly assigning in many instance functions
                             tol=0.01):
         """
         This function is used to symmetrize the top surface enumerated slab
@@ -296,7 +321,7 @@ class Slab(Structure):
         """
 
         # Load slab which is going to be symmetrized
-        slab_tgt = self
+        slab_tgt = self  # Questions 2: copy.deepcopy is not needed in this part?
 
         # Use center region to get the inversion symmetry center and the
         # rotation matrix
@@ -307,7 +332,7 @@ class Slab(Structure):
         for s in slab_tgt:
             if lower_limit - tol < s.frac_coords[2] < upper_limit + tol:
                 slab_ref_site.append(copy.deepcopy(s))
-        slab_ref = Structure.from_sites(slab_ref_site)
+        slab_ref = Structure.from_sites(slab_ref_site) # Questions 3: "center_sites" is already defined in self.layer_distinguisher. If same variables are defined more than two times, it would be better to define the variable as instance variable and share it in multiple instance functions.
 
         # Determine symmetry operations of the reference slab and make sure
         # the reference slab has an inversion center
