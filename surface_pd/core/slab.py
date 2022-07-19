@@ -370,7 +370,7 @@ class Slab(Structure):
     def surface_substitute(self,
                            subs1: str,
                            subs2: str,
-                           direction=2,
+                           direction=2,  # Questions 1: How about defining the slab_direction as instance varialbe of Slab Class instead of separatly assigning in many instance functions
                            tol=0.02):
         """
         This function is used to substitute surface Li and O atoms with "dummy
@@ -390,7 +390,7 @@ class Slab(Structure):
 
         """
         # Load slab
-        slab_tgt = self
+        slab_tgt = self  # Questions 2: copy.deepcopy is not needed in this part?
 
         # Define c-fractional coordinates of upper boundary of the fixed
         # region, surface metal, and surface O atoms.
@@ -410,7 +410,7 @@ class Slab(Structure):
                     distance - tol and ('Li' in s)):
                 surface_Li.append(copy.deepcopy(s))
             if (abs(c_max_surface_O - s.frac_coords[direction]) <
-                    tol and ('O' in s)):
+                    tol and ('O' in s)):  # Questions 3: "distance" is not needed in this part?
                 surface_O.append(copy.deepcopy(s))
 
         # Extract indices for surface Li and O atoms in target slab model
@@ -451,6 +451,7 @@ class Slab(Structure):
 
         """
         minimum, maximum = 1, 0
+        # Questions 1: The following lines are assuming that the surface normal direction is parallel to the c lattice.
         for site in self:
             if site.frac_coords[2] > maximum:
                 maximum = site.frac_coords[2]
@@ -471,6 +472,7 @@ class Slab(Structure):
         Li_layers = collections.defaultdict(int)
         TM_layers = collections.defaultdict(int)
         O_layers = collections.defaultdict(int)
+        # Questions 1: The following lines are only applicable to Li-TM-O assuming that the Li and TM are mixed. Do you think it is enough to only consider the ternary Li-TM-O?
         for s in self:
             if 'Li' in s:
                 # Since the c fractional coordinates of atoms even in the
@@ -487,4 +489,7 @@ class Slab(Structure):
         Li_layers = self.group_atoms_by_layer(Li_layers)
         TM_layers = self.group_atoms_by_layer(TM_layers)
         O_layers = self.group_atoms_by_layer(O_layers)
+        
+        # Questions 2: The lines in this function is exactly the same as first several lines in self.layer_distinguisher.
+        # Therefore, it would be better to replace the first several lines with this function, or to define instance variables (e.g., self.Li_layers) so that the variables can be shared in multiple instance functions
         return Li_layers, TM_layers, O_layers
