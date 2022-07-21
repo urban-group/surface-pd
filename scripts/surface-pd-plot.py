@@ -39,7 +39,9 @@ def surface_pd_plot(data_files,
                     low_T, high_T,
                     color_Li=False,
                     color_O=False,
-                    functional="PBE+U"):
+                    functional="PBE+U",
+                    discharge=False,
+                    save=False):
 
     # Create x and y axis
     V = np.linspace(0.0, 5.0, 500)
@@ -54,6 +56,8 @@ def surface_pd_plot(data_files,
         df = []
         for data in data_files:
             temp_df = pd.read_table(data, sep="\s+", index_col=0)
+            # Standardize the surface pd data (with the same number of TM
+            # species)
             temp_df = standardize_pd_data(temp_df, TM_species=TM_species)
             # Get the phases that will be used to calcualte the shift energy
             check_phases.append(get_check_phases(temp_df))
@@ -63,7 +67,7 @@ def surface_pd_plot(data_files,
         shift_energy = get_the_shift_energy(check_phases,
                                             TM_species,
                                             functional)
-        print(shift_energy)
+        # print(shift_energy)
         # Get surface energy
         temp_G = get_surface_energy(df, TM_species,
                                     V_mesh, T_mesh,
@@ -142,7 +146,7 @@ def surface_pd_plot(data_files,
                                stable_phases_index]
 
         ticks = np.unique([stable_phases_index])
-        print(ticks)
+        # print(ticks)
         converted_stable_phases_index = convert_numbers(stable_phases_index,
                                                         ticks)
 
@@ -172,12 +176,20 @@ def surface_pd_plot(data_files,
                      levels=levels, cmap=cmap)
     ax.set_xlabel('Potential vs. Li/Li$^+$ (V)', fontsize=20)
     ax.set_ylabel('Temperature (K)', fontsize=20)
+    if discharge:
+        ax.invert_xaxis()
+    else:
+        pass
     colorbar = fig.colorbar(PD, ticks=ticky, pad=0.05)
     colorbar.ax.set_yticklabels(labels)
     colorbar.ax.tick_params(size=0)
     colorbar.ax.minorticks_off()
     plt.tight_layout()
-    # plt.savefig('surface-pd.pdf', dpi=500)
+    if save:
+        if discharge:
+            plt.savefig('discharge-surface-pd.pdf', dpi=500)
+        else:
+            plt.savefig('charge-surface-pd.pdf', dpi=500)
     plt.show()
 
 
@@ -227,6 +239,18 @@ if __name__ == "__main__":
         default="PBE+U"
     )
 
+    parser.add_argument(
+        '--discharge', '-d',
+        help='If the surface pd represents charge or discharge',
+        action='store_true'
+    )
+
+    parser.add_argument(
+        '--save', '-s',
+        help='Whether to save the charge/discharge surface pd.',
+        action='store_true'
+    )
+
     args = parser.parse_args()
 
     surface_pd_plot(args.surface_pd_data,
@@ -234,5 +258,7 @@ if __name__ == "__main__":
                     args.high_T,
                     args.color_by_Li_content,
                     args.color_by_O_content,
-                    args.functional
+                    args.functional,
+                    args.discharge,
+                    args.save
                     )
