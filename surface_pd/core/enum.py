@@ -54,9 +54,14 @@ class EnumWithComposition(object):
             temp_dict[self.subs_species[i]] = self.subs_composition[i]
             subs_dict[self.subs_species[i]] = temp_dict
 
+        # Questions 1: what the "subs_dict" dictionary above looks like?
+        # Questions 2: When I looked at the self.surface_substitute function in Slab Class, I thought that Li and O atoms can be substituted by only one element, respectively.
+        # In this EnumWithComposition Class, is there no limitations in the List length for "subs_species" and "subs_composition" arguments?
+        # The List arguments with arbitrary length can be handled?
         subs = SubstitutionTransformation(subs_dict)
         surface_structure_partial = subs.apply_transformation(
             structure)
+        
         enum = EnumerateStructureTransformation(
             min_cell_size=self.min_cell_size,
             max_cell_size=self.cell_zie,
