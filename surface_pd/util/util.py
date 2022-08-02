@@ -33,7 +33,7 @@ def define_scaling_matrix(a, b, multiple):
     return scaling_matrix
 
 
-def temp_shift_isc_back(before_refined_structure,
+def temp_shift_isc_back(before_refined_structure: Slab,
                         after_refined_structure,
                         shift=True):
     """
@@ -49,12 +49,8 @@ def temp_shift_isc_back(before_refined_structure,
         back.
 
     """
-    sga = SpacegroupAnalyzer(before_refined_structure,
-                             symprec=1e-1)
-    ops = sga.get_symmetry_operations()
-    inversion = ops[1]
-    assert (np.all(inversion.rotation_matrix == -np.identity(3)))
-    origin = inversion.translation_vector / 2
+    _, origin, _ = before_refined_structure.is_symmetry(
+        return_isc=True)
     if shift:
         for site in after_refined_structure:
             site.frac_coords = site.frac_coords + origin

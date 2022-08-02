@@ -74,8 +74,13 @@ def boundary_define(parent_structure,
         parent_num_layers = len(TM_layers)
         num_layers = len(enumed_TM_layers)
     else:
-        parent_num_layers = len(Li_layers) + len(TM_layers)
-        num_layers = len(enumed_Li_layers) + len(enumed_TM_layers)
+        # Previous method
+        # parent_num_layers = len(Li_layers) + len(TM_layers)
+        # num_layers = len(enumed_Li_layers) + len(enumed_TM_layers)
+
+        # Here changed, might revert if something went wrong
+        parent_num_layers = len({**Li_layers, **TM_layers})
+        num_layers = len({**enumed_Li_layers, **enumed_TM_layers})
 
     # Use number of layers in the parent slab model to define how many
     # layers should be fixed in the middel since this number should be

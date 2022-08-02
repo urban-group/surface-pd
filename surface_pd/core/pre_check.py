@@ -130,6 +130,21 @@ class PreCheck(object):
                                  lithium_like_composition: list,
                                  num_oxygen_like_atoms: int,
                                  oxygen_like_composition: list):
+        """
+        This function is used to check whether the user defined composition
+        can be enumerated.
+
+        Args:
+            num_lithium_like_atoms: number of lithium-like atoms on the top
+                surface which will be relaxed.
+            lithium_like_composition: User defined lithium-like composition.
+            num_oxygen_like_atoms: number of oxygen-like atoms on the top
+                surface which will be relaxed.
+            oxygen_like_composition: User defined oxygen-like composition.
+
+        Returns:
+            Whether it has the valid composition.
+        """
         pass_1, pass_2 = [], []
         for composition in lithium_like_composition:
             f = composition * num_lithium_like_atoms
