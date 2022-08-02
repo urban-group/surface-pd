@@ -13,4 +13,4 @@ __all__ = ['NoInversionSymmetryError', 'SlabOrientationError',
            'PrimitiveStructureFinderError',
            'NonDefinedSelectiveDynamicsError',
            'PolarSurfaceError', 'NonPolarSurfaceError', 'NonSlabError',
-           'TooLargeSlabError']
+           'TooLargeSlabError', 'InvalidCompositionError']

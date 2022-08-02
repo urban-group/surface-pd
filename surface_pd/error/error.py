@@ -119,3 +119,17 @@ class TooLargeSlabError(Exception):
         return "The target cell size defined here is too large which will " \
                "generate too many enumerated structures. \n" \
                "Please consider to decrease the cell size."
+
+
+class InvalidCompositionError(Exception):
+    """
+    An error class defined for the invalid user defined composition list to
+    be enumerated.
+    """
+
+    def __str__(self):
+        return "Please double check the composition list or target cell " \
+               "size! By applying one of them, the num of target " \
+               "atom on the surface is not an integer."
+
+
