@@ -1,8 +1,9 @@
-from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.surface import get_slab_regions
+from pymatgen.core.composition import Composition, Element
 
 from surface_pd.error import *
+from surface_pd.core import Slab
 
 
 class PreCheck(object):
@@ -14,8 +15,55 @@ class PreCheck(object):
 
     """
 
-    def __init__(self, structure: Structure):
+    def __init__(self, structure: Slab):
         self.structure = structure
+
+    def compound_check(self):
+        """
+        This function is used to check whether it is a Li-TM-O compound,
+        if it is not Li-TM-O compound, the name of other elements will be
+        internally changed into pseudo "Li-TM-O" compound.
+
+        Returns:
+            If it is a Li-TM-O system, pseudo Li element,
+            pseudo TM element, and pseudo O element.
+        """
+        pseudo_Li, pseudo_TM, pseudo_O = '', '', ''
+
+        num_pseudo_O = 0
+        symbol_set = self.structure.symbol_set
+        for element in symbol_set:
+            # The slab model should always have more oxygen atoms than others.
+            if (self.structure.composition[element]) > num_pseudo_O:
+                num_pseudo_O = self.structure.composition[element]
+                pseudo_O = element
+            # The pseudo Li element should have a positive charge "+1".
+            if list(Element(element).common_oxidation_states) == [1]:
+                pseudo_Li = element
+
+        symbol_set = list(symbol_set)
+        for i in (pseudo_Li, pseudo_O):
+            symbol_set.remove(i)
+        pseudo_TM = symbol_set.copy()
+
+        if pseudo_Li == 'Li' and pseudo_O == 'O':
+            return True, pseudo_Li, pseudo_TM, pseudo_O
+        else:
+            return False, pseudo_Li, pseudo_TM, pseudo_O
+
+    def pseudo_compound_generator(self):
+        """
+        This function is used to replace pseudo Li and O element with "Li"
+        and "O" element.
+
+        Returns:
+            Li-TM-O system structure
+
+        """
+        _, pseudo_Li, pseudo_TM, pseudo_O = self.compound_check()
+        self.structure.replace_species({Element(pseudo_Li): Element("Li"),
+                                        Element(pseudo_O): Element("O")})
+        return self.structure
 
     def is_not_slab(self):
         """
@@ -71,5 +119,34 @@ class PreCheck(object):
                 relatively loose).
 
         """
-        sga = SpacegroupAnalyzer(self.structure, symprec=symprec)
-        return not sga.is_laue()
+        # sga = SpacegroupAnalyzer(self.structure, symprec=symprec)
+        # return not sga.is_laue()
+        return not Slab.from_sites(self.structure). \
+            is_symmetry(symprec=symprec,
+                        return_isc=False)
+
+    @staticmethod
+    def has_validate_composition(num_lithium_like_atoms: int,
+                                 lithium_like_composition: list,
+                                 num_oxygen_like_atoms: int,
+                                 oxygen_like_composition: list):
+        pass_1, pass_2 = [], []
+        for composition in lithium_like_composition:
+            f = composition * num_lithium_like_atoms
+            if f.is_integer():
+                pass_1.append(True)
+            else:
+                pass_1.append(False)
+                break
+        for composition in oxygen_like_composition:
+            f = composition * num_oxygen_like_atoms
+            if f.is_integer():
+                pass_2.append(True)
+            else:
+                pass_2.append(False)
+                break
+
+        if all(pass_1) and all(pass_2):
+            return True
+        else:
+            return False
