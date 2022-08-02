@@ -28,4 +28,7 @@ error
     
 .. autoclass:: error.TooLargeSlabError
     :members:
+
+.. autoclass:: error.InvalidCompositionError
+    :members:
     
