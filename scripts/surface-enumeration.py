@@ -8,11 +8,12 @@ This code will generate slab models with Li and O vacancies on the surface
 """
 
 __author__ = "Xinhao Li"
-__email__ = "xl2778@columbia.edu"
-__date__ = "2022-06-01"
+__email__ = "xinhao.li@columbia.edu"
+__date__ = "2022-07-28"
 
 import os
 import string
+import copy
 import argparse
 
 import numpy as np
@@ -34,43 +35,67 @@ def automate_surface(target_slab_path,
                      surface_oxygen_composition,
                      target_cell_size,
                      num_layers_relaxed,
+                     num_o_layers_relaxed=1,
                      to_vasp=False):
     """
     This function contains the general framework to enumerate the parent
     slab model with different composition of lithium and oxygen vacancies.
+
     Args:
         target_slab_path: Fully lithiated slab with no oxygen vacancies on the
-        surface.
+            surface.
         surface_lithium_composition: Desired composition of lithium on the
-        surface. This composition is determined by number of lithium
-        remaining on the surface divided by the total number of lithium atoms
-        that will be relaxed on the surface.
+            surface. This composition is determined by number of lithium
+            remaining on the surface divided by the total number of lithium atoms
+            that will be relaxed on the surface.
         surface_oxygen_composition: Desired composition of oxygen on the
-        surface.
+            surface.
         target_cell_size: Maximum number of supercells of the input slab.
         num_layers_relaxed: Define how many layers on the surface will be
-        relaxed during the geometry optimization.
+            relaxed during the geometry optimization.
+        num_o_layers_relaxed: Number of oxygen layers will be relaxed during
+            the geometry optimization. Defaults to 1.
         to_vasp: Whether to generate all the output slab models in a
-        well-organized format.
+            well-organized format. Defaults to False.
 
-    Returns: All enumerated slabs with different composition of lithium and
-    oxygen vacancies
+    Returns:
+        All enumerated slabs with different composition of lithium and
+            oxygen vacancies
     """
-    surface_lithium_composition.sort(reverse=True)
-    surface_oxygen_composition.sort(reverse=True)
-
-    print("target_cell_size = {}".format(target_cell_size))
-    print("Composition of lithium on the surface will be {}.".format(
-        surface_lithium_composition))
-    print("Composition of oxygen on the surface will be {}.".format(
-        surface_oxygen_composition))
-
     # Load initial slab model with no lithium and oxygen vacancies on the
     # surface
     input_structure = Slab.from_file(target_slab_path)
+    slab_direction = input_structure.slab_direction
+    tolerance = input_structure.tolerance
+
+    # Extract the c parameter of the parent slab model (will be used as
+    # criteria next)
+    a, b, c = input_structure.lattice.abc
+
+    # Sort
+    surface_lithium_composition.sort(reverse=True)
+    surface_oxygen_composition.sort(reverse=True)
+
+    # Enumerate with maximum unit cell of 4, but the cell size can also be
+    # like 2x1 or 1x2 or 2x2
+    composition_Li = surface_lithium_composition
+    composition_O = surface_oxygen_composition
+    scaling_matrix = define_scaling_matrix(a, b, target_cell_size)
+    print("Scaling matrix used here is: {}".format(scaling_matrix))
+
+    # Get indices of the relaxed Li atoms as well as the surface oxygen atoms
+    # in the slab model
+    relaxed_Li_index, oxygen_index \
+        = input_structure.index_extraction(num_o_layers=num_o_layers_relaxed)
 
     # PreCheck
     precheck = PreCheck(input_structure)
+
+    right_compound, pseudo_Li, _, pseudo_O = precheck.compound_check()
+
+    if not right_compound:
+        print("**Change compound to pseudo Li-TM-O compound.**")
+        pseudo_structure = precheck.pseudo_compound_generator()
 
     if precheck.is_not_cuboid():
         raise SlabOrientationError
@@ -84,6 +109,24 @@ def automate_surface(target_slab_path,
     if precheck.has_no_inversion_symmetry():
         raise NoInversionSymmetryError
 
+    # Check if the user defined lithium-like and oxygen-like compositions
+    # are valid.
+    if precheck.has_validate_composition(
+            num_lithium_like_atoms=
+            len(relaxed_Li_index) * target_cell_size / 2,
+            lithium_like_composition=surface_lithium_composition,
+            num_oxygen_like_atoms=len(oxygen_index) * target_cell_size / 2,
+            oxygen_like_composition=surface_oxygen_composition):
+        pass
+    else:
+        raise InvalidCompositionError
+
+
+    print("target_cell_size = {}".format(target_cell_size))
+    print("Composition of {} on the surface will be {}.".format(
+        pseudo_Li, surface_lithium_composition))
+    print("Composition of {} on the surface will be {}.".format(
+        pseudo_O, surface_oxygen_composition))
 
     # Define the dummy species that will be used to substitute the target
     # species
@@ -92,19 +135,10 @@ def automate_surface(target_slab_path,
 
     # Replace the top surface Li and O atoms with dummy species which will
     # be easier to enumerate using the enumlib
-    slab_substituted = input_structure.surface_substitute(subs1=Li_replacement,
-                                                          subs2=O_replacement)
-
-    # Extract the c parameter of the parent slab model (will be used as
-    # criteria next)
-    a, b, c = slab_substituted.lattice.abc
-
-    # Enumerate with maximum unit cell of 4, but the cell size can also be
-    # like 2x1 or 1x2 or 2x2
-    composition_Li = surface_lithium_composition
-    composition_O = surface_oxygen_composition
-    scaling_matrix = define_scaling_matrix(a, b, target_cell_size)
-    print("Scaling matrix used here is: {}".format(scaling_matrix))
+    slab_substituted = input_structure.surface_substitute(
+        subs1=Li_replacement,
+        subs2=O_replacement,
+        num_o_layers=num_o_layers_relaxed)
 
     # Initialize a number to store total number of enumerated slab models
     num = 0
@@ -113,10 +147,6 @@ def automate_surface(target_slab_path,
     # fixed region in the centeral slab
     [center_bottom, center_top,
      _, _, _, _, _, _] = input_structure.layer_distinguisher()
-
-    # Get indices of the relaxed Li atoms as well as the surface oxygen atoms
-    # in the slab model
-    relaxed_Li_index, oxygen_index = input_structure.index_extraction()
 
     # Initialize a dictionary to store the successfully enumerated slab
     # models by composition
@@ -130,17 +160,15 @@ def automate_surface(target_slab_path,
             # contains slabs generated from the edge cases
             supplemental_structures = []
             if i == 1 and j == 1:  # Fully lithiated
-                structure1 = input_structure.copy()
+                structure1 = copy.deepcopy(input_structure)
                 structure1.make_supercell(scaling_matrix=scaling_matrix)
                 supplemental_structures = [structure1]
                 symmetrized_structures = [structure1]
             elif i == 0 and j == 1:  # remove all surface Li atoms
                 structure1 = input_structure.remove_sites_with_scaling(
                     index=relaxed_Li_index,
-                    scaling_matrix=scaling_matrix)
-                # structure1 = remove_sites(input_structure,
-                #                           index=relaxed_li_index,
-                #                           scaling_matrix=scaling_matrix)
+                    scaling_matrix=scaling_matrix
+                )
                 supplemental_structures = [structure1]
                 symmetrized_structures = [structure1]
             elif i == 1 and j == 0:  # remove all surface O atoms
@@ -148,9 +176,6 @@ def automate_surface(target_slab_path,
                     index=oxygen_index,
                     scaling_matrix=scaling_matrix
                 )
-                # structure1 = remove_sites(input_structure,
-                #                           index=oxygen_index,
-                #                           scaling_matrix=scaling_matrix)
                 supplemental_structures = [structure1]
                 symmetrized_structures = [structure1]
             elif i == 0 and j == 0:  # remove all surface atoms
@@ -158,10 +183,6 @@ def automate_surface(target_slab_path,
                     index=relaxed_Li_index + oxygen_index,
                     scaling_matrix=scaling_matrix
                 )
-                # structure1 = remove_sites(
-                #     input_structure,
-                #     index=relaxed_li_index + oxygen_index,
-                #     scaling_matrix=scaling_matrix)
                 supplemental_structures = [structure1]
                 symmetrized_structures = [structure1]
             else:
@@ -177,20 +198,16 @@ def automate_surface(target_slab_path,
                             enumerated_slabs_by_composition[str([i, j + 1])]:
                         # Remove surface oxygen atoms by extracting
                         # their indices first
-                        oxygen_index_enumed = \
-                            enumed_structure.index_extraction()[1]
-                        # oxygen_index_enumed = index_extraction(
-                        #     symmetrized_structure)[2]
+                        _, oxygen_index_enumed = \
+                            enumed_structure.index_extraction(
+                                num_o_layers=num_o_layers_relaxed
+                            )
                         direct_structures.append(
                             enumed_structure.remove_sites_with_scaling(
                                 index=oxygen_index_enumed,
                                 scaling_matrix=[1, 1, 1]
                             )
                         )
-                        # direct_structures.append(
-                        #     remove_sites(structure_model=symmetrized_structure,
-                        #                  index=oxygen_index_enumed,
-                        #                  scaling_matrix=[1, 1, 1]))
                     supplemental_structures = direct_structures
                     symmetrized_structures = direct_structures
 
@@ -203,14 +220,6 @@ def automate_surface(target_slab_path,
                     )
                     structures = ewc.apply_enumeration(slab_substituted)
 
-                    # structures = enum_with_composition(
-                    #     slab_substituted,
-                    #     subs_li=Li_replacement,
-                    #     li_composition=i,
-                    #     subs_o=O_replacement,
-                    #     o_composition=j,
-                    #     cell_size=target_cell_size)
-
                     # Filtered out the structures which has c lattice as the
                     # largest lattice (a tall cuboid)
                     filtered_structures = []
@@ -218,8 +227,8 @@ def automate_surface(target_slab_path,
                         lattice = structure['structure'].lattice.abc
                         # Strict criteria -- keeps slabs with c lattice
                         # as parent slab models
-                        if (round(lattice[2], 3) - 0.2) <= c <= \
-                                (round(lattice[2], 3) + 0.2):
+                        if (round(lattice[slab_direction], 3) - 0.2) <= c <= \
+                                (round(lattice[slab_direction], 3) + 0.2):
                             filtered_structures.append(
                                 structures[k]['structure'])
                     # In case of that using strict criteria will remove all
@@ -233,8 +242,8 @@ def automate_surface(target_slab_path,
                             # Keep the c direction of the slab models is
                             # perpendicular to x-y plane but the c lattice
                             # parameter can be modified for a little bit.
-                            if (lattice[0] and lattice[1]) < lattice[2] \
-                                    <= c * 1.5:
+                            if (lattice[0] and lattice[1]) < \
+                                    lattice[slab_direction] <= c * 1.5:
                                 filtered_structures.append(
                                     structures[k]['structure'])
 
@@ -250,8 +259,9 @@ def automate_surface(target_slab_path,
                                     'selective_dynamics': [True, True, True]
                                 }
                             if t.properties['selective_dynamics'] is None:
-                                if (center_bottom - 0.01 <= t.frac_coords[2]
-                                        <= center_top + 0.01):
+                                if (center_bottom - tolerance <=
+                                        t.frac_coords[slab_direction] <=
+                                        center_top + tolerance):
                                     t.properties = {
                                         'selective_dynamics':
                                             [False, False, False]}
@@ -346,6 +356,12 @@ def automate_surface(target_slab_path,
                         num_relaxed=num_layers_relaxed
                     )
 
+                # call pseudo compound invertor
+                if not right_compound:
+                    pc = PostCheck(refined_structure)
+                    refined_structure = pc.pseudo_compound_invertor(
+                        pseudo_Li=pseudo_Li, pseudo_O=pseudo_O)
+
                 # Perform final check
                 pc = PostCheck(refined_structure)
                 pc.final_check(
@@ -357,7 +373,7 @@ def automate_surface(target_slab_path,
                 # Generate slab models
                 if to_vasp:
                     # Make directories
-                    dirname = str(i) + 'Li' + str(j) + 'O'
+                    dirname = str(i) + pseudo_Li + str(j) + pseudo_O
                     if not os.path.exists(dirname):
                         os.makedirs(dirname)
 
@@ -392,7 +408,8 @@ def automate_surface(target_slab_path,
             # Print the results
             print(f'The enumeration found {len(symmetrized_structures)} '
                   f'({prev}+{len(supplemental_structures)}) '
-                  f'distinct structures for {i * 100}% Li and {j * 100}% O.')
+                  f'distinct structures for {i * 100}% {pseudo_Li}'
+                  f' and {j * 100}% {pseudo_O}.')
 
     print(f'{num} distinct structures are found totally.')
 
@@ -413,18 +430,18 @@ if __name__ == "__main__":
         default=1)
 
     parser.add_argument(
-        "--lithium-composition", "-L",
-        help="All desired surface lithium composition "
+        "--lithium-like-composition", "-L",
+        help="All desired surface lithium-like element composition "
              "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
         nargs="+",
         type=float,
         default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
     parser.add_argument(
-        "--oxygen-composition", "-O",
+        "--oxygen-like-composition", "-O",
         nargs="+",
         type=float,
-        help="All desired surface oxygen composition "
+        help="All desired surface oxygen-like element composition "
              "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
         default=[1.0, 0.75, 0.5, 0.25, 0.0])
 
@@ -437,6 +454,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--num-of-oxygen-relaxed-layers", "-nor",
+        help="Number of oxygen layers that will be relaxed on the surface "
+             "(default: 2).",
+        type=int,
+        default=1
+    )
+
+    parser.add_argument(
         "--generate-poscar", "-g",
         help="Generate POSCAR files of enumerated structures.",
         action="store_true")
@@ -444,8 +469,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     automate_surface(args.input_file,
-                     surface_lithium_composition=args.lithium_composition,
-                     surface_oxygen_composition=args.oxygen_composition,
+                     surface_lithium_composition=args.lithium_like_composition,
+                     surface_oxygen_composition=args.oxygen_like_composition,
                      target_cell_size=args.target_cell_size,
                      num_layers_relaxed=args.num_of_relaxed_layers,
+                     num_o_layers_relaxed=args.num_of_oxygen_relaxed_layers,
                      to_vasp=args.generate_poscar)
