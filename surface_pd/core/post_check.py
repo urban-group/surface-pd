@@ -1,8 +1,9 @@
 import numpy as np
 
+from pymatgen.core.composition import Element
 from pymatgen.core.structure import Structure
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
+from surface_pd.core import Slab
 from surface_pd.error import (PrimitiveStructureFinderError,
                               NoInversionSymmetryError,
                               SlabOrientationError,
@@ -82,6 +83,27 @@ class PostCheck(object):
             else:
                 return 0, self.refined_structure
 
+    def pseudo_compound_invertor(self,
+                                 pseudo_Li,
+                                 pseudo_O):
+        """
+        This function is used to inverse back the pseudo Li-TM-O system to
+        its original compound.
+
+        Args:
+            pseudo_Li: pseudo Li element
+            pseudo_O: pseudo O element
+
+        Returns:
+            Original input compound
+
+        """
+        self.refined_structure.replace_species(
+            {Element('Li'): Element(pseudo_Li),
+             Element('O'): Element(pseudo_O)})
+
+        return self.refined_structure
+
     def final_check(self,
                     Li_composition,
                     O_composition,
@@ -108,13 +130,13 @@ class PostCheck(object):
             unexpected happens, the specific error report will generate.
 
         """
+        symmetric, origin, _ = Slab.from_sites(
+            self.refined_structure).is_symmetry(
+            symprec=symprec,
+            return_isc=True
+        )
 
-        sga = SpacegroupAnalyzer(self.refined_structure, symprec=symprec)
-        ops = sga.get_symmetry_operations()
-        inversion = ops[1]
-        assert (np.all(inversion.rotation_matrix == -np.identity(3)))
-        origin = inversion.translation_vector / 2
-        if not sga.is_laue():
+        if not symmetric:
             print("{}Li{}O -- structure_{}".format(Li_composition,
                                                    O_composition,
                                                    index))
