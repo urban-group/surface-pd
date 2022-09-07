@@ -1,0 +1,13 @@
+{
+    "target_slab_path": "/Users/xinhaoli/code/surface-pd/new_functionality/POSCAR_Li_100_new.vasp",
+    "replacements": {
+        "Li": {"Li": [0.75, 1.0, 0.5, 0.25, 0.0]}
+    },
+    "num_layers_relaxed":{
+        "Li": 4
+    },
+    "symmetric": false,
+    "max_cell_size": 2
+}
+
+
