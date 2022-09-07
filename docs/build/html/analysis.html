@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>analysis &mdash; surface-pd 0.0.1 documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -83,66 +84,46 @@
            <div itemprop="articleBody">
              
   <section id="analysis">
-<h1>analysis<a class="headerlink" href="#analysis" title="Permalink to this headline"></a></h1>
+<h1>analysis<a class="headerlink" href="#analysis" title="Permalink to this heading"></a></h1>
 <section id="slab-analysis-functions">
-<h2><code class="docutils literal notranslate"><span class="pre">slab_analysis</span></code> functions<a class="headerlink" href="#slab-analysis-functions" title="Permalink to this headline"></a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">slab_analysis</span></code> functions<a class="headerlink" href="#slab-analysis-functions" title="Permalink to this heading"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.get_num_sites">
-<span class="sig-prename descclassname"><span class="pre">analysis.</span></span><span class="sig-name descname"><span class="pre">get_num_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lithiated_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slab_substituted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Li_replacement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Li_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">O_replacement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">O_composition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.get_num_sites" title="Permalink to this definition"></a></dt>
-<dd><p>Get the right number of sites in the slab model after enumeration.</p>
+<dt class="sig sig-object py" id="analysis.structure_filter">
+<span class="sig-prename descclassname"><span class="pre">analysis.</span></span><span class="sig-name descname"><span class="pre">structure_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_slabs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.structure_filter" title="Permalink to this definition"></a></dt>
+<dd><p>Filter out the slab models that doese not satisfy the criteria.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lithiated_structure</strong> – Fully lithiated structure (input structure).</p></li>
-<li><p><strong>slab_substituted</strong> – Slab model where the surface Li and O atoms
-are substituted.</p></li>
-<li><p><strong>Li_replacement</strong> – Substitution atom for Li atom.</p></li>
-<li><p><strong>Li_composition</strong> – Enumerated Li composition.</p></li>
-<li><p><strong>O_replacement</strong> – Substitution atom for O atom.</p></li>
-<li><p><strong>O_composition</strong> – Enumerated O composition.</p></li>
-<li><p><strong>cell_size</strong> – Maximum cell size.</p></li>
+<li><p><strong>input_slabs</strong> – Input slab model.</p></li>
+<li><p><strong>direction</strong> – Lattice direction perpendicular to the surface.</p></li>
+<li><p><strong>criteria</strong> – Lattice parameter perpendicular to the input(parent)
+slab model surface.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Number of sites that should be after the enumeration.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of structures.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.boundary_define">
-<span class="sig-prename descclassname"><span class="pre">analysis.</span></span><span class="sig-name descname"><span class="pre">boundary_define</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enumed_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_relaxed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.boundary_define" title="Permalink to this definition"></a></dt>
-<dd><p>Get the boundary of the central fixed region without having the “selective
-dynamics” labeled.</p>
+<dt class="sig sig-object py" id="analysis.selective_dynamics_completion">
+<span class="sig-prename descclassname"><span class="pre">analysis.</span></span><span class="sig-name descname"><span class="pre">selective_dynamics_completion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="surface_pd.core.html#surface_pd.core.slab.Slab" title="surface_pd.core.slab.Slab"><span class="pre">Slab</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_bottom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_top</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.selective_dynamics_completion" title="Permalink to this definition"></a></dt>
+<dd><p>Complete  the selective dynamics properties after the enumeration based
+on the rules of species and locations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>parent_structure</strong> – Input structure.</p></li>
-<li><p><strong>enumed_structure</strong> – After enumerated structure.</p></li>
-<li><p><strong>num_relaxed</strong> – User defined number of relaxed layers on the surface.</p></li>
+<li><p><strong>structure</strong> – Enumerated slab model.</p></li>
+<li><p><strong>direction</strong> – Same as before.</p></li>
+<li><p><strong>dummy_species</strong> – Same as before.</p></li>
+<li><p><strong>center_bottom</strong> – Same as before.</p></li>
+<li><p><strong>center_top</strong> – Same as before.</p></li>
+<li><p><strong>tolerance</strong> – Same as before.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Lower and upper boundary of the central fixed region in the slab.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="analysis.add_selective_dynamics">
-<span class="sig-prename descclassname"><span class="pre">analysis.</span></span><span class="sig-name descname"><span class="pre">add_selective_dynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enumed_structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_relaxed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.add_selective_dynamics" title="Permalink to this definition"></a></dt>
-<dd><p>Add selective dynamics to the after refined slab model based on number
-of layers that will be relaxed on the surface.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>parent_structure</strong> – Input structure.</p></li>
-<li><p><strong>enumed_structure</strong> – After enumerated structure.</p></li>
-<li><p><strong>num_relaxed</strong> – User defined number of relaxed layers on the surface.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Enumerated slab model with “selective dynamics” labeled.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Slab model with all sites have selective dynamics.</p>
 </dd>
 </dl>
 </dd></dl>

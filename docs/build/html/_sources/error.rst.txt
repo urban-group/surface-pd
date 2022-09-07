@@ -32,3 +32,12 @@ error
 .. autoclass:: error.InvalidCompositionError
     :members:
     
+.. autoclass:: error.InvalidPhasesAlignError
+    :members:
+
+.. autoclass:: error.NonIntegerError
+    :members:
+
+.. autoclass:: error.IncompatibleSymmError
+    :members:
+

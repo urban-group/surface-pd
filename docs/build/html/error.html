@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>error &mdash; surface-pd 0.0.1 documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -80,7 +81,7 @@
            <div itemprop="articleBody">
              
   <section id="error">
-<h1>error<a class="headerlink" href="#error" title="Permalink to this headline"></a></h1>
+<h1>error<a class="headerlink" href="#error" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="error.NoInversionSymmetryError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">NoInversionSymmetryError</span></span><a class="headerlink" href="#error.NoInversionSymmetryError" title="Permalink to this definition"></a></dt>
@@ -111,13 +112,15 @@ redundant).</p>
 <dt class="sig sig-object py" id="error.NonDefinedSelectiveDynamicsError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">NonDefinedSelectiveDynamicsError</span></span><a class="headerlink" href="#error.NonDefinedSelectiveDynamicsError" title="Permalink to this definition"></a></dt>
 <dd><p>An error class defined for the slab model that does not have selective
-dynamics defined for all sites.</p>
+dynamics defined for all sites (selective dynamics is extremely useful
+in several steps).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="error.NonSlabError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">NonSlabError</span></span><a class="headerlink" href="#error.NonSlabError" title="Permalink to this definition"></a></dt>
-<dd><p>An error class defined for the structure that is not a slab model.</p>
+<dd><p>An error class defined for the structure that is not a slab model
+(no enough vacuum region in the model).</p>
 </dd></dl>
 
 <dl class="py class">
@@ -125,7 +128,7 @@ dynamics defined for all sites.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">PolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#error.PolarSurfaceError" title="Permalink to this definition"></a></dt>
 <dd><p>An error class defined for the polar surface.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
 <li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
@@ -139,7 +142,7 @@ dynamics defined for all sites.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">NonPolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#error.NonPolarSurfaceError" title="Permalink to this definition"></a></dt>
 <dd><p>An error class defined for the non-polar surface.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
 <li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
@@ -159,6 +162,29 @@ dynamics defined for all sites.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">InvalidCompositionError</span></span><a class="headerlink" href="#error.InvalidCompositionError" title="Permalink to this definition"></a></dt>
 <dd><p>An error class defined for the invalid user defined composition list to
 be enumerated.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="error.InvalidPhasesAlignError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">InvalidPhasesAlignError</span></span><a class="headerlink" href="#error.InvalidPhasesAlignError" title="Permalink to this definition"></a></dt>
+<dd><p>An error class defined for the invalid phases used to calculate the
+alignment energy.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="error.NonIntegerError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">NonIntegerError</span></span><a class="headerlink" href="#error.NonIntegerError" title="Permalink to this definition"></a></dt>
+<dd><p>An error class defined to check whether the after enumerated number of
+atoms is an integer with tolerance.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="error.IncompatibleSymmError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">error.</span></span><span class="sig-name descname"><span class="pre">IncompatibleSymmError</span></span><a class="headerlink" href="#error.IncompatibleSymmError" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>An error class defined to show that the user defined symmetric parameter is</dt><dd><p>not compatible with code determined symmetric parameter.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; surface-pd 0.0.1 documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -79,9 +80,9 @@
            <div itemprop="articleBody">
              
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <section id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline"></a></h2>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.python.org/">Python&gt;=3</a></p></li>
 <li><p><a class="reference external" href="https://numpy.org/doc/stable/">Numpy</a></p></li>
@@ -92,7 +93,7 @@
 </ul>
 </section>
 <section id="installation-using-pip">
-<h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Permalink to this headline"></a></h2>
+<h2>Installation using pip<a class="headerlink" href="#installation-using-pip" title="Permalink to this heading"></a></h2>
 <p><strong>surface-pd</strong> is a Python 3 package and the stable version can be installed
 via <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install ***
@@ -100,7 +101,7 @@ via <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>.
 </div>
 </section>
 <section id="installation-from-source-code">
-<h2>Installation from source code<a class="headerlink" href="#installation-from-source-code" title="Permalink to this headline"></a></h2>
+<h2>Installation from source code<a class="headerlink" href="#installation-from-source-code" title="Permalink to this heading"></a></h2>
 <p>The package can also be built from <a class="reference external" href="https://github.com/urban-group/surface-pd">surface-pd
 GitHub</a> by git
 clone
@@ -112,22 +113,32 @@ $ python setup.py install
 </div>
 </section>
 <section id="additional-requirements">
-<h2>Additional requirements<a class="headerlink" href="#additional-requirements" title="Permalink to this headline"></a></h2>
+<h2>Additional requirements<a class="headerlink" href="#additional-requirements" title="Permalink to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>In order to use the enumeration functionalities provided in this package,
-the <code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code> must be in the path. The detailed
-compilation steps are fully described at <a class="reference external" href="https://github.com/msg-byu/enumlib">https://github.com/msg-byu/enumlib</a>.</p>
-<p>The compilation step can also make use of the pymatgen command line tool as
-follows (assume that the pymatgen has been installed successfully):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pmg config --install enumlib
+the <code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code> must be in the path.</p>
+<p>You can run the following several lines of code to complie the enumlib source code in your termnal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone  --branch v2.0.4 --recursive https://github.com/msg-byu/enumlib.git
+$ cd enumlib/symlib/src &amp;&amp; make F90=gfortran
+$ cd enumlib/src &amp;&amp; make F90=gfortran
+$ cd enumlib/src &amp;&amp; F90=gfortran make enum.x
+$ cd enumlib/src &amp;&amp; F90=gfortran make makestr.x
+$ mkdir -p /opt/bin
+$ cp enumlib/src/*.x /opt/bin
 </pre></div>
 </div>
+<p>The last line of code is just to copy the excecutable <code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code> files to the path that we think should be global. But you can dynamically change it to anywhere you want.
+The detailed compilation steps are fully described at <a class="reference external" href="https://github.com/msg-byu/enumlib">https://github.com/msg-byu/enumlib</a>.</p>
+<p>To check whether the enumeration utilities are available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ which enum.x makestr.x
+</pre></div>
 </div>
-<p>Then put these in your PATH somewhere.</p>
+<p>The paths to these two files should be located.</p>
+</div>
 </section>
 <section id="installation-test-this-needs-to-further-check">
-<h2>Installation test (This needs to further check)<a class="headerlink" href="#installation-test-this-needs-to-further-check" title="Permalink to this headline"></a></h2>
+<h2>Installation test (This needs to further check)<a class="headerlink" href="#installation-test-this-needs-to-further-check" title="Permalink to this heading"></a></h2>
 <p>To check whether the <strong>surface-pd</strong> package is successfully installed, you
 can import <strong>surface-pd</strong> within Python interpreter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">surface</span><span class="o">-</span><span class="n">pd</span>

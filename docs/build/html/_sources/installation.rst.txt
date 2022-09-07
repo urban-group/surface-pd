@@ -42,15 +42,28 @@ Additional requirements
 .. note::
 
     In order to use the enumeration functionalities provided in this package,
-    the ``enum.x`` and ``makestr.x`` must be in the path. The detailed
-    compilation steps are fully described at https://github.com/msg-byu/enumlib.
+    the ``enum.x`` and ``makestr.x`` must be in the path.
 
-    The compilation step can also make use of the pymatgen command line tool as
-    follows (assume that the pymatgen has been installed successfully): ::
+    You can run the following several lines of code to complie the enumlib source code in your termnal. ::
 
-        $ pmg config --install enumlib
+        $ git clone  --branch v2.0.4 --recursive https://github.com/msg-byu/enumlib.git
+        $ cd enumlib/symlib/src && make F90=gfortran
+        $ cd enumlib/src && make F90=gfortran
+        $ cd enumlib/src && F90=gfortran make enum.x
+        $ cd enumlib/src && F90=gfortran make makestr.x
+        $ mkdir -p /opt/bin
+        $ cp enumlib/src/*.x /opt/bin 
 
-Then put these in your PATH somewhere.
+    The last line of code is just to copy the excecutable ``enum.x`` and ``makestr.x`` files to the path that we think should be global. But you can dynamically change it to anywhere you want.
+    The detailed compilation steps are fully described at https://github.com/msg-byu/enumlib.
+
+    To check whether the enumeration utilities are available: ::
+
+        $ which enum.x makestr.x
+
+    The paths to these two files should be located.
+
+
 
 Installation test (This needs to further check)
 ***********************************************
