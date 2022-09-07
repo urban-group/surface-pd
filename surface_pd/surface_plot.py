@@ -238,23 +238,6 @@ def get_ticks_and_levels(converted_phase):
                                 len(converted_unique_phase) + 1)
     return position, unique_levels
 
-
-def get_labels(datafiles,
-               dataframe: pd.DataFrame,
-               species: list,
-               ticks):
-    labels = collections.defaultdict(list)
-    for s in species:
-        species_label = get_compositions(datafiles, dataframe, s, ticks)
-        labels[s] = species_label
-
-    display = labels[str(species[0])]
-    for i in range(1, len(labels)):
-        for j in range(len(display)):
-            display[j] = str(display[j]) + " " + str(labels[species[i]][j])
-    return display
-
-
 def get_compositions(datafiles, dataframe, species, ticks):
     num_files = len(datafiles)
     total_relaxed = (max(dataframe.iloc[:]["O"]) -
@@ -277,3 +260,19 @@ def get_compositions(datafiles, dataframe, species, ticks):
             labels.append(
                 str(round(comp * 100, 1)) + "%" + str(species))
     return labels
+
+def get_labels(datafiles,
+               dataframe: pd.DataFrame,
+               species: list,
+               ticks):
+    labels = collections.defaultdict(list)
+    for s in species:
+        species_label = get_compositions(datafiles, dataframe, s, ticks)
+        labels[s] = species_label
+
+    display = labels[str(species[0])]
+    for i in range(1, len(labels)):
+        for j in range(len(display)):
+            display[j] = str(display[j]) + " " + str(labels[species[i]][j])
+    return display
+

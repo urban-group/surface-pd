@@ -45,7 +45,8 @@ class PrimitiveStructureFinderError(Exception):
 class NonDefinedSelectiveDynamicsError(Exception):
     """
     An error class defined for the slab model that does not have selective
-    dynamics defined for all sites.
+    dynamics defined for all sites (selective dynamics is extremely useful
+    in several steps).
     """
 
     def __str__(self):
@@ -54,7 +55,8 @@ class NonDefinedSelectiveDynamicsError(Exception):
 
 class NonSlabError(Exception):
     """
-    An error class defined for the structure that is not a slab model.
+    An error class defined for the structure that is not a slab model
+    (no enough vacuum region in the model).
     """
 
     def __str__(self):
@@ -129,7 +131,38 @@ class InvalidCompositionError(Exception):
 
     def __str__(self):
         return "Please double check the composition list or target cell " \
-               "size! By applying one of them, the num of target " \
+               "size! By applying one of them, \n the num of target " \
                "atom on the surface is not an integer."
 
 
+class InvalidPhasesAlignError(Exception):
+    """
+    An error class defined for the invalid phases used to calculate the
+    alignment energy.
+    """
+
+    def __str__(self):
+        return "Please double check the reference phases used here. The " \
+               "alignment energy should be \n calculated on the basis of " \
+               "two same slab models but with different number of layers."
+
+
+class NonIntegerError(Exception):
+    """
+    An error class defined to check whether the after enumerated number of
+    atoms is an integer with tolerance.
+    """
+
+    def __str__(self):
+        return "The after enumerated number of atoms is not an integer."
+
+
+class IncompatibleSymmError(Exception):
+    """
+    An error class defined to show that the user defined symmetric parameter is
+     not compatible with code determined symmetric parameter.
+    """
+
+    def __str__(self):
+        return "Please double check the symmetric parameter defined in the " \
+               "input json file. \n It is not compatible with slab model."

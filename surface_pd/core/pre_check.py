@@ -1,9 +1,7 @@
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.surface import get_slab_regions
-from pymatgen.core.composition import Composition, Element
 
-from surface_pd.error import *
 from surface_pd.core import Slab
+from surface_pd.util import check_int
 
 
 class PreCheck(object):
@@ -18,54 +16,7 @@ class PreCheck(object):
     def __init__(self, structure: Slab):
         self.structure = structure
 
-    def compound_check(self):
-        """
-        This function is used to check whether it is a Li-TM-O compound,
-        if it is not Li-TM-O compound, the name of other elements will be
-        internally changed into pseudo "Li-TM-O" compound.
-
-        Returns:
-            If it is a Li-TM-O system, pseudo Li element,
-            pseudo TM element, and pseudo O element.
-        """
-        pseudo_Li, pseudo_TM, pseudo_O = '', '', ''
-
-        num_pseudo_O = 0
-        symbol_set = self.structure.symbol_set
-        for element in symbol_set:
-            # The slab model should always have more oxygen atoms than others.
-            if (self.structure.composition[element]) > num_pseudo_O:
-                num_pseudo_O = self.structure.composition[element]
-                pseudo_O = element
-            # The pseudo Li element should have a positive charge "+1".
-            if list(Element(element).common_oxidation_states) == [1]:
-                pseudo_Li = element
-
-        symbol_set = list(symbol_set)
-        for i in (pseudo_Li, pseudo_O):
-            symbol_set.remove(i)
-        pseudo_TM = symbol_set.copy()
-
-        if pseudo_Li == 'Li' and pseudo_O == 'O':
-            return True, pseudo_Li, pseudo_TM, pseudo_O
-        else:
-            return False, pseudo_Li, pseudo_TM, pseudo_O
-
-    def pseudo_compound_generator(self):
-        """
-        This function is used to replace pseudo Li and O element with "Li"
-        and "O" element.
-
-        Returns:
-            Li-TM-O system structure
-
-        """
-        _, pseudo_Li, pseudo_TM, pseudo_O = self.compound_check()
-        self.structure.replace_species({Element(pseudo_Li): Element("Li"),
-                                        Element(pseudo_O): Element("O")})
-        return self.structure
-
-    def is_not_slab(self):
+    def is_slab(self):
         """
         Check whether the input structure is a slab.
 
@@ -73,28 +24,28 @@ class PreCheck(object):
         try:
             ranges = get_slab_regions(self.structure)
         except ValueError:
-            return True
+            return False
         else:
             if len(ranges) == 2:
                 slab_width = ranges[0][1] - ranges[1][0]
             else:
                 slab_width = ranges[0][1] - ranges[0][0]
             if slab_width < 0.9:
-                return False
-            else:
                 return True
+            else:
+                return False
 
-    def is_not_cuboid(self):
+    def is_cuboid(self):
         """
         Check whether the input structure is a cuboid.
 
         """
         if max(self.structure.lattice.abc) != self.structure.lattice.c:
-            return True
-        else:
             return False
+        else:
+            return True
 
-    def not_all_has_selective_dynamics(self):
+    def all_has_selective_dynamics(self):
         """
         Check if all sites have selective dynamics as the site properties.
 
@@ -103,65 +54,92 @@ class PreCheck(object):
             try:
                 if site.properties['selective_dynamics'] == \
                         ([False, False, False] or [True, True, True]):
-                    return False
+                    return True
             except KeyError:
-                return True
+                return False
             else:
                 if site.properties['selective_dynamics'] == [False]:
-                    return True
+                    return False
 
-    def has_no_inversion_symmetry(self, symprec=0.1):
+    def has_inversion_symmetry(self, symprec=0.1):
         """
         Check if the input structure has inversion symmetry.
 
         Args:
             symprec: Symmetry detection tolerance. Defaults to 0.1. (
-                relatively loose).
+                fairly strict).
 
         """
-        # sga = SpacegroupAnalyzer(self.structure, symprec=symprec)
-        # return not sga.is_laue()
-        return not Slab.from_sites(self.structure). \
-            is_symmetry(symprec=symprec,
-                        return_isc=False)
+        return Slab.from_sites(self.structure).is_symmetry(
+            symprec=symprec,
+            return_isc=False)
 
-    @staticmethod
-    def has_validate_composition(num_lithium_like_atoms: int,
-                                 lithium_like_composition: list,
-                                 num_oxygen_like_atoms: int,
-                                 oxygen_like_composition: list):
+    def relax_both_surfaces(self):
         """
-        This function is used to check whether the user defined composition
-        can be enumerated.
+        Check if the input slab model has only one side of the surface
+        will be relaxed.
+
+        """
+        # Wrap any out of unit cell atoms back
+        self.structure.wrap_pbc()
+
+        fixed_atoms_c_set = []
+        for site in self.structure:
+            if site.properties['selective_dynamics'] == [False, False, False]:
+                fixed_atoms_c_set.append(
+                    site.frac_coords[self.structure.direction])
+        min_fixed_atom_c = min(fixed_atoms_c_set)
+
+        # Check the slab region
+        ranges = get_slab_regions(self.structure)
+        if len(ranges) == 2:
+            lower_boundary = min(ranges[0][1], ranges[1][0])
+        else:
+            lower_boundary = min(ranges[0])
+
+        if min_fixed_atom_c - lower_boundary < self.structure.tolerance:
+            print('********************************************************')
+            print(' The slab model provided has whole bottom surface fixed. '
+                  '\n '
+                  ' Therefore, no symmetrization is needed.')
+            print('********************************************************')
+            return False
+        else:
+            return True
+
+    def has_validate_composition(self,
+                                 replace,
+                                 max_cell_size):
+        """
+        Check whether the user defined composition can be enumerated.
 
         Args:
-            num_lithium_like_atoms: number of lithium-like atoms on the top
-                surface which will be relaxed.
-            lithium_like_composition: User defined lithium-like composition.
-            num_oxygen_like_atoms: number of oxygen-like atoms on the top
-                surface which will be relaxed.
-            oxygen_like_composition: User defined oxygen-like composition.
+            replace: Species and occupancy dictionaries containing the species
+                mapping in string-string pairs. E.g. {'Li': {'Li': 0.5}},
+                stored in the list.
+            max_cell_size: Maximum number of supercells of the input slab.
 
-        Returns:
-            Whether it has the valid composition.
         """
-        pass_1, pass_2 = [], []
-        for composition in lithium_like_composition:
-            f = composition * num_lithium_like_atoms
-            if f.is_integer():
-                pass_1.append(True)
-            else:
-                pass_1.append(False)
-                break
-        for composition in oxygen_like_composition:
-            f = composition * num_oxygen_like_atoms
-            if f.is_integer():
-                pass_2.append(True)
-            else:
-                pass_2.append(False)
-                break
+        is_int = []
 
-        if all(pass_1) and all(pass_2):
+        num_atoms = {
+            key: len(value)
+            for key, value in self.structure.index_extraction()[2].items()
+        }
+        for comp in replace:
+            for s, n_s in num_atoms.items():
+                if self.structure.symmetric:
+                    f = comp[s][s] * n_s * max_cell_size / 2
+                    f = check_int(f)
+                else:
+                    f = comp[s][s] * n_s * max_cell_size
+                    f = check_int(f)
+                if f.is_integer():
+                    is_int.append(True)
+                else:
+                    is_int.append(False)
+                    break
+        if all(is_int):
             return True
         else:
             return False

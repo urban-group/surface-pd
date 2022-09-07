@@ -125,18 +125,18 @@ def automate_surface(target_slab_path: str,
     # PreCheck
     precheck = PreCheck(input_structure)
 
-    if precheck.is_not_cuboid():
+    if precheck.is_cuboid():
         raise SlabOrientationError
 
-    if precheck.is_not_slab():
+    if precheck.is_slab():
         raise NonSlabError
 
-    if precheck.not_all_has_selective_dynamics():
+    if precheck.all_has_selective_dynamics():
         raise NonDefinedSelectiveDynamicsError
 
-    require_symmetrize = precheck.relax_top_bottom_surfaces()
+    require_symmetrize = precheck.relax_both_surfaces()
     if require_symmetrize:
-        if precheck.has_no_inversion_symmetry():
+        if precheck.has_inversion_symmetry():
             raise NoInversionSymmetryError
         # Check if the user defined lithium-like and oxygen-like compositions
         # are valid.
@@ -294,7 +294,7 @@ def automate_surface(target_slab_path: str,
                     if len(filtered_structures) == 0:
                         for k, structure in enumerate(structures):
                             structure['structure'] = Slab.from_sites(
-                                structure['structure']).rotate()
+                                structure['structure']).check_rotate()
                             lattice = structure['structure'].lattice.abc
                             # Strict criteria -- keeps slabs with c lattice
                             # as parent slab models
@@ -311,7 +311,7 @@ def automate_surface(target_slab_path: str,
                         #       "the modest one.**")
                         for k, structure in enumerate(structures):
                             structure['structure'] = Slab.from_sites(
-                                structure['structure']).rotate()
+                                structure['structure']).check_rotate()
                             lattice = structure['structure'].lattice.abc
                             # Keep the c direction of the slab models is
                             # perpendicular to x-y plane but the c lattice
@@ -400,7 +400,7 @@ def automate_surface(target_slab_path: str,
                     indicator, refined_structure = pc.slab_size_check(
                         total_num_sites=total_num_sites,
                         enumerated_num_sites=num_sites,
-                        input_c=c
+                        criteria=c
                     )
                     num_sites = refined_structure.num_sites
 

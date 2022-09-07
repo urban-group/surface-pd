@@ -1,150 +1,115 @@
-"""
-
-"""
 from surface_pd.core import Slab
-from surface_pd.error import PolarSurfaceError, NonPolarSurfaceError
 
 
-def get_num_sites(lithiated_structure, slab_substituted,
-                  Li_replacement, Li_composition,
-                  O_replacement, O_composition,
-                  cell_size):
+def structure_filter(input_slabs,
+                     direction,
+                     criteria):
     """
-    Get the right number of sites in the slab model after enumeration.
+    Filter out the slab models that doese not satisfy the criteria.
 
     Args:
-        lithiated_structure: Fully lithiated structure (input structure).
-        slab_substituted: Slab model where the surface Li and O atoms
-            are substituted.
-        Li_replacement: Substitution atom for Li atom.
-        Li_composition: Enumerated Li composition.
-        O_replacement: Substitution atom for O atom.
-        O_composition: Enumerated O composition.
-        cell_size: Maximum cell size.
+        input_slabs: Input slab model.
+        direction: Lattice direction perpendicular to the surface.
+        criteria: Lattice parameter perpendicular to the input(parent)
+            slab model surface.
 
     Returns:
-        Number of sites that should be after the enumeration.
+        List of structures.
 
     """
+    filtered_structures = []
+    lattice_sets = []
+    for i, slab in enumerate(input_slabs):
+        lattice = slab['structure'].lattice.abc
+        lattice_sets.append(lattice)
+        ############################################
+        # structure['structure'].remove_site_property(
+        #     'selective_dynamics')
+        # structure['structure'].to(
+        #     fmt='poscar', filename='{}.vasp'.format(k))
+        ############################################
+        # Strict criteria -- keeps slabs with c lattice
+        # as parent slab models
+        if (round(lattice[direction], 3) - 0.2) <= criteria <= \
+                (round(lattice[direction], 3) + 0.2):
+            filtered_structures.append(input_slabs[i]['structure'])
 
-    # Get number of lithium, TM, oxygen atoms in the fully lithiated slabs
-    # after scaling
-    enum_Li, enum_O = [
-        slab_substituted.composition[Li_replacement] * cell_size * 2,
-        slab_substituted.composition[O_replacement] * cell_size * 2
-    ]
+    # In case of that using strict criteria will remove all
+    # structures, apply modest criteria to complete the
+    # dataset.
+    if len(filtered_structures) == 0:
+        # print("**The criteria used is too strict! Changing to "
+        #       "the modest one.**")
+        for i, slab in enumerate(input_slabs):
+            a, b, c_new = lattice_sets[i]
+            # Keep the c direction of the slab models is
+            # perpendicular to x-y plane but the c lattice
+            # parameter can be modified for a little.
+            if (a and b) < c_new <= criteria * 1.5:
+                filtered_structures.append(input_slabs[i]['structure'])
 
-    num_Li, num_O = [lithiated_structure.composition["Li"] * cell_size,
-                     lithiated_structure.composition["O"] * cell_size]
-    num_TM = lithiated_structure.num_sites * cell_size - num_Li - num_O
+    # In case of the enumerated structures are rotated:
+    if len(filtered_structures) == 0:
+        for i, slab in enumerate(input_slabs):
+            slab['structure'] = Slab.from_sites(
+                slab['structure']).check_rotate()
+            a, b, c_new = lattice_sets[i]
+            # Strict criteria -- keeps slabs with c lattice
+            # as parent slab models
+            if (round(c_new, 3) - 0.2) <= criteria <= (round(c_new, 3) + 0.2):
+                filtered_structures.append(input_slabs[i]['structure'])
 
-    rest_Li, rest_O = [num_Li - enum_Li, num_O - enum_O]
-    curr_Li, curr_O = Li_composition * enum_Li, O_composition * enum_O
-    curr_Li, curr_O = curr_Li + rest_Li, curr_O + rest_O
-    curr_num_sites = curr_Li + num_TM + curr_O
-    return curr_num_sites
+        # In case of that using strict criteria will remove all
+        # structures, apply modest criteria to complete the
+        # dataset.
+    if len(filtered_structures) == 0:
+        # print("**The criteria used is too strict! Changing to "
+        #       "the modest one.**")
+        for i, slab in enumerate(input_slabs):
+            slab['structure'] = Slab.from_sites(
+                slab['structure']).check_rotate()
+            a, b, c_new = lattice_sets[i]
+            # Keep the c direction of the slab models is
+            # perpendicular to x-y plane but the c lattice
+            # parameter can be modified for a little.
+            if (a and b) < c_new <= criteria * 1.5:
+                filtered_structures.append(input_slabs[i]['structure'])
+    return filtered_structures
 
 
-def boundary_define(parent_structure,
-                    enumed_structure,
-                    num_relaxed):
+def selective_dynamics_completion(structure: Slab,
+                                  direction: int,
+                                  dummy_species: list,
+                                  center_bottom: float,
+                                  center_top: float,
+                                  tolerance: float):
     """
-    Get the boundary of the central fixed region without having the "selective
-    dynamics" labeled.
+    Complete  the selective dynamics properties after the enumeration based
+    on the rules of species and locations.
 
     Args:
-        parent_structure: Input structure.
-        enumed_structure: After enumerated structure.
-        num_relaxed: User defined number of relaxed layers on the surface.
+        structure: Enumerated slab model.
+        direction: Same as before.
+        dummy_species: Same as before.
+        center_bottom: Same as before.
+        center_top: Same as before.
+        tolerance: Same as before.
 
     Returns:
-        Lower and upper boundary of the central fixed region in the slab.
-
+        Slab model with all sites have selective dynamics.
     """
-    parent_structure = Slab.from_sites(parent_structure)
-    enumed_structure = Slab.from_sites(enumed_structure)
-    Li_layers, TM_layers, _ = parent_structure.Li_TM_layers_finder()
-    # Li_layers, TM_layers, _ = Li_TM_layers_finder(parent_structure)
-    [enumed_Li_layers,
-     enumed_TM_layers, _] = enumed_structure.Li_TM_layers_finder()
-    # enumed_Li_layers, enumed_TM_layers, _ = Li_TM_layers_finder(
-    #     enumed_structure)
-    layers = sorted({**enumed_Li_layers, **enumed_TM_layers})
-    if len(Li_layers) == len(TM_layers):
-        parent_num_layers = len(TM_layers)
-        num_layers = len(enumed_TM_layers)
-    else:
-        # Previous method
-        # parent_num_layers = len(Li_layers) + len(TM_layers)
-        # num_layers = len(enumed_Li_layers) + len(enumed_TM_layers)
-
-        # Here changed, might revert if something went wrong
-        parent_num_layers = len({**Li_layers, **TM_layers})
-        num_layers = len({**enumed_Li_layers, **enumed_TM_layers})
-
-    # Use number of layers in the parent slab model to define how many
-    # layers should be fixed in the middel since this number should be
-    # constant for all enumerated slabs.
-    num_fixed = parent_num_layers - 2 * num_relaxed
-
-    # Polar surface
-    if len(Li_layers) != len(TM_layers):
-        if (num_layers % 2) != 0:  # Odd number of layers
-            # In the slab model, the number of layers starts from 1, so here
-            # we need to add 1.
-            center_layer = num_layers // 2 + 1
-            # In dict, the number of layers starts from 0, therefore here we
-            # need to minus 1.
-            if num_fixed % 2 == 0:
-                raise PolarSurfaceError(num_layers, num_fixed)
+    for t in structure:
+        for ds in dummy_species:
+            if ds in t:
+                t.properties = {
+                    'selective_dynamics': [True, True, True]}
+        if t.properties['selective_dynamics'] is None:
+            if (center_bottom - tolerance <=
+                    t.frac_coords[direction] <=
+                    center_top + tolerance):
+                t.properties = {
+                    'selective_dynamics': [False, False, False]}
             else:
-                lower_limit = layers[center_layer - 1 - (num_fixed // 2)]
-                upper_limit = layers[center_layer - 1 + (num_fixed // 2)]
-                return lower_limit, upper_limit
-        else:
-            raise PolarSurfaceError(num_layers, num_fixed)
-    # Non-polar surface
-    else:
-        if (num_layers % 2) != 0:  # Odd number of layers
-            center_layer = num_layers // 2 + 1
-            if num_fixed % 2 == 0:
-                raise NonPolarSurfaceError(num_layers, num_fixed)
-            else:
-                lower_limit = layers[center_layer - 1 - (num_fixed // 2)]
-                upper_limit = layers[center_layer - 1 + (num_fixed // 2)]
-                return lower_limit, upper_limit
-        else:  # Even number of layers
-            if (num_fixed % 2) != 0:
-                raise NonPolarSurfaceError(num_layers, num_fixed)
-            else:
-                lower_limit = layers[num_relaxed - 1 + 1]
-                upper_limit = layers[-num_relaxed - 1]
-                return lower_limit, upper_limit
-
-
-def add_selective_dynamics(parent_structure,
-                           enumed_structure,
-                           num_relaxed):
-    """
-    Add selective dynamics to the after refined slab model based on number
-    of layers that will be relaxed on the surface.
-
-    Args:
-        parent_structure: Input structure.
-        enumed_structure: After enumerated structure.
-        num_relaxed: User defined number of relaxed layers on the surface.
-
-    Returns:
-        Enumerated slab model with "selective dynamics" labeled.
-
-    """
-    lower_limit, upper_limit = boundary_define(parent_structure,
-                                               enumed_structure,
-                                               num_relaxed)
-    for site in enumed_structure:
-        if lower_limit - 0.01 <= site.frac_coords[2] <= upper_limit + 0.01:
-            site.properties = {'selective_dynamics': [False, False, False]}
-        else:
-            site.properties = {'selective_dynamics': [True, True, True]}
-    return enumed_structure
-
+                t.properties = {
+                    'selective_dynamics': [True, True, True]}
+    return structure
