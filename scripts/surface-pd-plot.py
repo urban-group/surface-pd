@@ -6,13 +6,13 @@ This code will be used to construct the surface phase diagram.
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
-__date__ = "2022-03-29"
+__date__ = "2022-08-05"
 
 import argparse
 
-import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
+from surface_pd.plot.pd_data import PdData
+from surface_pd.plot.plot import *
 
 rcparams = {"font.size": 20,
             "legend.frameon": False,
@@ -27,66 +27,72 @@ rcparams = {"font.size": 20,
             "ytick.major.size": 16,
             "ytick.minor.size": 8}
 
-from surface_pd.surface_plot import (convert_numbers, get_ticks_and_levels,
-                                     get_surface_energy, find_stable_phases,
-                                     get_labels, get_check_phases,
-                                     get_the_shift_energy,
-                                     standardize_pd_data,
-                                     get_TM_species)
-
 
 def surface_pd_plot(data_files,
+                    lithium_like_species,
+                    oxygen_like_species,
                     low_T, high_T,
                     color_Li=False,
                     color_O=False,
                     functional="PBE+U",
                     discharge=False,
                     save=False):
-
-    # Create x and y axis
+    # Create x and y axes
     V = np.linspace(0.0, 5.0, 500)
     T = np.linspace(low_T, high_T, 500)
     V_mesh, T_mesh = np.meshgrid(V, T)
 
-    # Get the symbol of TM species
-    TM_species = get_TM_species(data_files[0])
+    # Get the number of files
+    num_files = len(data_files)
 
-    if len(data_files) != 1:
-        check_phases = []
+    if num_files != 1:
+        checked_phases = []
         df = []
         for data in data_files:
             temp_df = pd.read_table(data, sep="\s+", index_col=0)
+
+            # Initialize the PdData class and do standardization
+            phase_data = PdData(dataframe=temp_df,
+                                lithium_like_species=lithium_like_species,
+                                oxygen_like_species=oxygen_like_species,
+                                functional=functional)
+
             # Standardize the surface pd data (with the same number of TM
             # species)
-            temp_df = standardize_pd_data(temp_df, TM_species=TM_species)
-            # Get the phases that will be used to calcualte the shift energy
-            check_phases.append(get_check_phases(temp_df))
+            temp_df = phase_data.standardize_pd_data().dataframe
+
+            # Get the phases that will be used to calculate the shift energy
+            checked_phases.append(phase_data.get_check_phases())
             df.append(temp_df)
+
+        # Combine all dataframes
         df = pd.concat(df)
-        # Calculate the shift energy for the polar surface only
-        shift_energy = get_the_shift_energy(check_phases,
-                                            TM_species,
-                                            functional)
-        # print(shift_energy)
+
         # Get surface energy
-        temp_G = get_surface_energy(df, TM_species,
-                                    V_mesh, T_mesh,
-                                    functional=functional)
-        shifted_G = temp_G[int(len(temp_G) / len(data_files)):] + shift_energy
-        G = np.append(temp_G[0:int(len(temp_G) / len(data_files))], shifted_G)
+        phase_data = PdData(dataframe=df,
+                            lithium_like_species=lithium_like_species,
+                            oxygen_like_species=oxygen_like_species,
+                            functional=functional)
+
+        # Calculate the shift energy for the polar surface only
+        shift_energy = phase_data.get_the_shift_energy(
+            checked_phases=checked_phases)
+
+        temp_G = phase_data.get_surface_energy(V=V_mesh, T=T_mesh)
+
+        shifted_G = temp_G[int(len(temp_G) / num_files):] + shift_energy
+        G = np.append(temp_G[0:int(len(temp_G) / num_files)], shifted_G)
     else:
         # Read data file
         df = pd.read_table(data_files[0], sep="\s+", index_col=0)
-        df = standardize_pd_data(df, TM_species=TM_species)
-        # for i, energy in enumerate(df_copy.iloc[:]['E']):
-        #     if i == 10 or i == 11:
-        #         df_copy.at[i, "E"] = 0
-        # print(df)
+        phase_data = PdData(dataframe=df,
+                            lithium_like_species=lithium_like_species,
+                            oxygen_like_species=oxygen_like_species,
+                            functional=functional)
+        phase_data.standardize_pd_data()
 
         # Get surface energy
-        G = get_surface_energy(df, TM_species,
-                               V_mesh, T_mesh,
-                               functional=functional)
+        G = phase_data.get_surface_energy(V=V_mesh, T=T_mesh)
 
     # Split an array into multiple sub-arrays
     stable_phases_index = find_stable_phases(G, df)
@@ -122,9 +128,11 @@ def surface_pd_plot(data_files,
         stable_phases_reshaped = np.reshape(converted_stable_phases_index,
                                             (T.size, V.size))
 
-        # plot used
+        # temp_plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(data_files, df, species=["Li"], ticks=ticks)
+        labels = get_labels(dataframe=df, num_files=num_files,
+                            species=[lithium_like_species],
+                            ticks=ticks)
         cmap = "Greens_r"
         fig = plt.figure(figsize=(9.5, 6))
 
@@ -153,17 +161,20 @@ def surface_pd_plot(data_files,
         stable_phases_reshaped = np.reshape(converted_stable_phases_index,
                                             (T.size, V.size))
 
-        # plot used
+        # temp_plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(data_files, df, species=["O"], ticks=ticks)
+        labels = get_labels(dataframe=df, num_files=num_files,
+                            species=[oxygen_like_species], ticks=ticks)
         cmap = "Reds_r"
         fig = plt.figure(figsize=(9.5, 6))
     else:
         stable_phases_reshaped = stable_phases_reshaped_global
-        # plot used
+        # temp_plot used
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(data_files, df,
-                            species=["Li", "O"], ticks=ticks)
+        labels = get_labels(dataframe=df, num_files=num_files,
+                            species=[lithium_like_species,
+                                     oxygen_like_species],
+                            ticks=ticks)
         cmap = 'tab20c'
         fig = plt.figure(figsize=(10.5, 6))
 
@@ -204,6 +215,20 @@ if __name__ == "__main__":
         help="Path to the surface pd data.",
         nargs="+",
         type=str
+    )
+
+    parser.add_argument(
+        "--lithium-like-species", "-L",
+        help="Define the lithium like species",
+        type=str,
+        default="Li"
+    )
+
+    parser.add_argument(
+        "--oxygen-like-species", "-O",
+        help="Define the oxygen like species",
+        type=str,
+        default="O"
     )
 
     parser.add_argument(
@@ -254,6 +279,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     surface_pd_plot(args.surface_pd_data,
+                    args.lithium_like_species,
+                    args.oxygen_like_species,
                     args.low_T,
                     args.high_T,
                     args.color_by_Li_content,

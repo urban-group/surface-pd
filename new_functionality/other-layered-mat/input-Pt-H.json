@@ -1,0 +1,13 @@
+{
+    "target_slab_path": "/Users/xinhaoli/code/surface-pd/new_functionality/Pt_111_slab_FCC_1H.vasp",
+    "replacements": {
+        "H": {"H": [0.875]}
+    },
+    "num_layers_relaxed":{
+        "H": 1
+    },
+    "symmetric": false,
+    "max_cell_size": 8
+}
+
+

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>surface_pd.error package &mdash; surface-pd 0.0.1 documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -70,12 +71,38 @@
            <div itemprop="articleBody">
              
   <section id="surface-pd-error-package">
-<h1>surface_pd.error package<a class="headerlink" href="#surface-pd-error-package" title="Permalink to this headline"></a></h1>
+<h1>surface_pd.error package<a class="headerlink" href="#surface-pd-error-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-surface_pd.error.error">
-<span id="surface-pd-error-error-module"></span><h2>surface_pd.error.error module<a class="headerlink" href="#module-surface_pd.error.error" title="Permalink to this headline"></a></h2>
+<span id="surface-pd-error-error-module"></span><h2>surface_pd.error.error module<a class="headerlink" href="#module-surface_pd.error.error" title="Permalink to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.IncompatibleSymmError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">IncompatibleSymmError</span></span><a class="headerlink" href="#surface_pd.error.error.IncompatibleSymmError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="simple">
+<dt>An error class defined to show that the user defined symmetric parameter is</dt><dd><p>not compatible with code determined symmetric parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.InvalidCompositionError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">InvalidCompositionError</span></span><a class="headerlink" href="#surface_pd.error.error.InvalidCompositionError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the invalid user defined composition list to
+be enumerated.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.InvalidPhasesAlignError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">InvalidPhasesAlignError</span></span><a class="headerlink" href="#surface_pd.error.error.InvalidPhasesAlignError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the invalid phases used to calculate the
+alignment energy.</p>
+</dd></dl>
+
 <dl class="py exception">
 <dt class="sig sig-object py" id="surface_pd.error.error.NoInversionSymmetryError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NoInversionSymmetryError</span></span><a class="headerlink" href="#surface_pd.error.error.NoInversionSymmetryError" title="Permalink to this definition"></a></dt>
@@ -96,7 +123,16 @@ inversion symmetry center located at the origin.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonDefinedSelectiveDynamicsError</span></span><a class="headerlink" href="#surface_pd.error.error.NonDefinedSelectiveDynamicsError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>An error class defined for the slab model that does not have selective
-dynamics defined for all sites.</p>
+dynamics defined for all sites (selective dynamics is extremely useful
+in several steps).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.error.NonIntegerError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonIntegerError</span></span><a class="headerlink" href="#surface_pd.error.error.NonIntegerError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined to check whether the after enumerated number of
+atoms is an integer with tolerance.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -105,7 +141,7 @@ dynamics defined for all sites.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>An error class defined for the non-polar surface.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
 <li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
@@ -118,7 +154,8 @@ dynamics defined for all sites.</p>
 <dt class="sig sig-object py" id="surface_pd.error.error.NonSlabError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.error.</span></span><span class="sig-name descname"><span class="pre">NonSlabError</span></span><a class="headerlink" href="#surface_pd.error.error.NonSlabError" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>An error class defined for the structure that is not a slab model.</p>
+<p>An error class defined for the structure that is not a slab model
+(no enough vacuum region in the model).</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -127,7 +164,7 @@ dynamics defined for all sites.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>An error class defined for the polar surface.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
 <li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>

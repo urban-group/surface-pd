@@ -1,400 +1,378 @@
 #!/usr/bin/env python
 
 """
-This code will generate slab models with Li and O vacancies on the surface
-    automatically. The input slab structure should be as small as
-    possible because it will increase the number of possibilities that the
-    enumeration can have.
+This code will enumerate the input slab model with user defined target
+species and composition. The input slab structure should be as small as
+possible because the unit cell of the slab will also be enumerated, and it
+will increase the number of possibilities that the enumeration can have.
+For the detailed algorithm behind the enumeration, please see the
+following references below.
+(1) Morgan, W. S.; Hart, G. L. W.; Forcade, R. W.
+Computational Materials Science 2017, 136, 144–149.
+https://doi.org/10.1016/j.commatsci.2017.04.015.
+(2) Hart, G. L. W.; Nelson, L. J.; Forcade, R. W.
+Computational Materials Science 2012, 59, 101–107.
+https://doi.org/10.1016/j.commatsci.2012.02.015.
+(3) Hart, G. L. W.; Forcade, R. W.
+Phys. Rev. B 2008, 77 (22), 224115.
+https://doi.org/10.1103/PhysRevB.77.224115.
+(4) Hart, G. L. W.; Forcade, R. W.
+Phys. Rev. B 2009, 80 (1), 014120.
+https://doi.org/10.1103/PhysRevB.80.014120.
+
 """
 
 __author__ = "Xinhao Li"
-__email__ = "xl2778@columbia.edu"
-__date__ = "2022-06-01"
+__email__ = "xinhao.li@columbia.edu"
+__date__ = "2022-09-06"
 
 import os
-import string
+import json
+import copy
 import argparse
+import warnings
 
-import numpy as np
+from itertools import product
 
-from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.core.periodic_table import Species, DummySpecies
-from pymatgen.analysis.structure_matcher import StructureMatcher
+from pymatgen.core.periodic_table import DummySpecies
+from pymatgen.core.surface import get_slab_regions
 
 from surface_pd.core import Slab, EnumWithComposition, PreCheck, PostCheck
-from surface_pd.analysis.slab_analysis import (get_num_sites,
-                                               add_selective_dynamics)
-from surface_pd.util import (define_scaling_matrix, temp_shift_isc_back)
+from surface_pd.analysis.slab_analysis import (structure_filter,
+                                               selective_dynamics_completion)
+from surface_pd.util import (get_values_nested_dict,
+                             all_int, replace_dummy, have_zero)
 from surface_pd.error import *
 
+warnings.filterwarnings("ignore")
 
-def automate_surface(target_slab_path,
-                     surface_lithium_composition,
-                     surface_oxygen_composition,
-                     target_cell_size,
-                     num_layers_relaxed,
-                     to_vasp=False):
+
+def automate_surface(target_slab_path: str,
+                     species: list,
+                     replace: list,
+                     num_layers_relaxed: dict,
+                     max_cell_size: int,
+                     symmetric: bool,
+                     max_structures: int,
+                     to_vasp: bool = False):
     """
+    ToDo:
+        1. Li_100 slab works, but any atom with c frac < 0 has issue to
+        assign the selective dynamics.
+        2. Re-test whether the new framework works for all cases.
+        3. Check the documentation of PostCheck class.
+
     This function contains the general framework to enumerate the parent
-    slab model with different composition of lithium and oxygen vacancies.
+    slab model with different target species and compositions.
+
     Args:
-        target_slab_path: Fully lithiated slab with no oxygen vacancies on the
-        surface.
-        surface_lithium_composition: Desired composition of lithium on the
-        surface. This composition is determined by number of lithium
-        remaining on the surface divided by the total number of lithium atoms
-        that will be relaxed on the surface.
-        surface_oxygen_composition: Desired composition of oxygen on the
-        surface.
-        target_cell_size: Maximum number of supercells of the input slab.
-        num_layers_relaxed: Define how many layers on the surface will be
-        relaxed during the geometry optimization.
+        target_slab_path: Input slab model
+        species: Target species that will be enumerated.
+        replace: Species and occupancy dictionaries containing the species
+            mapping in string-string pairs. E.g. {'Li': {'Li': 0.5}}
+            (This dict represents that only half of the original Li
+            atoms in the slab model will be kept), stored in the list.
+        num_layers_relaxed: Dictionaries where species and number of relaxed
+            layers as keys and values, respectively. E.g. {'Li': 2, 'O': 1},
+            which represents 2 and 1 layers of Li and O will be relaxed
+            during the DFT geometry optimization.
+        max_cell_size: Maximum number of supercells of the input slab.
+        symmetric: Whether the symmetry of the slab model will be kept
+            after the enumeration.
+        max_structures: Number of structures to be returned at most for
+            each composition.
         to_vasp: Whether to generate all the output slab models in a
-        well-organized format.
+            well-organized format. Defaults to False.
 
-    Returns: All enumerated slabs with different composition of lithium and
-    oxygen vacancies
+    Returns:
+        All enumerated slab models with different composition of target
+        species.
+
     """
-    surface_lithium_composition.sort(reverse=True)
-    surface_oxygen_composition.sort(reverse=True)
 
-    print("target_cell_size = {}".format(target_cell_size))
-    print("Composition of lithium on the surface will be {}.".format(
-        surface_lithium_composition))
-    print("Composition of oxygen on the surface will be {}.".format(
-        surface_oxygen_composition))
-
-    # Load initial slab model with no lithium and oxygen vacancies on the
-    # surface
+    # Load initial slab model
     input_structure = Slab.from_file(target_slab_path)
+    input_structure.wrap_pbc()
+
+    # Define important parameters which will be used later, including to be
+    # enumerated species, number of layers relaxed, whether to keep the
+    # symmetry, direction of the slab, and the proximity tolerance for
+    # adjacent atoms
+    input_structure.to_be_enumerated_species = species
+    input_structure.num_layers_relaxed = num_layers_relaxed
+    input_structure.symmetric = symmetric
+    direction = input_structure.direction
+    tolerance = input_structure.tolerance
 
     # PreCheck
-    precheck = PreCheck(input_structure)
+    pre_check = PreCheck(input_structure)
 
-    if precheck.is_not_cuboid():
+    if not pre_check.is_cuboid():
         raise SlabOrientationError
 
-    if precheck.is_not_slab():
+    if not pre_check.is_slab():
         raise NonSlabError
 
-    if precheck.not_all_has_selective_dynamics():
+    if not pre_check.all_has_selective_dynamics():
         raise NonDefinedSelectiveDynamicsError
 
-    if precheck.has_no_inversion_symmetry():
-        raise NoInversionSymmetryError
+    if pre_check.relax_both_surfaces() != input_structure.symmetric:
+        raise IncompatibleSymmError
 
+    if symmetric:
+        if not pre_check.has_inversion_symmetry():
+            raise NoInversionSymmetryError
 
-    # Define the dummy species that will be used to substitute the target
+    # Check the user defined to-be-enumerated composition is valid
+    if not pre_check.has_validate_composition(replace, max_cell_size):
+        raise InvalidCompositionError
+
+    # Extract the lattice parameter of the parent slab model along the slab
+    # direction defined by user (will be used as criteria next)
+    criteria = input_structure.lattice.abc[direction]
+
+    # Get the indices of the to-be-enumerated atoms on the surface.
+    # Get the c_frac coordinates of the lower and upper boundaries of the
+    # fixed region in the central slab.
+    center_bottom, center_top, relaxed_index = \
+        input_structure.index_extraction(only_top=False)
+
+    # print(relaxed_index)
+    # Define the "dummy" species that will be used to substitute the target
     # species
-    Li_replacement = DummySpecies(symbol='A', oxidation_state=+1)
-    O_replacement = DummySpecies(symbol='D', oxidation_state=-2)
+    dummy_species = [DummySpecies(symbol='X' + str(i + 1))
+                     for i in range(len(species))]
 
-    # Replace the top surface Li and O atoms with dummy species which will
-    # be easier to enumerate using the enumlib
-    slab_substituted = input_structure.surface_substitute(subs1=Li_replacement,
-                                                          subs2=O_replacement)
-
-    # Extract the c parameter of the parent slab model (will be used as
-    # criteria next)
-    a, b, c = slab_substituted.lattice.abc
-
-    # Enumerate with maximum unit cell of 4, but the cell size can also be
-    # like 2x1 or 1x2 or 2x2
-    composition_Li = surface_lithium_composition
-    composition_O = surface_oxygen_composition
-    scaling_matrix = define_scaling_matrix(a, b, target_cell_size)
-    print("Scaling matrix used here is: {}".format(scaling_matrix))
+    # Replace the to-be-enumerated species from the slab top surface with
+    # "dummy" species. This will facilitate the enumeration code.
+    input_substituted = input_structure.surface_substitute(dummy_species)
 
     # Initialize a number to store total number of enumerated slab models
     num = 0
 
-    # c_fractional coordinates of the lower and upper boundaries of the
-    # fixed region in the centeral slab
-    [center_bottom, center_top,
-     _, _, _, _, _, _] = input_structure.layer_distinguisher()
-
-    # Get indices of the relaxed Li atoms as well as the surface oxygen atoms
-    # in the slab model
-    relaxed_Li_index, oxygen_index = input_structure.index_extraction()
-
-    # Initialize a dictionary to store the successfully enumerated slab
-    # models by composition
-    enumerated_slabs_by_composition = {}
-
     # Begin to enumerate
-    for i in composition_Li:
-        for j in composition_O:
-            prev = 0
-            # Create a list to store supplemental slabs, this mainly
-            # contains slabs generated from the edge cases
-            supplemental_structures = []
-            if i == 1 and j == 1:  # Fully lithiated
-                structure1 = input_structure.copy()
-                structure1.make_supercell(scaling_matrix=scaling_matrix)
-                supplemental_structures = [structure1]
-                symmetrized_structures = [structure1]
-            elif i == 0 and j == 1:  # remove all surface Li atoms
-                structure1 = input_structure.remove_sites_with_scaling(
-                    index=relaxed_Li_index,
-                    scaling_matrix=scaling_matrix)
-                # structure1 = remove_sites(input_structure,
-                #                           index=relaxed_li_index,
-                #                           scaling_matrix=scaling_matrix)
-                supplemental_structures = [structure1]
-                symmetrized_structures = [structure1]
-            elif i == 1 and j == 0:  # remove all surface O atoms
-                structure1 = input_structure.remove_sites_with_scaling(
-                    index=oxygen_index,
-                    scaling_matrix=scaling_matrix
-                )
-                # structure1 = remove_sites(input_structure,
-                #                           index=oxygen_index,
-                #                           scaling_matrix=scaling_matrix)
-                supplemental_structures = [structure1]
-                symmetrized_structures = [structure1]
-            elif i == 0 and j == 0:  # remove all surface atoms
-                structure1 = input_structure.remove_sites_with_scaling(
-                    index=relaxed_Li_index + oxygen_index,
-                    scaling_matrix=scaling_matrix
-                )
-                # structure1 = remove_sites(
-                #     input_structure,
-                #     index=relaxed_li_index + oxygen_index,
-                #     scaling_matrix=scaling_matrix)
-                supplemental_structures = [structure1]
-                symmetrized_structures = [structure1]
-            else:
-                # When all surface oxygen atoms are removed, the slab models
-                # can not be enumerated. This might be the bug in the enumlib
-                # library source code or pymatgen does no implement it
-                # properly. But luckly, all the not-working cases are
-                # actually the sub-cases(remove all surface O atoms) of
-                # previous successfully enumerated composition
-                if str([i, j + 1]) in enumerated_slabs_by_composition.keys():
-                    direct_structures = []
-                    for enumed_structure in \
-                            enumerated_slabs_by_composition[str([i, j + 1])]:
-                        # Remove surface oxygen atoms by extracting
-                        # their indices first
-                        oxygen_index_enumed = \
-                            enumed_structure.index_extraction()[1]
-                        # oxygen_index_enumed = index_extraction(
-                        #     symmetrized_structure)[2]
-                        direct_structures.append(
-                            enumed_structure.remove_sites_with_scaling(
-                                index=oxygen_index_enumed,
-                                scaling_matrix=[1, 1, 1]
-                            )
-                        )
-                        # direct_structures.append(
-                        #     remove_sites(structure_model=symmetrized_structure,
-                        #                  index=oxygen_index_enumed,
-                        #                  scaling_matrix=[1, 1, 1]))
-                    supplemental_structures = direct_structures
-                    symmetrized_structures = direct_structures
+    for subs_dict in replace:
+        slab_substituted = copy.deepcopy(input_substituted)
 
+        prev = 0
+        supplemental_structures = []
+
+        composition_list = list(get_values_nested_dict(subs_dict))
+        if all_int(composition_list):
+            structure = input_structure.supplemental_structures_gene(
+                subs_dict, relaxed_index)
+            supplemental_structures = [structure]
+            enumerated_structures = [structure]
+        else:
+            if have_zero(composition_list):
+                slab_substituted = slab_substituted \
+                    .supplemental_structures_gene(subs_dict, relaxed_index)
+
+            subs_dict = replace_dummy(subs_dict, dummy_species)
+
+            ewc = EnumWithComposition(
+                subs_dict=subs_dict,
+                max_cell_size=max_cell_size
+            )
+
+            structures = ewc.apply_enumeration(slab_substituted,
+                                               max_structures)
+
+            # Filtered out the structures which has c lattice as the
+            # largest lattice (a tall cuboid)
+            filtered_structures = structure_filter(structures,
+                                                   direction=direction,
+                                                   criteria=criteria)
+
+            # Add selective dynamics for enumerated sites
+            for filtered_structure in filtered_structures:
+                selective_dynamics_completion(
+                    structure=filtered_structure,
+                    direction=direction,
+                    dummy_species=dummy_species,
+                    center_bottom=center_bottom,
+                    center_top=center_top,
+                    tolerance=tolerance
+                )
+
+            # Symmetrize slab models based on the top enumerated
+            # surface if needed
+            enumerated_structures = []
+            for filtered_structure in filtered_structures:
+                for i in range(len(species)):
+                    filtered_structure.replace_species(
+                        {dummy_species[i]: species[i]})
+                filtered_structure = Slab.from_sites(filtered_structure)
+                if symmetric:
+                    enumerated_structures.append(
+                        filtered_structure.symmetrize_top_base())
                 else:
-                    # New
-                    ewc = EnumWithComposition(
-                        subs_species=[Li_replacement, O_replacement],
-                        subs_composition=[i, j],
-                        max_cell_size=target_cell_size
-                    )
-                    structures = ewc.apply_enumeration(slab_substituted)
+                    enumerated_structures.append(filtered_structure)
 
-                    # structures = enum_with_composition(
-                    #     slab_substituted,
-                    #     subs_li=Li_replacement,
-                    #     li_composition=i,
-                    #     subs_o=O_replacement,
-                    #     o_composition=j,
-                    #     cell_size=target_cell_size)
+            prev = len(enumerated_structures)
 
-                    # Filtered out the structures which has c lattice as the
-                    # largest lattice (a tall cuboid)
-                    filtered_structures = []
-                    for k, structure in enumerate(structures):
-                        lattice = structure['structure'].lattice.abc
-                        # Strict criteria -- keeps slabs with c lattice
-                        # as parent slab models
-                        if (round(lattice[2], 3) - 0.2) <= c <= \
-                                (round(lattice[2], 3) + 0.2):
-                            filtered_structures.append(
-                                structures[k]['structure'])
-                    # In case of that using strict criteria will remove all
-                    # structures, apply modest criteria to complete the
-                    # dataset.
-                    if len(filtered_structures) == 0:
-                        # print("**The criteria used is too strict! Changing to "
-                        #       "the modest one.**")
-                        for k, structure in enumerate(structures):
-                            lattice = structure['structure'].lattice.abc
-                            # Keep the c direction of the slab models is
-                            # perpendicular to x-y plane but the c lattice
-                            # parameter can be modified for a little bit.
-                            if (lattice[0] and lattice[1]) < lattice[2] \
-                                    <= c * 1.5:
-                                filtered_structures.append(
-                                    structures[k]['structure'])
-
-                    # Add selective dynamics for enumerated sites
-                    for filtered_structure in filtered_structures:
-                        for t in filtered_structure:
-                            if Li_replacement in t:
-                                t.properties = {
-                                    'selective_dynamics': [True, True, True]
-                                }
-                            if O_replacement in t:
-                                t.properties = {
-                                    'selective_dynamics': [True, True, True]
-                                }
-                            if t.properties['selective_dynamics'] is None:
-                                if (center_bottom - 0.01 <= t.frac_coords[2]
-                                        <= center_top + 0.01):
-                                    t.properties = {
-                                        'selective_dynamics':
-                                            [False, False, False]}
-                                else:
-                                    t.properties = {
-                                        'selective_dynamics':
-                                            [True, True, True]}
-
-                    # Symmetrize slab models based on the top enumerated
-                    # surface
-                    symmetrized_structures = []
-                    for filtered_structure in filtered_structures:
-                        if i == 0 and j == 0:
-                            pass
-                        elif i != 0 and j == 0:
-                            filtered_structure.replace_species(
-                                {Li_replacement: 'Li'})
-                        elif i == 0 and j != 0:
-                            filtered_structure.replace_species(
-                                {O_replacement: 'O'})
-                        elif (i and j) != 0:
-                            filtered_structure.replace_species(
-                                {Li_replacement: 'Li', O_replacement: 'O'})
-                        filtered_structure = \
-                            Slab.from_sites(filtered_structure)
-                        symmetrized_structures.append(
-                            filtered_structure.symmetrize_top_base()
-                        )
-                        # symmetrized_structures.append(
-                        #     symmetrize_top_base(filtered_structure))
-                    prev = len(symmetrized_structures)
-
-            # Add composition and enumerated structures to the
-            # dictionary as the keys and values
-            enumerated_slabs_by_composition[str([i, j])] \
-                = symmetrized_structures
-
-            for k, symmetrized_structure in enumerate(symmetrized_structures):
+        unique_index = "-{:0%dd}" % (len(str(len(enumerated_structures))))
+        for k, symmetrized_structure in enumerate(enumerated_structures):
+            indicator = 0
+            if symmetric:
+                _, origin, _ = symmetrized_structure.is_symmetry(
+                    return_isc=True)
+                min_c, _ = symmetrized_structure.get_max_min_c_frac()
                 sga = SpacegroupAnalyzer(symmetrized_structure,
                                          symprec=0.1)
-
                 # Create the refined structures
                 refined_structure = sga.get_refined_structure()
 
                 # Define number of sites that should be after enumeration
-                total_num_sites = get_num_sites(input_structure,
-                                                slab_substituted,
-                                                Li_replacement,
-                                                i,
-                                                O_replacement,
-                                                j,
-                                                target_cell_size)
+                total_num_sites = input_structure.calculate_num_sites(
+                    composition_list=composition_list,
+                    relaxed_index=relaxed_index,
+                    max_cell_size=max_cell_size)
+
                 num_sites = refined_structure.num_sites
 
-                indicator = 0
                 while ((num_sites > total_num_sites) or
-                       (max(refined_structure.lattice.abc) > c * 2 - 5) or
+                       (max(refined_structure.lattice.abc) >
+                        criteria * 2 - 5) or
                        (max(refined_structure.lattice.abc) !=
-                        refined_structure.lattice.c)):
+                        refined_structure.lattice.abc[direction])):
                     pc = PostCheck(refined_structure)
                     indicator, refined_structure = pc.slab_size_check(
                         total_num_sites=total_num_sites,
                         enumerated_num_sites=num_sites,
-                        input_c=c
-                    )
+                        criteria=criteria)
                     num_sites = refined_structure.num_sites
 
-                # Add selective dynamics
                 refined_structure = Slab.from_sites(refined_structure)
-                min_c, max_c = refined_structure.get_max_min_c_frac()
-                # min_c, max_c = get_max_min_c_frac(refined_structure)
-                if max_c - min_c > 0.8:
-                    refined_structure = temp_shift_isc_back(
-                        before_refined_structure=symmetrized_structure,
-                        after_refined_structure=refined_structure,
-                        shift=True
-                    )
-                    refined_structure = add_selective_dynamics(
-                        input_structure,
-                        refined_structure,
-                        num_relaxed=num_layers_relaxed
-                    )
-                    refined_structure = temp_shift_isc_back(
-                        before_refined_structure=symmetrized_structure,
-                        after_refined_structure=refined_structure,
-                        shift=False
-                    )
+                noncontiguous = (len(get_slab_regions(refined_structure)) == 2)
+                # print(input_structure.layers_finder())
+
+                if noncontiguous:
+                    refined_structure = refined_structure.tune_isc(
+                        origin=origin, shift_isc_back=True)
+                    refined_structure = refined_structure.tune_c(
+                        target_min_c=min_c)
+                    # print(refined_structure.layers_finder())
+                    refined_structure = \
+                        refined_structure.add_selective_dynamics(
+                            lower_limit=center_bottom,
+                            upper_limit=center_top
+                        )
                 else:
-                    refined_structure = add_selective_dynamics(
-                        input_structure,
-                        refined_structure,
-                        num_relaxed=num_layers_relaxed
-                    )
+                    refined_structure = refined_structure.tune_c(
+                        target_min_c=min_c)
+                    # print(refined_structure.layers_finder())
+                    refined_structure = \
+                        refined_structure.add_selective_dynamics(
+                            lower_limit=center_bottom,
+                            upper_limit=center_top
+                        )
 
-                # Perform final check
-                pc = PostCheck(refined_structure)
-                pc.final_check(
-                    Li_composition=i,
-                    O_composition=j,
-                    index=k
-                )
+                refined_structure = refined_structure.tune_isc(
+                    origin=origin, shift_isc_back=False)
+            else:
+                refined_structure = symmetrized_structure
 
-                # Generate slab models
-                if to_vasp:
-                    # Make directories
-                    dirname = str(i) + 'Li' + str(j) + 'O'
-                    if not os.path.exists(dirname):
-                        os.makedirs(dirname)
+            # Perform final check
+            pc = PostCheck(refined_structure)
+            pc.final_check(
+                species=species,
+                composition_list=composition_list,
+                keep_symmetric=symmetric,
+                index=k)
 
-                    if indicator == -1:
-                        refined_structure.to(
-                            fmt='poscar',
-                            filename=os.path.join(
-                                dirname,
-                                "refined-prim-{}.vasp".format(k)))
-                    elif indicator == 1:
-                        refined_structure.to(
-                            fmt='poscar',
-                            filename=os.path.join(
-                                dirname,
-                                "refined-reduced-{}.vasp".format(k)))
-                    elif indicator == 2:
-                        refined_structure.to(
-                            fmt='poscar',
-                            filename=os.path.join(
-                                dirname,
-                                "refined-rotated-{}.vasp".format(k)))
-                    else:
-                        refined_structure.to(
-                            fmt='poscar',
-                            filename=os.path.join(
-                                dirname,
-                                "refined-structure-{}.vasp".format(k)))
+            # Generate slab models
+            if to_vasp:
+                # Make directories
+                dirname = ''
+                for n in range(len(species)):
+                    dirname += str(composition_list[n]) + str(species[n])
+                if not os.path.exists(dirname):
+                    os.makedirs(dirname)
 
-            # Calculate total number of enumerated structures
-            num += len(symmetrized_structures)
+                if indicator == -1:
+                    refined_structure.to(
+                        fmt='poscar',
+                        filename=os.path.join(
+                            dirname,
+                            "refined-prim{}.vasp".format(
+                                unique_index.format(k))))
+                elif indicator == 1:
+                    refined_structure.to(
+                        fmt='poscar',
+                        filename=os.path.join(
+                            dirname,
+                            "refined-reduced{}.vasp".format(
+                                unique_index.format(k))))
+                elif indicator == 2:
+                    refined_structure.to(
+                        fmt='poscar',
+                        filename=os.path.join(
+                            dirname,
+                            "refined-rotated{}.vasp".format(
+                                unique_index.format(k))))
+                else:
+                    refined_structure.to(
+                        fmt='poscar',
+                        filename=os.path.join(
+                            dirname,
+                            "refined-structure{}.vasp".format(
+                                unique_index.format(k))))
 
-            # Print the results
-            print(f'The enumeration found {len(symmetrized_structures)} '
-                  f'({prev}+{len(supplemental_structures)}) '
-                  f'distinct structures for {i * 100}% Li and {j * 100}% O.')
-
+        num += len(enumerated_structures)
+        print(
+            'The enumeration found {}({}+{}) distinct structures for {} '
+            'with {} composition.'.format(
+                len(enumerated_structures), prev,
+                len(supplemental_structures), species,
+                composition_list))
     print(f'{num} distinct structures are found totally.')
+
+
+def run(json_file_path, max_structures, to_vasp):
+    """
+    Function to read the json file and load the parameters.
+
+    Args:
+        json_file_path: JSON file path direct to the file which includes
+            all the important parameters.
+        max_structures: Number of structures to be returned at most.
+        to_vasp: Whether to generate all output slab models.
+
+    """
+
+    # Load json input file
+    with open(json_file_path) as fp:
+        data = json.load(fp)
+
+    # Generate all composition combo
+    to_be_enumerated_species = list(data['replacements'])
+    num_layers_relaxed = data['num_layers_relaxed']
+    composition_list = list(
+        get_values_nested_dict(data['replacements']))
+    composition_list = [sorted(x, reverse=True) for x in
+                        composition_list]
+
+    print("target_cell_size = {}".format(data['max_cell_size']))
+    print("Composition of {} on the surface will be {}, "
+          "respectively.".format(to_be_enumerated_species, composition_list))
+
+    composition_combo = []
+    for combo in product(*composition_list):
+        replace_dict = {}
+        for key, value in zip(to_be_enumerated_species, combo):
+            replace_dict[key] = {key: float(value)}
+        composition_combo.append(replace_dict)
+
+    automate_surface(target_slab_path=data['target_slab_path'],
+                     species=to_be_enumerated_species,
+                     replace=composition_combo,
+                     num_layers_relaxed=num_layers_relaxed,
+                     max_cell_size=data['max_cell_size'],
+                     symmetric=data['symmetric'],
+                     max_structures=max_structures,
+                     to_vasp=to_vasp)
 
 
 if __name__ == "__main__":
@@ -403,37 +381,15 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument(
-        "input_file",
+        "json_file_path",
         help="Path to an input file in VASP's POSCAR format.")
 
     parser.add_argument(
-        "--target-cell-size", "-s",
-        help="Target cell size relative to input cell (default: 1).",
+        "--max-structures", "-max",
+        help="Number of structures to be returned at most for each "
+             "composition.",
         type=int,
-        default=1)
-
-    parser.add_argument(
-        "--lithium-composition", "-L",
-        help="All desired surface lithium composition "
-             "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
-        nargs="+",
-        type=float,
-        default=[1.0, 0.75, 0.5, 0.25, 0.0])
-
-    parser.add_argument(
-        "--oxygen-composition", "-O",
-        nargs="+",
-        type=float,
-        help="All desired surface oxygen composition "
-             "(default: [[1.0, 0.75, 0.5, 0.25, 0.0]]).",
-        default=[1.0, 0.75, 0.5, 0.25, 0.0])
-
-    parser.add_argument(
-        "--num-of-relaxed-layers", "-nr",
-        help="Number of layers that will be relaxed on the surface "
-             "(default: 2).",
-        type=int,
-        default=2
+        default=2000
     )
 
     parser.add_argument(
@@ -443,9 +399,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    automate_surface(args.input_file,
-                     surface_lithium_composition=args.lithium_composition,
-                     surface_oxygen_composition=args.oxygen_composition,
-                     target_cell_size=args.target_cell_size,
-                     num_layers_relaxed=args.num_of_relaxed_layers,
-                     to_vasp=args.generate_poscar)
+    run(args.json_file_path,
+        args.max_structures,
+        args.generate_poscar)

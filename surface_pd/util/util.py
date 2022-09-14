@@ -1,9 +1,8 @@
-import numpy as np
+import copy
 
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+import pandas as pd
 
-from surface_pd.core import Slab
-from surface_pd.error import TooLargeSlabError
+from surface_pd.error import TooLargeSlabError, NonIntegerError
 
 
 def define_scaling_matrix(a, b, multiple):
@@ -33,39 +32,120 @@ def define_scaling_matrix(a, b, multiple):
     return scaling_matrix
 
 
-def temp_shift_isc_back(before_refined_structure,
-                        after_refined_structure,
-                        shift=True):
+def csv2dict(csvlist):
     """
-    Shift / shift back the inversion symmetry center.
+    Convert list of comma separated values to a dictionary.
+
+    The hierarchy of the dictionary is expressed by equal signs ("=") and
+    colons (":").  For example
+
+       ["Co=Co:0.5,Ni:0.5", "Li=Na"]
+
+    will be converted to
+
+       {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
+
+    """
+
+    def trynumeric(v):
+        try:
+            out = int(v)
+        except ValueError:
+            try:
+                out = pd.eval(v)
+            except ValueError:
+                out = v
+        return out
+
+    outdict = {}
+    for item in csvlist:
+        key, value = item.split("=")
+        if ":" in value:
+            value = {s.strip(): trynumeric(v.strip()) for s, v in
+                     [el.split(":") for el in value.split("&")]}
+        else:
+            value = trynumeric(value.strip())
+        outdict[key.strip()] = value
+    return outdict
+
+
+def check_int(num):
+    eps = 1e-2
+    int_f = float(round(num))
+    if abs(num - int_f) < eps:
+        return int_f
+    else:
+        raise NonIntegerError
+
+
+def get_values_nested_dict(m: dict):
+    """
+    Get the values inside the nested dictionary.
 
     Args:
-        before_refined_structure: Before refined structure
-        after_refined_structure: After refined structure
-        shift: Whether to shift the inversion symmetry center to the origin.
+        m: Dict
 
     Returns:
-        Slab model with inversion symmetry center shifted to the origin /
-        back.
+        values
 
     """
-    sga = SpacegroupAnalyzer(before_refined_structure,
-                             symprec=1e-1)
-    ops = sga.get_symmetry_operations()
-    inversion = ops[1]
-    assert (np.all(inversion.rotation_matrix == -np.identity(3)))
-    origin = inversion.translation_vector / 2
-    if shift:
-        for site in after_refined_structure:
-            site.frac_coords = site.frac_coords + origin
-            # wrap_pbc(site.frac_coords, slab_direction=2)
-        after_refined_structure = Slab.from_sites(after_refined_structure)
-        after_refined_structure.wrap_pbc()
-        return after_refined_structure
+    for val in m.values():
+        if isinstance(val, dict):
+            yield from get_values_nested_dict(val)
+        else:
+            yield val
+
+
+def all_int(n: list):
+    """
+    Check if every item in the list is an integer.
+
+    Args:
+        n: Input list
+
+    """
+    m = [x.is_integer() for x in n]
+    if all(m):
+        return True
     else:
-        for site in after_refined_structure:
-            site.frac_coords = site.frac_coords - origin
-            # wrap_pbc(site.frac_coords, slab_direction=2)
-        after_refined_structure = Slab.from_sites(after_refined_structure)
-        after_refined_structure.wrap_pbc()
-        return after_refined_structure
+        return False
+
+
+def have_zero(n: list):
+    """
+    Check if any item in the list is zero.
+
+    Args:
+        n: Input list
+
+    """
+    return any([x == 0 for x in n])
+
+
+def replace_dummy(subs_dict: dict,
+                  dummy_species: list):
+    """
+    Replace the keys (species) in the "replace" dict with "dummy" species.
+
+    Args:
+        subs_dict: Species and occupancy dictionaries containing the species
+            mapping in string-string pairs.
+        dummy_species: A special specie for representing non-traditional
+            elements or species.
+
+    Returns:
+        Updated dict with "dummy" species as the keys
+
+    """
+    for i, key, value in zip(range(len(dummy_species)),
+                             subs_dict.keys(),
+                             subs_dict.values()):
+        subs_dict[dummy_species[i]] = subs_dict.pop(key)
+        value[dummy_species[i]] = value.pop(key)
+
+    updated_dict = copy.deepcopy(subs_dict)
+    for key in subs_dict.keys():
+        if subs_dict[key][key] == 0:
+            updated_dict.pop(key)
+
+    return updated_dict
