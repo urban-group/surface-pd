@@ -1,8 +1,8 @@
 {
     "target_slab_path": "/Users/xinhaoli/code/surface-pd/new_functionality/other-layered-mat/LCO_terminated_LCO_10L15A.vasp",
     "replacements": {
-        "Li": {"Li": [1.0, 0.75, 0.5, 0.25, 0]},
-        "O": {"O": [1.0, 0.75, 0.5, 0.25, 0]}
+        "Li": {"Li": [1.0]},
+        "O": {"O": [0.75]}
     },
     "num_layers_relaxed":{
         "Li": 2,
