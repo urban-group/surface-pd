@@ -1,9 +1,9 @@
-from surface_pd.core.slab import Slab
-
+from pymatgen.transformations.advanced_transformations import \
+    EnumerateStructureTransformation
 from pymatgen.transformations.standard_transformations \
     import SubstitutionTransformation
-from pymatgen.transformations.advanced_transformations \
-    import EnumerateStructureTransformation
+
+from surface_pd.core.slab import Slab
 
 
 class EnumWithComposition(object):

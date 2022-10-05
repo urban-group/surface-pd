@@ -84,6 +84,7 @@ class PostCheck(object):
                     composition_list,
                     index,
                     keep_symmetric,
+                    criteria,
                     symprec=1e-5):
         """
         Perform final check to see whether the enumerated slab models are
@@ -100,6 +101,7 @@ class PostCheck(object):
             index: Unique index of this slab model.
             keep_symmetric: Whether the symmetry of the slab model will be
                 kept after the enumeration.
+            criteria:
             symprec: Tolerance for symmetry finding. Defaults to 1e-5.
 
         Returns:
@@ -137,9 +139,12 @@ class PostCheck(object):
                     raise NonCentralInversionSymmetryError
         else:
             pass
-
-        if max(self.refined_structure.lattice.abc) != \
-                self.refined_structure.lattice.c:
+        if (round(criteria, 2) - 0.01) >=\
+                round(self.refined_structure.lattice.abc[
+                      self.refined_structure.direction], 2) or \
+                round(criteria, 2) + 0.01 <= \
+                round(self.refined_structure.lattice.abc[
+                          self.refined_structure.direction], 3):
             print("{}{} -- structure_{}".format(species,
                                                 composition_list,
                                                 index))
