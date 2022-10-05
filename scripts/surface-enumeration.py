@@ -184,9 +184,10 @@ def automate_surface(target_slab_path: str,
             filtered_structures = structure_filter(structures,
                                                    direction=direction,
                                                    criteria=criteria)
-
+            # print(filtered_structures)
             # Add selective dynamics for enumerated sites
             for filtered_structure in filtered_structures:
+                # print(filtered_structure)
                 selective_dynamics_completion(
                     structure=filtered_structure,
                     direction=direction,
@@ -280,6 +281,7 @@ def automate_surface(target_slab_path: str,
                 species=species,
                 composition_list=composition_list,
                 keep_symmetric=symmetric,
+                criteria=criteria,
                 index=k)
 
             # Generate slab models

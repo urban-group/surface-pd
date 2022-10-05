@@ -5,7 +5,7 @@ def structure_filter(input_slabs,
                      direction,
                      criteria):
     """
-    Filter out the slab models that doese not satisfy the criteria.
+    Filter out the slab models that does not satisfy the criteria.
 
     Args:
         input_slabs: Input slab model.
@@ -18,10 +18,8 @@ def structure_filter(input_slabs,
 
     """
     filtered_structures = []
-    lattice_sets = []
     for i, slab in enumerate(input_slabs):
         lattice = slab['structure'].lattice.abc
-        lattice_sets.append(lattice)
         ############################################
         # structure['structure'].remove_site_property(
         #     'selective_dynamics')
@@ -30,50 +28,11 @@ def structure_filter(input_slabs,
         ############################################
         # Strict criteria -- keeps slabs with c lattice
         # as parent slab models
-        if (round(lattice[direction], 3) - 0.2) <= criteria <= \
-                (round(lattice[direction], 3) + 0.2):
-            filtered_structures.append(input_slabs[i]['structure'])
-
-    # In case of that using strict criteria will remove all
-    # structures, apply modest criteria to complete the
-    # dataset.
-    if len(filtered_structures) == 0:
-        # print("**The criteria used is too strict! Changing to "
-        #       "the modest one.**")
-        for i, slab in enumerate(input_slabs):
-            a, b, c_new = lattice_sets[i]
-            # Keep the c direction of the slab models is
-            # perpendicular to x-y plane but the c lattice
-            # parameter can be modified for a little.
-            if (a and b) < c_new <= criteria * 1.5:
-                filtered_structures.append(input_slabs[i]['structure'])
-
-    # In case of the enumerated structures are rotated:
-    if len(filtered_structures) == 0:
-        for i, slab in enumerate(input_slabs):
+        if any((x - 0.0001) <= criteria
+               <= (x + 0.0001) for x in lattice):
             slab['structure'] = Slab.from_sites(
-                slab['structure']).check_rotate()
-            a, b, c_new = lattice_sets[i]
-            # Strict criteria -- keeps slabs with c lattice
-            # as parent slab models
-            if (round(c_new, 3) - 0.2) <= criteria <= (round(c_new, 3) + 0.2):
-                filtered_structures.append(input_slabs[i]['structure'])
-
-        # In case of that using strict criteria will remove all
-        # structures, apply modest criteria to complete the
-        # dataset.
-    if len(filtered_structures) == 0:
-        # print("**The criteria used is too strict! Changing to "
-        #       "the modest one.**")
-        for i, slab in enumerate(input_slabs):
-            slab['structure'] = Slab.from_sites(
-                slab['structure']).check_rotate()
-            a, b, c_new = lattice_sets[i]
-            # Keep the c direction of the slab models is
-            # perpendicular to x-y plane but the c lattice
-            # parameter can be modified for a little.
-            if (a and b) < c_new <= criteria * 1.5:
-                filtered_structures.append(input_slabs[i]['structure'])
+                slab['structure']).check_rotate(criteria)
+            filtered_structures.append(slab['structure'])
     return filtered_structures
 
 
@@ -98,6 +57,8 @@ def selective_dynamics_completion(structure: Slab,
     Returns:
         Slab model with all sites have selective dynamics.
     """
+    # print(structure)
+    # print(dummy_species)
     for t in structure:
         for ds in dummy_species:
             if ds in t:

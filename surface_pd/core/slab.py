@@ -470,16 +470,21 @@ class Slab(Structure):
         if sga.is_laue():  # has Laue symmetry (centro-symmetry)
             if return_isc:
                 ops = sga.get_symmetry_operations()
-                inversion = ops[1]
-                assert (np.all(inversion.rotation_matrix == -np.identity(3)))
-                origin = inversion.translation_vector / 2
-                return True, origin, inversion
+                # print(ops)
+                for op in ops:
+                    if np.all(op.rotation_matrix == -np.identity(3)):
+                        inversion = op
+                        origin = inversion.translation_vector / 2
+                        return True, origin, inversion
+                # assert (np.all(inversion.rotation_matrix == -np.identity(3)))
+                # origin = inversion.translations_vector / 2
+                # return True, origin, inversion
             else:
                 return True
         else:
             return False
 
-    def check_rotate(self):
+    def check_rotate(self, criteria):
         """
         Check if the enumerated slab models need to rotate to satisfy the
         shape (cuboid) requirement.
@@ -488,24 +493,27 @@ class Slab(Structure):
             Cuboid slab model
 
         """
-        if max(self.lattice.abc) != self.lattice.c:
-            if max(self.lattice.abc) == self.lattice.a:
-                slab_rotated = copy.deepcopy(self)
-                slab_rotated.make_supercell(
-                    [[0, 0, 1],
-                     [0, 1, 0],
-                     [1, 0, 0]]
-                )
-            elif max(self.lattice.abc) == self.lattice.b:
-                slab_rotated = copy.deepcopy(self)
-                slab_rotated.make_supercell(
-                    [[1, 0, 0],
-                     [0, 0, 1],
-                     [0, 1, 0]]
-                )
-            return slab_rotated
+        directions = [0, 1, 2]
+        directions.remove(self.direction)
+        slab_rotated = copy.deepcopy(self)
+        if round(self.lattice.abc[self.direction], 4) - 0.0001 >= criteria \
+                or \
+                round(self.lattice.abc[self.direction], 4) + 0.0001 <= \
+                criteria:
+            for d in directions:
+                if round(self.lattice.abc[d], 4) - 0.0001 <= criteria <= \
+                        round(self.lattice.abc[d], 4) + 0.0001:
+                    slab_rotated = copy.deepcopy(self)
+                    matrix = np.zeros((3, 3))
+                    matrix[self.direction, d] = 1
+                    matrix[d, self.direction] = 1
+                    directions.remove(d)
+                    rest = directions[0]
+                    matrix[rest, rest] = 1
+                    slab_rotated.make_supercell(matrix)
+                    return slab_rotated
         else:
-            return self
+            return slab_rotated
 
     def calculate_num_sites(self,
                             composition_list: list,
@@ -625,24 +633,3 @@ class Slab(Structure):
             else:
                 site.properties = {'selective_dynamics': [True, True, True]}
         return structure
-
-    # def selective_dynamics_completion(self,
-    #                                   dummy_species: list,
-    #                                   center_bottom: float,
-    #                                   center_top: float,
-    #                                   ):
-    #     for t in self:
-    #         for ds in dummy_species:
-    #             if ds in t:
-    #                 t.properties = {
-    #                     'selective_dynamics': [True, True, True]}
-    #         if t.properties['selective_dynamics'] is None:
-    #             if (center_bottom - self.tolerance <=
-    #                     t.frac_coords[self.direction] <=
-    #                     center_top + self.tolerance):
-    #                 t.properties = {
-    #                     'selective_dynamics': [False, False, False]}
-    #             else:
-    #                 t.properties = {
-    #                     'selective_dynamics': [True, True, True]}
-    #     return self

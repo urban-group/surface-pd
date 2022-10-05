@@ -15,8 +15,8 @@ class SlabOrientationError(Exception):
     """
 
     def __str__(self):
-        return "The slab model provided is not a tall cuboid. Please " \
-               "consider to construct a slab with c > (a and b)."
+        return "The slab model provided does not have vacuum in the " \
+               "c-direction."
 
 
 class NonCentralInversionSymmetryError(Exception):
