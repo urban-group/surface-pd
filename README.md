@@ -57,7 +57,7 @@ Thank you for your interest.
 
 <a name="documentation"></a>
 # Documentation
-If you want to learn more about ***surface-pd***, please find the [user manual](https://interphon.readthedocs.io/).
+If you want to learn more about ***surface-pd***, please find the [user manual]().
 
 Or please contact: ```Xinhao Li, xinhao.li@columbia.edu```
 
@@ -70,6 +70,6 @@ $ pip install surface-pd
 
 <a name="using-surface-pd"></a>
 # Using surface-pd
-Please refer to the official [surface-pd](https://interphon.readthedocs.io/)
+Please refer to the official [surface-pd]()
 for tutorials and examples.
 
