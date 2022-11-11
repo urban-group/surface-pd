@@ -38,7 +38,7 @@ setup(
     ],
     keywords=['materials science', 'phase diagrams'],
     packages=find_packages(exclude=['tests']),
-    install_requires=['numpy', 'pymatgen', 'matplotlib', 'pandas'],
+    install_requires=['monty', 'numpy', 'pymatgen', 'matplotlib', 'pandas'],
     # package_data={
     #     'sample': [''],
     # },
