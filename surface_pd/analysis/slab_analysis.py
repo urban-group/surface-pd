@@ -43,7 +43,7 @@ def selective_dynamics_completion(structure: Slab,
                                   center_top: float,
                                   tolerance: float):
     """
-    Complete  the selective dynamics properties after the enumeration based
+    Complete the selective dynamics properties after the enumeration based
     on the rules of species and locations.
 
     Args:

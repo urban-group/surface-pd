@@ -1,0 +1,13 @@
+{
+    "target_slab_path": "./example/enumeration-examples/structure/other/Na_terminated_NaTiS2.vasp",
+    "replacements": {
+        "Na": {"Li": [1.0]},
+        "S": {"O": [0.75]}
+    },
+    "num_layers_enumed":{
+        "Na": 1,
+        "S": 1
+    },
+    "symmetric": true,
+    "max_cell_size": 4
+}

@@ -1,3 +1,6 @@
+from shutil import which
+from monty.dev import requires
+
 from pymatgen.core.surface import get_slab_regions
 
 from surface_pd.core import Slab
@@ -16,6 +19,18 @@ class PreCheck(object):
     def __init__(self, structure: Slab):
         self.structure = structure
 
+    enum_cmd = which('enum.x')
+    makestr_cmd = which('makestr.x') or which("makeStr.x") or which(
+        "makeStr.py")
+
+    @requires(
+        enum_cmd and makestr_cmd,
+        "In order to run this script, you need to have the executable "
+        "'enum.x' "
+        "or 'makestr.x' files and add them in the path. For the detailed "
+        "compilation, please refer to the documentation of this package ("
+        "Installation)."
+    )
     def is_slab(self):
         """
         Check whether the input structure is a slab.

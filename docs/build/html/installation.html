@@ -46,7 +46,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation-using-pip">Installation using pip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-from-source-code">Installation from source code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#additional-requirements">Additional requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation-test-this-needs-to-further-check">Installation test (This needs to further check)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-test">Installation test</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
@@ -84,6 +84,7 @@
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
 <ul class="simple">
+<li><p><a class="reference external" href="https://pythonhosted.org/monty/index.html">Monty</a></p></li>
 <li><p><a class="reference external" href="https://www.python.org/">Python&gt;=3</a></p></li>
 <li><p><a class="reference external" href="https://numpy.org/doc/stable/">Numpy</a></p></li>
 <li><p><a class="reference external" href="https://matplotlib.org/">Matplotlib</a></p></li>
@@ -108,7 +109,7 @@ clone
 and setup:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git@github.com:urban-group/surface-pd.git
 $ cd surface-pd
-$ python setup.py install
+$ pip install --user .
 </pre></div>
 </div>
 </section>
@@ -118,18 +119,20 @@ $ python setup.py install
 <p class="admonition-title">Note</p>
 <p>In order to use the enumeration functionalities provided in this package,
 the <code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code> must be in the path.</p>
-<p>You can run the following several lines of code to complie the enumlib source code in your termnal.</p>
+<p>You can run the following several lines of code to compile the enumlib
+source code in your terminal.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone  --branch v2.0.4 --recursive https://github.com/msg-byu/enumlib.git
 $ cd enumlib/symlib/src &amp;&amp; make F90=gfortran
 $ cd enumlib/src &amp;&amp; make F90=gfortran
 $ cd enumlib/src &amp;&amp; F90=gfortran make enum.x
 $ cd enumlib/src &amp;&amp; F90=gfortran make makestr.x
-$ mkdir -p /opt/bin
-$ cp enumlib/src/*.x /opt/bin
 </pre></div>
 </div>
-<p>The last line of code is just to copy the excecutable <code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code> files to the path that we think should be global. But you can dynamically change it to anywhere you want.
-The detailed compilation steps are fully described at <a class="reference external" href="https://github.com/msg-byu/enumlib">https://github.com/msg-byu/enumlib</a>.</p>
+<p>After the compilation, you should add these two executable files (<code class="docutils literal notranslate"><span class="pre">enum.x</span></code> and <code class="docutils literal notranslate"><span class="pre">makestr.x</span></code>) to your
+global path .</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cp enumlib/src/*.x &quot;your_global_path&quot;
+</pre></div>
+</div>
 <p>To check whether the enumeration utilities are available:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ which enum.x makestr.x
 </pre></div>
@@ -137,15 +140,35 @@ The detailed compilation steps are fully described at <a class="reference extern
 <p>The paths to these two files should be located.</p>
 </div>
 </section>
-<section id="installation-test-this-needs-to-further-check">
-<h2>Installation test (This needs to further check)<a class="headerlink" href="#installation-test-this-needs-to-further-check" title="Permalink to this heading"></a></h2>
-<p>To check whether the <strong>surface-pd</strong> package is successfully installed, you
-can import <strong>surface-pd</strong> within Python interpreter:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">surface</span><span class="o">-</span><span class="n">pd</span>
+<section id="installation-test">
+<h2>Installation test<a class="headerlink" href="#installation-test" title="Permalink to this heading"></a></h2>
+<p>After installation, you should be able to see three scripts, they
+are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py
+$ surface-pd-plot.py
+$ discharge_pd_gene.py
 </pre></div>
 </div>
-<p>Or the following command can be executed (with an error in the unprepared state):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-pd
+<p>To check whether the <strong>surface-pd</strong> package is successfully installed, you
+can try if the following command can be executed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ surface-enumeration.py -h
+</pre></div>
+</div>
+<p>The user-friendly command-line interfaces with help and usage messages
+should be automatically generated. Something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$  surface-enumeration.py -h
+usage: surface-enumeration.py [-h] [--max-structures MAX_STRUCTURES] [--generate-poscar] json_file_path
+This code will enumerate the input slab model with user defined target
+species and composition. The input slab structure should be as small as
+possible because the unit cell of the slab will also be enumerated, and it
+will increase the number of possibilities that the enumeration can have.
+For the detailed algorithm behind the enumeration, please see the
+following references below.
+(1) Morgan, W. S.; Hart, G. L. W.; Forcade, R. W.
+Computational Materials Science 2017, 136, 144–149.
+https://doi.org/10.1016/j.commatsci.2017.04.015.
+...
+...
 </pre></div>
 </div>
 </section>

@@ -166,3 +166,15 @@ class IncompatibleSymmError(Exception):
     def __str__(self):
         return "Please double check the symmetric parameter defined in the " \
                "input json file. \n It is not compatible with slab model."
+
+
+class InvalidInputFormatError(Exception):
+    """
+    An error class defined to show that the user defined input format is not
+    valid.
+    """
+
+    def __str__(self):
+        return "Please check the input format. \n" \
+               "The input should be formatted as JSON file. For details, " \
+               "see examples in the example folder."

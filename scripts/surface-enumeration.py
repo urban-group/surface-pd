@@ -21,10 +21,10 @@ Phys. Rev. B 2009, 80 (1), 014120.
 https://doi.org/10.1103/PhysRevB.80.014120.
 
 """
-
 __author__ = "Xinhao Li"
 __email__ = "xinhao.li@columbia.edu"
-__date__ = "2022-09-06"
+__date__ = "2022-11-07"
+__version__ = '0.1.0'
 
 import os
 import json
@@ -51,18 +51,11 @@ warnings.filterwarnings("ignore")
 def automate_surface(target_slab_path: str,
                      species: list,
                      replace: list,
-                     num_layers_relaxed: dict,
+                     num_layers_enumed: dict,
                      max_cell_size: int,
                      symmetric: bool,
-                     max_structures: int,
                      to_vasp: bool = False):
     """
-    ToDo:
-        1. Li_100 slab works, but any atom with c frac < 0 has issue to
-        assign the selective dynamics.
-        2. Re-test whether the new framework works for all cases.
-        3. Check the documentation of PostCheck class.
-
     This function contains the general framework to enumerate the parent
     slab model with different target species and compositions.
 
@@ -73,7 +66,7 @@ def automate_surface(target_slab_path: str,
             mapping in string-string pairs. E.g. {'Li': {'Li': 0.5}}
             (This dict represents that only half of the original Li
             atoms in the slab model will be kept), stored in the list.
-        num_layers_relaxed: Dictionaries where species and number of relaxed
+        num_layers_enumed: Dictionaries where species and number of relaxed
             layers as keys and values, respectively. E.g. {'Li': 2, 'O': 1},
             which represents 2 and 1 layers of Li and O will be relaxed
             during the DFT geometry optimization.
@@ -100,7 +93,7 @@ def automate_surface(target_slab_path: str,
     # symmetry, direction of the slab, and the proximity tolerance for
     # adjacent atoms
     input_structure.to_be_enumerated_species = species
-    input_structure.num_layers_relaxed = num_layers_relaxed
+    input_structure.num_layers_relaxed = num_layers_enumed
     input_structure.symmetric = symmetric
     direction = input_structure.direction
     tolerance = input_structure.tolerance
@@ -176,18 +169,16 @@ def automate_surface(target_slab_path: str,
                 max_cell_size=max_cell_size
             )
 
-            structures = ewc.apply_enumeration(slab_substituted,
-                                               max_structures)
+            structures = ewc.apply_enumeration(slab_substituted)
 
             # Filtered out the structures which has c lattice as the
             # largest lattice (a tall cuboid)
             filtered_structures = structure_filter(structures,
                                                    direction=direction,
                                                    criteria=criteria)
-            # print(filtered_structures)
+
             # Add selective dynamics for enumerated sites
             for filtered_structure in filtered_structures:
-                # print(filtered_structure)
                 selective_dynamics_completion(
                     structure=filtered_structure,
                     direction=direction,
@@ -332,25 +323,27 @@ def automate_surface(target_slab_path: str,
     print(f'{num} distinct structures are found totally.')
 
 
-def run(json_file_path, max_structures, to_vasp):
+def run(json_file_path, to_vasp):
     """
     Function to read the json file and load the parameters.
 
     Args:
         json_file_path: JSON file path direct to the file which includes
             all the important parameters.
-        max_structures: Number of structures to be returned at most.
         to_vasp: Whether to generate all output slab models.
 
     """
 
     # Load json input file
-    with open(json_file_path) as fp:
-        data = json.load(fp)
+    try:
+        with open(json_file_path) as fp:
+            data = json.load(fp)
+    except (json.decoder.JSONDecodeError, IsADirectoryError):
+        raise InvalidInputFormatError
 
     # Generate all composition combo
     to_be_enumerated_species = list(data['replacements'])
-    num_layers_relaxed = data['num_layers_relaxed']
+    num_layers_enumed = data['num_layers_enumed']
     composition_list = list(
         get_values_nested_dict(data['replacements']))
     composition_list = [sorted(x, reverse=True) for x in
@@ -370,29 +363,21 @@ def run(json_file_path, max_structures, to_vasp):
     automate_surface(target_slab_path=data['target_slab_path'],
                      species=to_be_enumerated_species,
                      replace=composition_combo,
-                     num_layers_relaxed=num_layers_relaxed,
+                     num_layers_enumed=num_layers_enumed,
                      max_cell_size=data['max_cell_size'],
                      symmetric=data['symmetric'],
-                     max_structures=max_structures,
                      to_vasp=to_vasp)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=__doc__ + "\n{} {}".format(__date__, __author__),
+        description=__doc__ + "\n{} {}".format(__date__, __author__) +
+                    "\n version: {}".format(__version__),
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument(
         "json_file_path",
-        help="Path to an input file in VASP's POSCAR format.")
-
-    parser.add_argument(
-        "--max-structures", "-max",
-        help="Number of structures to be returned at most for each "
-             "composition.",
-        type=int,
-        default=2000
-    )
+        help="Path to a JSON file which has the necessary parameters defined.")
 
     parser.add_argument(
         "--generate-poscar", "-g",
@@ -402,5 +387,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run(args.json_file_path,
-        args.max_structures,
         args.generate_poscar)

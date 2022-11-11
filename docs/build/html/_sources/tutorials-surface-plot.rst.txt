@@ -1,5 +1,5 @@
 ==================================
-Surface Phase Diagram Construction
+Surface phase diagram construction
 ==================================
 
 

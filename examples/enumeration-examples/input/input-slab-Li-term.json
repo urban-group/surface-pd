@@ -1,0 +1,13 @@
+{
+    "target_slab_path": "./example/enumeration-examples/structure/electrode/LCO/Li_terminated_LCO_7L15A.vasp",
+    "replacements": {
+        "Li": {"Li": [0.5]},
+        "O": {"O": [0.5]}
+    },
+    "num_layers_enumed":{
+        "Li": 1,
+        "O": 1
+    },
+    "symmetric": true,
+    "max_cell_size": 4
+}

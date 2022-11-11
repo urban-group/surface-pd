@@ -15,4 +15,4 @@ __all__ = ['NoInversionSymmetryError', 'SlabOrientationError',
            'PolarSurfaceError', 'NonPolarSurfaceError', 'NonSlabError',
            'TooLargeSlabError', 'InvalidCompositionError',
            'InvalidPhasesAlignError', 'IncompatibleSymmError',
-           'NonIntegerError']
+           'NonIntegerError', 'InvalidInputFormatError']

@@ -24,7 +24,7 @@ challenging to probe experimentally.
 
 To construct the surface phase diagram, slab models
 with different surface compositions need to be created. The surface phase
-diagram shown on the left only has four phases that are predicted to be
+diagram shown on the left above only has four phases that are predicted to be
 stable in the range of 0 to 5 V and 0 to 1500 K. However, behind the most
 stable phases shown on the surface phase diagram, hundreds/thousands
 meta-stable phases should also be calculated. The figure shown above on the
@@ -35,7 +35,7 @@ when "all" enumerated slab models are considered.
 # surface-pd framework
 This package takes use of the method developed in [enumlib code](https://github.com/msg-byu/enumlib), but
 in contrast to conventional enumlib code, we apply the systematic
-enumeration to only part of the slab model, creating Li and O vacancies on
+enumeration to only part of the slab model, creating vacancies on
 the surface. Then by taking the advantage of inherent inversion symmetry
 center of the slab models, the top surface will be symmetrized to the bottom
 surface, i.e. a symmetrically equivalent modification was introduced at the
