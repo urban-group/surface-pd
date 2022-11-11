@@ -1,0 +1,13 @@
+{
+    "target_slab_path": "./example/enumeration-examples/structure/catalyst_surface/Pt_111_slab_FCC_1H.vasp",
+    "replacements": {
+        "H": {"H": [0.375]}
+    },
+    "num_layers_enumed":{
+        "H": 1
+    },
+    "symmetric": false,
+    "max_cell_size": 8
+}
+
+

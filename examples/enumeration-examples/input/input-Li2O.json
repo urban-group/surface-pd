@@ -1,0 +1,15 @@
+{
+    "target_slab_path": "./example/enumeration-examples/structure/electrode/POSCAR_Li2O_110.vasp",
+    "replacements": {
+        "Li": {"Li": [1.0]},
+        "O": {"O": [0.75]}
+    },
+    "num_layers_enumed":{
+        "Li": 1,
+        "O": 2
+    },
+    "symmetric": true,
+    "max_cell_size": 2
+}
+
+
