@@ -44,7 +44,11 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="theory.html">Theory</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="surface_energy.html">Surface energy</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Surface enumeration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Surface enumeration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow">Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enumlib-code">Enumlib code</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
@@ -78,7 +82,25 @@
            <div itemprop="articleBody">
              
   <section id="surface-enumeration">
-<h1>Surface enumeration<a class="headerlink" href="#surface-enumeration" title="Permalink to this heading"></a></h1>
+<span id="label-surface-enumeration"></span><h1>Surface enumeration<a class="headerlink" href="#surface-enumeration" title="Permalink to this heading"></a></h1>
+<section id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Permalink to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/flowchart.png"><img alt="_images/flowchart.png" class="align-center" src="_images/flowchart.png" style="width: 500px;" /></a>
+<ul class="simple">
+<li><p>The compound, shape, geometry, sites property of the input slab model will be checked first to make sure the user defined slab model is valid.</p></li>
+<li><p>The to-be-enumerated composition that user defined will be further checked to make sure it will yield integral number of atoms.</p></li>
+<li><p>The slab model will be separated as the top, center, and bottom regions according to the statement of constrains defined for all atoms (user defined).</p></li>
+<li><p>The top and center regions will be combined and create a pseudo slab model.</p></li>
+<li><p>The target atoms in the pseudo slab model will be substituted by dummy species to facilitate the EnumWithComposition class to detect and enumerate.</p></li>
+<li><p>The “top” surface of the pseudo slab model will be enumerated in 3D to generate all geometrically distinct slab models (a, b, and c lattice parameters are all possible to change).</p></li>
+<li><p>Applying the filtration steps to remove those enumerated pseudo slab models have c lattice parameter changed since we only want 2D surface enumeration (only a and b lattice parameters are allowed to change).</p></li>
+<li><p>The remaining enumerated pseudo slab models will be symmetrized on the basis of the inversion symmetry.</p></li>
+<li><p>The symmetrized “real” slab model will further be refined, which means the atoms will be moved to the expected symmetry positions.</p></li>
+<li><p>The inversion symmetry center will be shifted to the origin (0, 0, 0) and let VASP determines the point group symmetry and the space group.</p></li>
+</ul>
+</section>
+<section id="enumlib-code">
+<h2>Enumlib code<a class="headerlink" href="#enumlib-code" title="Permalink to this heading"></a></h2>
 <p>The enumlib code was developed by Prof. Gus Hart’s group by Brigham Young
 University (BYU).</p>
 <p>For the full description of the enumlib code, please refer to its
@@ -87,6 +109,7 @@ University (BYU).</p>
 <p>2. <a class="reference external" href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.80.014120">Generating derivative structures from multilattices: Algorithm and application to hcp alloys</a></p>
 <p>3. <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S092702561200081X">Generating derivative structures at a fixed concentration</a></p>
 <p>4. <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S0927025617302069">Generating derivative superstructures for systems with high configurational freedom</a></p>
+</section>
 </section>
 
 

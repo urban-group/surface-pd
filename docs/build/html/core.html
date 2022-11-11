@@ -206,7 +206,7 @@ of the user defined composition.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="core.Slab.check_rotate">
-<span class="sig-name descname"><span class="pre">check_rotate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.check_rotate" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criteria</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.Slab.check_rotate" title="Permalink to this definition"></a></dt>
 <dd><p>Check if the enumerated slab models need to rotate to satisfy the
 shape (cuboid) requirement.</p>
 <dl class="field-list simple">
@@ -527,7 +527,7 @@ will be relaxed.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="core.PostCheck.final_check">
-<span class="sig-name descname"><span class="pre">final_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_symmetric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PostCheck.final_check" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">final_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_symmetric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.PostCheck.final_check" title="Permalink to this definition"></a></dt>
 <dd><p>Perform final check to see whether the enumerated slab models are
 correct.</p>
 <ol class="arabic simple">
@@ -545,6 +545,7 @@ detection parameter.</p>
 <li><p><strong>index</strong> – Unique index of this slab model.</p></li>
 <li><p><strong>keep_symmetric</strong> – Whether the symmetry of the slab model will be
 kept after the enumeration.</p></li>
+<li><p><strong>criteria</strong> – </p></li>
 <li><p><strong>symprec</strong> – Tolerance for symmetry finding. Defaults to 1e-5.</p></li>
 </ul>
 </dd>

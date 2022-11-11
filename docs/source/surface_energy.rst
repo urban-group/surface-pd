@@ -1,5 +1,6 @@
-The brief overview of how the surface energy is calculated for the both
-non-polar and polar surface facets is described here.
+Below shows an example of how the surface energy of |LiTMO2| is calculated for the both
+non-polar and polar surface facets.
+The brief overview of how the surface energy  is described here.
 For a detailed description of how all the equations listed below are
 derived, please refer to the paper.
 
