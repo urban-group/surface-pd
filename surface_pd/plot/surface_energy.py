@@ -16,6 +16,21 @@ E_bulk_by_funtional = {
 
 
 class SurfaceEnergy(object):
+    """
+
+    Args:
+        V:
+        T:
+        nLi:
+        nTM:
+        nO:
+        dft_energy:
+        a:
+        b:
+        gamma:
+        TM_species:
+        functional:
+    """
     def __init__(self,
                  V, T, nLi, nTM, nO, dft_energy,
                  a, b, gamma, TM_species, functional):
@@ -40,6 +55,11 @@ class SurfaceEnergy(object):
         self.e_li = a
 
     def g_oxygen(self):
+        """
+
+        Returns:
+
+        """
         E_O2 = E_O2_by_funtional[self.functional]
         T0 = 298  # K
         kB = 0.008314463  # kJ/(mol K)
@@ -54,6 +74,11 @@ class SurfaceEnergy(object):
         return mu_oxygen
 
     def gibbs_free_energy(self):
+        """
+
+        Returns:
+
+        """
         E_bulk = E_bulk_by_funtional[self.TM_species][self.functional]
         E_Li = E_Li_by_funtional[self.functional]
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
@@ -61,14 +86,3 @@ class SurfaceEnergy(object):
              + (2 * self.nTM - self.nO) *
              self.g_oxygen() - self.nTM * E_bulk) / (2 * A)
         return G
-
-    # def gibbs_free_energy(self,
-    #                       nLi, nTM, nO, dft_energy,
-    #                       a, b, gamma):
-    #     E_bulk = E_bulk_by_funtional[self.TM_species][self.functional]
-    #     E_Li = E_Li_by_funtional[self.functional]
-    #     A = np.sin(gamma * np.pi / 180) * a * b
-    #     G = (dft_energy + (nTM - nLi)
-    #          * (E_Li - self.V) + (2 * nTM - nO) *
-    #          self.g_oxygen() - nTM * E_bulk) / (2 * A)
-    #     return G

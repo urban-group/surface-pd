@@ -15,6 +15,15 @@ E_bulk_by_funtional = {
 
 
 class PdData(object):
+    """
+
+    Args:
+        dataframe:
+        lithium_like_species:
+        oxygen_like_species:
+        functional:
+
+    """
     def __init__(self,
                  dataframe: pd.DataFrame,
                  lithium_like_species: str,
@@ -26,6 +35,12 @@ class PdData(object):
         self.functional = functional
 
     def tm_species(self):
+        """
+
+        Returns:
+
+        """
+
         # Define transition metal from periodic table
         TM_dataset = ['Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn']
         column_names = self.dataframe.columns
@@ -34,6 +49,11 @@ class PdData(object):
                 return name
 
     def standardize_pd_data(self):
+        """
+
+        Returns:
+
+        """
         self.dataframe.reset_index(inplace=True)
         max_TM_species = max(self.dataframe.iloc[:][self.tm_species()])
         for i, num in enumerate(self.dataframe.iloc[:][self.tm_species()]):
@@ -62,6 +82,11 @@ class PdData(object):
         return self
 
     def get_check_phases(self):
+        """
+
+        Returns:
+
+        """
         max_Li = max(self.dataframe.iloc[:][self.lithium_like_species])
         max_O = max(self.dataframe.iloc[:][self.oxygen_like_species])
         if max_Li == max_O / 2:
@@ -79,6 +104,14 @@ class PdData(object):
 
     def get_the_shift_energy(self,
                              checked_phases):
+        """
+
+        Args:
+            checked_phases:
+
+        Returns:
+
+        """
         num_Li, num_O, E = [], [], []
         for phase in checked_phases:
             num_Li.append(int(phase.iloc[:][self.lithium_like_species]))
@@ -103,6 +136,15 @@ class PdData(object):
     def get_surface_energy(self,
                            V,
                            T):
+        """
+
+        Args:
+            V:
+            T:
+
+        Returns:
+
+        """
         E = []
         for i in range(len(self.dataframe)):
             E = np.append(
