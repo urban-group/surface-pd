@@ -6,13 +6,13 @@ This code will be used to generate the discharge surface pd data.
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
-__date__ = "2022-07-15"
+__date__ = "2022-11-07"
 
 import argparse
 
 import pandas as pd
 
-from surface_pd.surface_plot import standardize_pd_data, get_TM_species
+from surface_pd.plot.pd_data import PdData
 
 
 def find_max_min_composition(data: pd.DataFrame,
@@ -23,21 +23,39 @@ def find_max_min_composition(data: pd.DataFrame,
 
 
 def add_composition2df(data1: str,
-                       data2: str = None):
+                       data2: str = None,
+                       lithium_like_species: str = None,
+                       oxygen_like_species: str = None
+                       ):
     df1 = pd.read_csv(data1, sep='\s+', index_col=0)
-    TM_species = get_TM_species(data1)
-    df1 = standardize_pd_data(df1, TM_species=TM_species)
+    df1_c = PdData(df1,
+                   lithium_like_species=lithium_like_species,
+                   oxygen_like_species=oxygen_like_species,
+                   functional=None)
+    df1_c.standardize_pd_data()
+    df1 = df1_c.dataframe
+
     if data2 is None:
         df2_li = 0
         df2_o = 0
     else:
         df2 = pd.read_csv(data2, sep='\s+', index_col=0)
-        df2 = standardize_pd_data(df2, TM_species=TM_species)
-        df2_li = find_max_min_composition(df2, column_name='Li')
-        df2_o = find_max_min_composition(df2, column_name='O')
+        df2_c = PdData(df2,
+                       lithium_like_species=lithium_like_species,
+                       oxygen_like_species=oxygen_like_species,
+                       functional=None)
+        df2_c.standardize_pd_data()
+        df2 = df2_c.dataframe
 
-    df1_li = find_max_min_composition(df1, column_name='Li')
-    df1_o = find_max_min_composition(df1, column_name='O')
+        df2_li = find_max_min_composition(df2,
+                                          column_name=lithium_like_species)
+        df2_o = find_max_min_composition(df2,
+                                         column_name=oxygen_like_species)
+
+    df1_li = find_max_min_composition(df1,
+                                      column_name=lithium_like_species)
+    df1_o = find_max_min_composition(df1,
+                                     column_name=oxygen_like_species)
 
     overall_li = df1_li + df2_li
     overall_o = df1_o + df2_o
@@ -55,11 +73,18 @@ def add_composition2df(data1: str,
 
 def create_discharge_pd(data_files,
                         charge_pd_end_composition: float,
+                        lithium_like_species: str = None,
+                        oxygen_like_species: str = None,
                         save=False):
     if len(data_files) == 1:
-        df1 = add_composition2df(data_files[0])
+        df1 = add_composition2df(data_files[0],
+                                 lithium_like_species=lithium_like_species,
+                                 oxygen_like_species=oxygen_like_species)
     else:
-        df1, df2 = add_composition2df(data_files[0], data_files[1])
+        df1, df2 = add_composition2df(
+            data_files[0], data_files[1],
+            lithium_like_species=lithium_like_species,
+            oxygen_like_species=oxygen_like_species)
 
     for i in df1.index:
         if df1['o_composition'][i] > charge_pd_end_composition:
@@ -81,7 +106,7 @@ def create_discharge_pd(data_files,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description=__doc__ + "\n{}{}".format(__date__, __author__),
+        description=__doc__ + "\n{} {}".format(__date__, __author__),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
@@ -90,6 +115,20 @@ if __name__ == '__main__':
         help='Path to the charge surface pd data',
         nargs='+',
         type=str
+    )
+
+    parser.add_argument(
+        "--lithium-like-species", "-L",
+        help="Define the lithium like species",
+        type=str,
+        default="Li"
+    )
+
+    parser.add_argument(
+        "--oxygen-like-species", "-O",
+        help="Define the oxygen like species",
+        type=str,
+        default="O"
     )
 
     parser.add_argument(
@@ -109,5 +148,7 @@ if __name__ == '__main__':
     create_discharge_pd(
         args.surface_pd_data,
         args.charge_pd_end_composition,
+        args.lithium_like_species,
+        args.oxygen_like_species,
         args.save
     )
