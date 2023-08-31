@@ -13,10 +13,10 @@ def find_stable_phases(G: list,
         [[1, 2, 3, 4],
          [5, 6, 7, 8],
          [9, 10, 11, 12]]
-    2. Stack arrays in sequence horizontally
+    2. Stack arrays in sequence horizontally,
         [[1, 2, 3, 4],
          [5, 6, 7, 8],
-         [9, 10, 11, 12]]
+         [9, 10, 11, 12]],
          -->
         [[1, 5, 9],
          [2, 6, 10],
@@ -25,11 +25,11 @@ def find_stable_phases(G: list,
     3. Find the indices of the minimum values along an axis
 
     Args:
-        G:
+        G: list of phases
         dataframe:
 
     Returns:
-
+        Indices of the most stable phase of each composition
     """
 
     # Split an array into multiple sub-arrays

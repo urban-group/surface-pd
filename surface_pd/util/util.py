@@ -32,9 +32,9 @@ def define_scaling_matrix(a, b, multiple):
     return scaling_matrix
 
 
-def csv2dict(csvlist):
+def csv2dict(csvlist: list):
     """
-    Convert list of comma separated values to a dictionary.
+     Convert list of comma separated values to a dictionary.
 
     The hierarchy of the dictionary is expressed by equal signs ("=") and
     colons (":").  For example
@@ -45,8 +45,12 @@ def csv2dict(csvlist):
 
        {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
 
-    """
+    Args:
+        csvlist: list of comma separated values.
 
+    Returns:
+        dictionary
+    """
     def trynumeric(v):
         try:
             out = int(v)
@@ -70,6 +74,15 @@ def csv2dict(csvlist):
 
 
 def check_int(num):
+    """
+    Check if the number is an integer.
+
+    Args:
+        num:
+
+    Returns:
+
+    """
     eps = 1e-2
     int_f = float(round(num))
     if abs(num - int_f) < eps:

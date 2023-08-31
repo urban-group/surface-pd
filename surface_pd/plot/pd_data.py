@@ -10,7 +10,11 @@ E_bulk_by_funtional = {
     'Co':
         {"PBE+U": -22.69242,
          "SCAN+rVV10+U": -37.2001966667,
-         "r2SCAN+rVV10+U": -32.5698933333}
+         "r2SCAN+rVV10+U": -32.5698933333},
+    'Mn':
+        {"PBE+U": -26.319605,
+         "SCAN+rVV10+U": 0,
+         "r2SCAN+rVV10+U": -36.4717}
     }
 
 
@@ -36,9 +40,10 @@ class PdData(object):
 
     def tm_species(self):
         """
+        Find the transition metal species in the material
 
         Returns:
-
+            transition metal species
         """
 
         # Define transition metal from periodic table
@@ -50,6 +55,8 @@ class PdData(object):
 
     def standardize_pd_data(self):
         """
+        Normalized the pandas dataframe based on the number of TM species.
+        This is to make the DFT energies directly comparable.
 
         Returns:
 
@@ -105,12 +112,16 @@ class PdData(object):
     def get_the_shift_energy(self,
                              checked_phases):
         """
+        Shift energy is calculated using the slab models with different
+        number of layers. Though they have different number of layers,
+        but proper normalization will make them same. This energy will be
+        used to eliminate the energy difference between these models.
 
         Args:
             checked_phases:
 
         Returns:
-
+            shift energy
         """
         num_Li, num_O, E = [], [], []
         for phase in checked_phases:
@@ -131,19 +142,24 @@ class PdData(object):
         A = float(np.sin(gamma * np.pi / 180) * a * b)
         E_bulk = E_bulk_by_funtional[self.tm_species()][self.functional]
         E_shift = (1 / (2 * A)) * (E[0] - E[1] + num_bulk * E_bulk)
+        print('Surface area:', A, '\n',
+              'E_bulk:', E_bulk, '\n',
+              'E_shift:', E_shift)
         return E_shift
 
     def get_surface_energy(self,
-                           V,
-                           T):
+                           V: np.ndarray,
+                           T: np.ndarray):
         """
+        Using the user defined voltage and temperature meshes to calculate
+        the surface free energy.
 
         Args:
-            V:
-            T:
+            V: voltage mesh
+            T: temperature mesh
 
         Returns:
-
+            list of surface energies
         """
         E = []
         for i in range(len(self.dataframe)):

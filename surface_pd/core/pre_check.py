@@ -113,11 +113,11 @@ class PreCheck(object):
             lower_boundary = min(ranges[0])
 
         if min_fixed_atom_c - lower_boundary < self.structure.tolerance:
-            print('********************************************************')
+            print('*'*40)
             print(' The slab model provided has whole bottom surface fixed. '
                   '\n '
                   ' Therefore, no symmetrization is needed.')
-            print('********************************************************')
+            print('*'*40)
             return False
         else:
             return True

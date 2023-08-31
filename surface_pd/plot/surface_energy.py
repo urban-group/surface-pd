@@ -1,35 +1,49 @@
 import numpy as np
 
+# DFT energies for pure BCC Li, calculated using different functionals
 E_Li_by_funtional = {"PBE+U": -1.89965,
                      "SCAN+rVV10+U": -2.33333,
                      "r2SCAN+rVV10+U": -2.32338}
 
+# DFT energies for isolated O2 molecule, calculated using different functionals
+# oxygen correction: -1.36
 E_O2_by_funtional = {"PBE+U": -9.86018 + 1.36,
                      "SCAN+rVV10+U": -12.00701,
                      "r2SCAN+rVV10+U": -11.54833}
 
+# DFT energies for different LiTMO2, calculated using different functionals
 E_bulk_by_funtional = {
-    'Ni': {"PBE+U": -19.92283375, "SCAN+rVV10+U": -36.8133525},
-    'Co': {"PBE+U": -22.69242, "SCAN+rVV10+U": -37.2001966667,
-           "r2SCAN+rVV10+U": -32.5698933333}
-                       }
+    'Ni':
+        {"PBE+U": -19.92283375,
+         "SCAN+rVV10+U": -36.8133525},
+    'Co':
+        {"PBE+U": -22.69242,
+         "SCAN+rVV10+U": -37.2001966667,
+         "r2SCAN+rVV10+U": -32.5698933333},
+    'Mn':
+        {"PBE+U": -26.319605,
+         "SCAN+rVV10+U": 0,
+         "r2SCAN+rVV10+U": -36.4717}
+}
 
 
 class SurfaceEnergy(object):
     """
+    Surface free energy class.
 
     Args:
-        V:
-        T:
-        nLi:
-        nTM:
-        nO:
-        dft_energy:
-        a:
-        b:
-        gamma:
-        TM_species:
-        functional:
+        V: Voltage.
+        T: Temperature.
+        nLi: Number of Li atoms.
+        nTM: Number of transition metal atoms.
+        nO: Number of O atoms.
+        dft_energy: DFT energy.
+        a: Lattice parameter a, used to calculate the surface area.
+        b: Lattice parameter b, used to calculate the surface area.
+        gamma: Lattice parameter gamma, used to calculate the surface area.
+        TM_species: Transition metal species in the material.
+        functional: Functional used to perform the calculations.
+
     """
     def __init__(self,
                  V, T, nLi, nTM, nO, dft_energy,
@@ -56,9 +70,11 @@ class SurfaceEnergy(object):
 
     def g_oxygen(self):
         """
+        Equation to calculate the temperature dependent oxygen chemical
+        potential.
 
         Returns:
-
+            Oxygen chemical potential.
         """
         E_O2 = E_O2_by_funtional[self.functional]
         T0 = 298  # K
@@ -75,9 +91,10 @@ class SurfaceEnergy(object):
 
     def gibbs_free_energy(self):
         """
+        Equation to calculate the surface Gibbs free energy.
 
         Returns:
-
+            Surface Gibbs free energy.
         """
         E_bulk = E_bulk_by_funtional[self.TM_species][self.functional]
         E_Li = E_Li_by_funtional[self.functional]

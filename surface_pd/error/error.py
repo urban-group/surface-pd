@@ -12,10 +12,11 @@ class NoInversionSymmetryError(Exception):
 class SlabOrientationError(Exception):
     """
     An error class defined for wrong slab orientation error.
+
     """
 
     def __str__(self):
-        return "The slab model provided does not have vacuum in the " \
+        return "The slab model given by user does not have vacuum in the " \
                "c-direction."
 
 
@@ -23,6 +24,7 @@ class NonCentralInversionSymmetryError(Exception):
     """
     An error class defined for the slab model which does not have the
     inversion symmetry center located at the origin.
+
     """
 
     def __str__(self):
@@ -34,6 +36,7 @@ class PrimitiveStructureFinderError(Exception):
     """
     An error class defined for wrong refined structure (some sites are lost or
     redundant).
+
     """
 
     def __str__(self):
@@ -47,6 +50,7 @@ class NonDefinedSelectiveDynamicsError(Exception):
     An error class defined for the slab model that does not have selective
     dynamics defined for all sites (selective dynamics is extremely useful
     in several steps).
+
     """
 
     def __str__(self):
@@ -57,6 +61,7 @@ class NonSlabError(Exception):
     """
     An error class defined for the structure that is not a slab model
     (no enough vacuum region in the model).
+
     """
 
     def __str__(self):
@@ -115,6 +120,7 @@ class NonPolarSurfaceError(Exception):
 class TooLargeSlabError(Exception):
     """
     An error class defined for the too large slab model.
+
     """
 
     def __str__(self):
@@ -127,6 +133,7 @@ class InvalidCompositionError(Exception):
     """
     An error class defined for the invalid user defined composition list to
     be enumerated.
+
     """
 
     def __str__(self):
@@ -139,6 +146,7 @@ class InvalidPhasesAlignError(Exception):
     """
     An error class defined for the invalid phases used to calculate the
     alignment energy.
+
     """
 
     def __str__(self):
@@ -151,6 +159,7 @@ class NonIntegerError(Exception):
     """
     An error class defined to check whether the after enumerated number of
     atoms is an integer with tolerance.
+
     """
 
     def __str__(self):
@@ -161,6 +170,7 @@ class IncompatibleSymmError(Exception):
     """
     An error class defined to show that the user defined symmetric parameter is
      not compatible with code determined symmetric parameter.
+
     """
 
     def __str__(self):
@@ -172,6 +182,7 @@ class InvalidInputFormatError(Exception):
     """
     An error class defined to show that the user defined input format is not
     valid.
+
     """
 
     def __str__(self):

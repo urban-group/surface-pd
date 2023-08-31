@@ -52,11 +52,13 @@ class PostCheck(object):
             else:
                 return 1, self.refined_structure
         else:
+            # Handle the case that the slab is repeated in the space
             if max(self.refined_structure.lattice.abc) > criteria * 2 - 5:
                 refined_prim = copy.deepcopy(self.refined_structure)
                 refined_prim = refined_prim.get_primitive_structure() \
                     .get_reduced_structure().get_sorted_structure()
                 return -1, refined_prim
+            # Handle the rotated case
             if max(self.refined_structure.lattice.abc) != \
                     self.refined_structure.lattice.c:
                 if (max(self.refined_structure.lattice.abc) ==
@@ -139,10 +141,10 @@ class PostCheck(object):
                     raise NonCentralInversionSymmetryError
         else:
             pass
-        if (round(criteria, 2) - 0.01) >=\
+        if (round(criteria, 2) - 0.02) >=\
                 round(self.refined_structure.lattice.abc[
                       self.refined_structure.direction], 2) or \
-                round(criteria, 2) + 0.01 <= \
+                round(criteria, 2) + 0.02 <= \
                 round(self.refined_structure.lattice.abc[
                           self.refined_structure.direction], 3):
             print("{}{} -- structure_{}".format(species,

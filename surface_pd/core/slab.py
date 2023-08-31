@@ -41,7 +41,7 @@ class Slab(Structure):
             larger than this tolerance value, these two sites will be
             treated as located on two difference layers.
         _to_be_enumerated_species (list):
-        _num_layers_relaxed (dict):
+        _num_layers_enumed (dict):
         _symmetric (bool):
 
     """
@@ -58,7 +58,7 @@ class Slab(Structure):
                  _direction: int = 2,
                  _tolerance: float = 0.03,
                  _to_be_enumerated_species: list = None,
-                 _num_layers_relaxed: dict = None,
+                 _num_layers_enumed: dict = None,
                  _symmetric: bool = None
                  ):
         super().__init__(lattice, species, coords,
@@ -68,7 +68,7 @@ class Slab(Structure):
         self._direction = _direction
         self._tolerance = _tolerance
         self._to_be_enumerated_species = _to_be_enumerated_species
-        self._num_layers_relaxed = _num_layers_relaxed
+        self._num_layers_enumed = _num_layers_enumed
         self._symmetric = _symmetric
 
     @property
@@ -96,12 +96,12 @@ class Slab(Structure):
         self._to_be_enumerated_species = a
 
     @property
-    def num_layers_relaxed(self):
-        return self._num_layers_relaxed
+    def num_layers_enumed(self):
+        return self._num_layers_enumed
 
-    @num_layers_relaxed.setter
-    def num_layers_relaxed(self, a: dict):
-        self._num_layers_relaxed = a
+    @num_layers_enumed.setter
+    def num_layers_enumed(self, a: dict):
+        self._num_layers_enumed = a
 
     @property
     def symmetric(self):
@@ -148,7 +148,8 @@ class Slab(Structure):
 
     def wrap_pbc(self):
         """
-        Wrap fractional coordinates back into the unit cell.
+        Wrap out of the boundary fractional coordinates back into the unit
+        cell.
 
         Returns:
             Slab model with all sites in the unit cell.
@@ -232,7 +233,8 @@ class Slab(Structure):
         Returns:
             c fractional coordinates of the upper and lower boundaries
             of the central fixed region. (1, 2)\n
-            {"species": [top and bottom c fractional coordinates]}
+            {"species": [top (lower surface relaxed region) and bottom (upper
+            surface relaxed region) c fractional coordinates]}
 
         """
 
@@ -240,20 +242,19 @@ class Slab(Structure):
         # TM, and O atoms
         layers = self.layers_finder()
 
-        # Get the fractional coordinates of distinct vertical layers for
-        # metals and oxygen
+        # Get the boundaries of the surface relaxed region in fractional
+        # coordinates format (c-direction)
         target_layers = {}
         for species, c_frac in zip(self.to_be_enumerated_species,
-                                   self.num_layers_relaxed):
+                                   self.num_layers_enumed):
             all_c_frac = list(layers[species])
             if self.symmetric:
-
                 target_layers[species] = \
-                    [all_c_frac[self.num_layers_relaxed[species] - 1],
-                     all_c_frac[-self.num_layers_relaxed[species]]]
+                    [all_c_frac[self.num_layers_enumed[species] - 1],
+                     all_c_frac[-self.num_layers_enumed[species]]]
             else:
                 target_layers[species] = \
-                    [all_c_frac[self.num_layers_relaxed[species] - 1]]
+                    [all_c_frac[self.num_layers_enumed[species] - 1]]
 
         # Collect the central layers based on the "selective_dynamics"
         lower_limit, upper_limit, _ = self.get_center_sites()
@@ -390,7 +391,7 @@ class Slab(Structure):
         if not symmetric:
             slab_ref.to(fmt='poscar', filename='debug-center.vasp')
             print("Please see the saved \"debug-center.vasp\" structure and "
-                  "see if it mases sense.")
+                  "see if it makes sense.")
             raise NoInversionSymmetryError
 
         # New way to implement wrap_pbc
@@ -484,7 +485,7 @@ class Slab(Structure):
         else:
             return False
 
-    def check_rotate(self, criteria):
+    def check_rotate(self, criteria: float):
         """
         Check if the enumerated slab models need to rotate to satisfy the
         shape (cuboid) requirement.
@@ -496,6 +497,7 @@ class Slab(Structure):
         directions = [0, 1, 2]
         directions.remove(self.direction)
         slab_rotated = copy.deepcopy(self)
+
         if round(self.lattice.abc[self.direction], 4) - 0.0001 >= criteria \
                 or \
                 round(self.lattice.abc[self.direction], 4) + 0.0001 <= \
@@ -584,7 +586,7 @@ class Slab(Structure):
         return self
 
     def tune_c(self,
-               target_min_c):
+               target_min_c: float):
         """
         Slightly adjust the slab along the slab direction defined before.
         This is to make sure that the central region is still located at
@@ -609,8 +611,8 @@ class Slab(Structure):
         return self
 
     def add_selective_dynamics(self,
-                               lower_limit,
-                               upper_limit):
+                               lower_limit: float,
+                               upper_limit: float):
         """
         Add selective dynamics to the after refined slab model based on the
         number of layers that will be relaxed on the surface.
