@@ -2,9 +2,6 @@
 core
 ====
 
-``EnumWithComposition`` class
-*****************************
-
 .. autoclass:: core.EnumWithComposition
     :members:
 
