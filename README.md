@@ -60,7 +60,7 @@ Thank you for your interest.
 If you want to learn more about ***surface-pd***, please find the [user manual](https://surface-pd.readthedocs.io/en/latest/index.html).
 
 
-Or please contact: ```Xinhao Li, xinhao.li@columbia.edu```
+Or please contact: Xinhao Li (<xinhao.li@columbia.edu>) and Alex Urban (<a.urban@columbia.edu>)
 
 <a name="installation"></a>
 # Installation
