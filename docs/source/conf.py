@@ -16,8 +16,9 @@ sys.path.insert(0, os.path.abspath('../../surface_pd'))
 
 import mock
 MOCK_MODULES = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty', 'surface_pd']
-autodoc_mock_imports = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty', 'surface_pd']
-
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+  
 # -- Project information -----------------------------------------------------
 
 project = 'surface-pd'
