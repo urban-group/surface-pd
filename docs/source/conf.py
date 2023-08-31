@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../../surface_pd'))
 
 import mock
-MOCK_MODULES = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty', 'surface_pd']
+MOCK_MODULES = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
   
