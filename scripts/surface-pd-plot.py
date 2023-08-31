@@ -259,7 +259,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--functional", "-f",
-        help="Functional used to perform the calculations.",
+        help="Functional used to perform the calculations,"
+             "\n, i.e. PBE+U, SCAN+rVV10+U, and r2SCAN+rVV10+U",
         type=str,
         default="PBE+U"
     )

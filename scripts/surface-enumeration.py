@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 """
-This code will enumerate the input slab model with user defined target
-species and composition. The input slab structure should be as small as
-possible because the unit cell of the slab will also be enumerated, and it
-will increase the number of possibilities that the enumeration can have.
+This code will enumerate the surface of the input slab model with user defined
+target species and composition.
 For the detailed algorithm behind the enumeration, please see the
 following references below.
 (1) Morgan, W. S.; Hart, G. L. W.; Forcade, R. W.
@@ -23,7 +21,7 @@ https://doi.org/10.1103/PhysRevB.80.014120.
 """
 __author__ = "Xinhao Li"
 __email__ = "xinhao.li@columbia.edu"
-__date__ = "2022-11-07"
+__date__ = "2023-08-23"
 __version__ = '0.1.0'
 
 import os
@@ -57,14 +55,21 @@ def automate_surface(target_slab_path: str,
                      to_vasp: bool = False):
     """
     This function contains the general framework to enumerate the parent
-    slab model with different target species and compositions.
-
+    slab model surface with different target species and compositions.
+    TODO:
+        1. Check the meaning of num_layers_enumed. Is this really the number of
+        layers enumed or number of layers relaxed? Can the number of layers
+        enumed be different than the number of layers relaxed?
+        2. symmetric parameter: If turned off, is the only top surface
+        enumerated?
+        4. Check enumlib code surface enumeration and see how difficult it
+        is to implement.
     Args:
         target_slab_path: Input slab model
-        species: Target species that will be enumerated.
+        species: Target species on the surface that will be enumerated.
         replace: Species and occupancy dictionaries containing the species
             mapping in string-string pairs. E.g. {'Li': {'Li': 0.5}}
-            (This dict represents that only half of the original Li
+            (This dict means that only half of the original Li
             atoms in the slab model will be kept), stored in the list.
         num_layers_enumed: Dictionaries where species and number of relaxed
             layers as keys and values, respectively. E.g. {'Li': 2, 'O': 1},
@@ -73,10 +78,8 @@ def automate_surface(target_slab_path: str,
         max_cell_size: Maximum number of supercells of the input slab.
         symmetric: Whether the symmetry of the slab model will be kept
             after the enumeration.
-        max_structures: Number of structures to be returned at most for
-            each composition.
-        to_vasp: Whether to generate all the output slab models in a
-            well-organized format. Defaults to False.
+        to_vasp: Whether to generate all the output slab models in VASP
+        format. Defaults to False.
 
     Returns:
         All enumerated slab models with different composition of target
@@ -84,8 +87,10 @@ def automate_surface(target_slab_path: str,
 
     """
 
-    # Load initial slab model
+    # Load parent slab model
     input_structure = Slab.from_file(target_slab_path)
+
+    # Wrap out of the boundary fractional coordinates back into the unit cell.
     input_structure.wrap_pbc()
 
     # Define important parameters which will be used later, including to be
@@ -93,7 +98,7 @@ def automate_surface(target_slab_path: str,
     # symmetry, direction of the slab, and the proximity tolerance for
     # adjacent atoms
     input_structure.to_be_enumerated_species = species
-    input_structure.num_layers_relaxed = num_layers_enumed
+    input_structure.num_layers_enumed = num_layers_enumed
     input_structure.symmetric = symmetric
     direction = input_structure.direction
     tolerance = input_structure.tolerance
@@ -131,7 +136,6 @@ def automate_surface(target_slab_path: str,
     center_bottom, center_top, relaxed_index = \
         input_structure.index_extraction(only_top=False)
 
-    # print(relaxed_index)
     # Define the "dummy" species that will be used to substitute the target
     # species
     dummy_species = [DummySpecies(symbol='X' + str(i + 1))

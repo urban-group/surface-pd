@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '--save', '-s',
-        help='Whether to save the discharge surfce pd data.',
+        help='Whether to save the discharge surface pd data.',
         action='store_true'
     )
 
