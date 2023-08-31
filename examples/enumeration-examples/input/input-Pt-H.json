@@ -1,5 +1,5 @@
 {
-    "target_slab_path": "./example/enumeration-examples/structure/catalyst_surface/Pt_111_slab_FCC_1H.vasp",
+    "target_slab_path": "./examples/enumeration-examples/structure/catalyst_surface/Pt_111_slab_FCC_1H.vasp",
     "replacements": {
         "H": {"H": [0.375]}
     },

@@ -1,5 +1,5 @@
 {
-    "target_slab_path": "./example/enumeration-examples/structure/electrode/LCO/LCO_terminated_LCO_10L15A.vasp",
+    "target_slab_path": "./examples/enumeration-examples/structure/electrode/LCO/LCO_terminated_LCO_10L15A.vasp",
     "replacements": {
         "Li": {"Li": [1.0, 0.75, 0.5, 0.25, 0.0]},
         "O": {"O": [1.0, 0.75, 0.5, 0.25, 0.0]}

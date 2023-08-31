@@ -1,5 +1,5 @@
 {
-    "target_slab_path": "./example/enumeration-examples/structure/other/Na_terminated_NaTiS2.vasp",
+    "target_slab_path": "./examples/enumeration-examples/structure/other/Na_terminated_NaTiS2.vasp",
     "replacements": {
         "Na": {"Li": [1.0]},
         "S": {"O": [0.75]}

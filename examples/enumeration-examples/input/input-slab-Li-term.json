@@ -1,8 +1,8 @@
 {
-    "target_slab_path": "./example/enumeration-examples/structure/electrode/LCO/Li_terminated_LCO_7L15A.vasp",
+    "target_slab_path": "./examples/enumeration-examples/structure/electrode/LNO/Li_terminated_LNO-bulk-conv-CONTCAR_1x1x1.vasp",
     "replacements": {
-        "Li": {"Li": [0.5]},
-        "O": {"O": [0.5]}
+        "Li": {"Li": [1.0]},
+        "O": {"O": [1.0]}
     },
     "num_layers_enumed":{
         "Li": 1,

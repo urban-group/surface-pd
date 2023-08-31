@@ -1,5 +1,5 @@
 {
-    "target_slab_path": "./example/enumeration-examples/structure/electrode/POSCAR_Li_100.vasp",
+    "target_slab_path": "./examples/enumeration-examples/structure/electrode/POSCAR_Li_100.vasp",
     "replacements": {
         "Li": {"Li": [0.75, 1.0, 0.5, 0.25, 0.0]}
     },
