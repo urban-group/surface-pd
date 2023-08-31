@@ -14,6 +14,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../surface_pd'))
 
+import mock
+MOCK_MODULES = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'surface_pd']
+autodoc_mock_imports = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'surface_pd']
 
 # -- Project information -----------------------------------------------------
 
