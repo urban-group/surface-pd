@@ -1,16 +1,16 @@
-import copy
-import numpy as np
-import collections
-from typing import Union, List, Sequence
+# import copy
+# import numpy as np
+# import collections
+# from typing import Union, List, Sequence
 
-from pymatgen.core.lattice import Lattice
-from pymatgen.core.structure import Structure
-from pymatgen.core.surface import get_slab_regions
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.core import Element, Species, DummySpecies, Composition
+# from pymatgen.core.lattice import Lattice
+# from pymatgen.core.structure import Structure
+# from pymatgen.core.surface import get_slab_regions
+# from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+# from pymatgen.core import Element, Species, DummySpecies, Composition
 
-from surface_pd.error import NoInversionSymmetryError
-from surface_pd.util import check_int
+# from surface_pd.error import NoInversionSymmetryError
+# from surface_pd.util import check_int
 
 
 class Slab(Structure):
