@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="surface_pd.plot package" href="surface_pd.plot.html" />
+    <link rel="prev" title="surface_pd.core package" href="surface_pd.core.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,12 +39,26 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">surface_pd</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="surface_pd.html">surface_pd package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="surface_pd.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.analysis.html">surface_pd.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.core.html">surface_pd.core package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">surface_pd.error package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.plot.html">surface_pd.plot package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.util.html">surface_pd.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="surface_pd.html#module-surface_pd">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
 </ul>
 
@@ -60,6 +76,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">surface_pd</a> &raquo;</li>
+          <li><a href="surface_pd.html">surface_pd package</a> &raquo;</li>
       <li>surface_pd.error package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/surface_pd.error.rst.txt" rel="nofollow"> View page source</a>
@@ -204,12 +222,147 @@ redundant).</p>
 </dd></dl>
 
 </section>
+<section id="module-surface_pd.error">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-surface_pd.error" title="Permalink to this heading"></a></h2>
+<p>SurfacePD error sub-package</p>
+<p>This sub-package consists of a following module:</p>
+<p>error.py –&gt; Collection of error class defined by developer to guide user.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.IncompatibleSymmError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">IncompatibleSymmError</span></span><a class="headerlink" href="#surface_pd.error.IncompatibleSymmError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="simple">
+<dt>An error class defined to show that the user defined symmetric parameter is</dt><dd><p>not compatible with code determined symmetric parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.InvalidCompositionError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">InvalidCompositionError</span></span><a class="headerlink" href="#surface_pd.error.InvalidCompositionError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the invalid user defined composition list to
+be enumerated.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.InvalidInputFormatError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">InvalidInputFormatError</span></span><a class="headerlink" href="#surface_pd.error.InvalidInputFormatError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined to show that the user defined input format is not
+valid.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.InvalidPhasesAlignError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">InvalidPhasesAlignError</span></span><a class="headerlink" href="#surface_pd.error.InvalidPhasesAlignError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the invalid phases used to calculate the
+alignment energy.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NoInversionSymmetryError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NoInversionSymmetryError</span></span><a class="headerlink" href="#surface_pd.error.NoInversionSymmetryError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for not finding the inversion symmetry center.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NonCentralInversionSymmetryError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NonCentralInversionSymmetryError</span></span><a class="headerlink" href="#surface_pd.error.NonCentralInversionSymmetryError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the slab model which does not have the
+inversion symmetry center located at the origin.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NonDefinedSelectiveDynamicsError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NonDefinedSelectiveDynamicsError</span></span><a class="headerlink" href="#surface_pd.error.NonDefinedSelectiveDynamicsError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the slab model that does not have selective
+dynamics defined for all sites (selective dynamics is extremely useful
+in several steps).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NonIntegerError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NonIntegerError</span></span><a class="headerlink" href="#surface_pd.error.NonIntegerError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined to check whether the after enumerated number of
+atoms is an integer with tolerance.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NonPolarSurfaceError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NonPolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.error.NonPolarSurfaceError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the non-polar surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
+<li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.NonSlabError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">NonSlabError</span></span><a class="headerlink" href="#surface_pd.error.NonSlabError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the structure that is not a slab model
+(no enough vacuum region in the model).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.PolarSurfaceError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">PolarSurfaceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fixed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.error.PolarSurfaceError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the polar surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_layers</strong> – Number of layers in the slab model.</p></li>
+<li><p><strong>num_fixed</strong> – Number of fixed layers in the slab model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.PrimitiveStructureFinderError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">PrimitiveStructureFinderError</span></span><a class="headerlink" href="#surface_pd.error.PrimitiveStructureFinderError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for wrong refined structure (some sites are lost or
+redundant).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.SlabOrientationError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">SlabOrientationError</span></span><a class="headerlink" href="#surface_pd.error.SlabOrientationError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for wrong slab orientation error.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="surface_pd.error.TooLargeSlabError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.error.</span></span><span class="sig-name descname"><span class="pre">TooLargeSlabError</span></span><a class="headerlink" href="#surface_pd.error.TooLargeSlabError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>An error class defined for the too large slab model.</p>
+</dd></dl>
+
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="surface_pd.core.html" class="btn btn-neutral float-left" title="surface_pd.core package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="surface_pd.plot.html" class="btn btn-neutral float-right" title="surface_pd.plot package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

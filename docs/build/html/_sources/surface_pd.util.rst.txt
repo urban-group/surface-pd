@@ -11,3 +11,11 @@ surface\_pd.util.util module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: surface_pd.util
+   :members:
+   :undoc-members:
+   :show-inheritance:

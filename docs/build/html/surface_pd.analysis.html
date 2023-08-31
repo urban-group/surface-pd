@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="surface_pd.core package" href="surface_pd.core.html" />
+    <link rel="prev" title="surface_pd package" href="surface_pd.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,12 +39,26 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">surface_pd</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="surface_pd.html">surface_pd package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="surface_pd.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">surface_pd.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.core.html">surface_pd.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.error.html">surface_pd.error package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.plot.html">surface_pd.plot package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.util.html">surface_pd.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="surface_pd.html#module-surface_pd">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
 </ul>
 
@@ -60,6 +76,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">surface_pd</a> &raquo;</li>
+          <li><a href="surface_pd.html">surface_pd package</a> &raquo;</li>
       <li>surface_pd.analysis package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/surface_pd.analysis.rst.txt" rel="nofollow"> View page source</a>
@@ -119,12 +137,59 @@ slab model surface.</p></li>
 </dd></dl>
 
 </section>
+<section id="module-surface_pd.analysis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-surface_pd.analysis" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.analysis.selective_dynamics_completion">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.analysis.</span></span><span class="sig-name descname"><span class="pre">selective_dynamics_completion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="surface_pd.core.html#surface_pd.core.slab.Slab" title="surface_pd.core.slab.Slab"><span class="pre">Slab</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_bottom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_top</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.analysis.selective_dynamics_completion" title="Permalink to this definition"></a></dt>
+<dd><p>Complete the selective dynamics properties after the enumeration based
+on the rules of species and locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Enumerated slab model.</p></li>
+<li><p><strong>direction</strong> – Same as before.</p></li>
+<li><p><strong>dummy_species</strong> – Same as before.</p></li>
+<li><p><strong>center_bottom</strong> – Same as before.</p></li>
+<li><p><strong>center_top</strong> – Same as before.</p></li>
+<li><p><strong>tolerance</strong> – Same as before.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Slab model with all sites have selective dynamics.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.analysis.structure_filter">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.analysis.</span></span><span class="sig-name descname"><span class="pre">structure_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_slabs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criteria</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.analysis.structure_filter" title="Permalink to this definition"></a></dt>
+<dd><p>Filter out the slab models that does not satisfy the criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_slabs</strong> – Input slab model.</p></li>
+<li><p><strong>direction</strong> – Lattice direction perpendicular to the surface.</p></li>
+<li><p><strong>criteria</strong> – Lattice parameter perpendicular to the input(parent)
+slab model surface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of structures.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="surface_pd.html" class="btn btn-neutral float-left" title="surface_pd package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="surface_pd.core.html" class="btn btn-neutral float-right" title="surface_pd.core package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

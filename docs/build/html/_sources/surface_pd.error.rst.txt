@@ -11,3 +11,11 @@ surface\_pd.error.error module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: surface_pd.error
+   :members:
+   :undoc-members:
+   :show-inheritance:

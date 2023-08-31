@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="surface_pd.util package" href="surface_pd.util.html" />
+    <link rel="prev" title="surface_pd.error package" href="surface_pd.error.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,12 +39,26 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">surface_pd</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="surface_pd.html">surface_pd package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="surface_pd.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.analysis.html">surface_pd.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.core.html">surface_pd.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.error.html">surface_pd.error package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">surface_pd.plot package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.util.html">surface_pd.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="surface_pd.html#module-surface_pd">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
 </ul>
 
@@ -60,6 +76,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">surface_pd</a> &raquo;</li>
+          <li><a href="surface_pd.html">surface_pd package</a> &raquo;</li>
       <li>surface_pd.plot package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/surface_pd.plot.rst.txt" rel="nofollow"> View page source</a>
@@ -289,12 +307,117 @@ phase corresponds to only one color in the color bar.</p>
 </dd></dl>
 
 </section>
+<section id="module-surface_pd.plot">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-surface_pd.plot" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.plot.</span></span><span class="sig-name descname"><span class="pre">PdData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lithium_like_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oxygen_like_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">functional</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataframe</strong> – </p></li>
+<li><p><strong>lithium_like_species</strong> – </p></li>
+<li><p><strong>oxygen_like_species</strong> – </p></li>
+<li><p><strong>functional</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData.get_check_phases">
+<span class="sig-name descname"><span class="pre">get_check_phases</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData.get_check_phases" title="Permalink to this definition"></a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData.get_surface_energy">
+<span class="sig-name descname"><span class="pre">get_surface_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData.get_surface_energy" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V</strong> – </p></li>
+<li><p><strong>T</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData.get_the_shift_energy">
+<span class="sig-name descname"><span class="pre">get_the_shift_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checked_phases</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData.get_the_shift_energy" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>checked_phases</strong> – </p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData.standardize_pd_data">
+<span class="sig-name descname"><span class="pre">standardize_pd_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData.standardize_pd_data" title="Permalink to this definition"></a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.PdData.tm_species">
+<span class="sig-name descname"><span class="pre">tm_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.PdData.tm_species" title="Permalink to this definition"></a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="surface_pd.plot.SurfaceEnergy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">surface_pd.plot.</span></span><span class="sig-name descname"><span class="pre">SurfaceEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nTM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dft_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TM_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">functional</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.SurfaceEnergy" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V</strong> – </p></li>
+<li><p><strong>T</strong> – </p></li>
+<li><p><strong>nLi</strong> – </p></li>
+<li><p><strong>nTM</strong> – </p></li>
+<li><p><strong>nO</strong> – </p></li>
+<li><p><strong>dft_energy</strong> – </p></li>
+<li><p><strong>a</strong> – </p></li>
+<li><p><strong>b</strong> – </p></li>
+<li><p><strong>gamma</strong> – </p></li>
+<li><p><strong>TM_species</strong> – </p></li>
+<li><p><strong>functional</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="surface_pd.plot.SurfaceEnergy.e_li">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">e_li</span></span><a class="headerlink" href="#surface_pd.plot.SurfaceEnergy.e_li" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.SurfaceEnergy.g_oxygen">
+<span class="sig-name descname"><span class="pre">g_oxygen</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.SurfaceEnergy.g_oxygen" title="Permalink to this definition"></a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="surface_pd.plot.SurfaceEnergy.gibbs_free_energy">
+<span class="sig-name descname"><span class="pre">gibbs_free_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.plot.SurfaceEnergy.gibbs_free_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="surface_pd.error.html" class="btn btn-neutral float-left" title="surface_pd.error package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="surface_pd.util.html" class="btn btn-neutral float-right" title="surface_pd.util package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

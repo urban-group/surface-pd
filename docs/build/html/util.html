@@ -103,8 +103,10 @@ lattice parameters a and b.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="util.csv2dict">
-<span class="sig-prename descclassname"><span class="pre">util.</span></span><span class="sig-name descname"><span class="pre">csv2dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csvlist</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#util.csv2dict" title="Permalink to this definition"></a></dt>
-<dd><p>Convert list of comma separated values to a dictionary.</p>
+<span class="sig-prename descclassname"><span class="pre">util.</span></span><span class="sig-name descname"><span class="pre">csv2dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csvlist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#util.csv2dict" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Convert list of comma separated values to a dictionary.</p>
+</div></blockquote>
 <p>The hierarchy of the dictionary is expressed by equal signs (“=”) and
 colons (“:”).  For example</p>
 <blockquote>
@@ -114,12 +116,27 @@ colons (“:”).  For example</p>
 <blockquote>
 <div><p>{“Co”: {“Co”: 0.5, “Ni”: 0.5}, “Li”: “Na”}</p>
 </div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>csvlist</strong> – list of comma separated values.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="util.check_int">
 <span class="sig-prename descclassname"><span class="pre">util.</span></span><span class="sig-name descname"><span class="pre">check_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#util.check_int" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check if the number is an integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num</strong> – </p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="util.get_values_nested_dict">

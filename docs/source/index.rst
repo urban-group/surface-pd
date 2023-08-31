@@ -17,7 +17,7 @@ surfaces as well as corrosion on the surfaces.
 
 If you have any questions or issues, please contact:
 
-**Xinhao Li**, xinhao.li@columbia.edu
+**Xinhao Li**, xinhao.li@columbia.edu and **Alexander Urban**, a.urban@columbia.edu
 
 .. toctree::
    :maxdepth: 2

@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to cite" href="how_to_cite.html" />
+    <link rel="prev" title="surface_pd.plot package" href="surface_pd.plot.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,12 +39,26 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">surface_pd</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="surface_pd.html">surface_pd package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="surface_pd.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.analysis.html">surface_pd.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.core.html">surface_pd.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.error.html">surface_pd.error package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="surface_pd.plot.html">surface_pd.plot package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">surface_pd.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="surface_pd.html#module-surface_pd">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="how_to_cite.html">How to cite</a></li>
 </ul>
 
@@ -60,6 +76,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">surface_pd</a> &raquo;</li>
+          <li><a href="surface_pd.html">surface_pd package</a> &raquo;</li>
       <li>surface_pd.util package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/surface_pd.util.rst.txt" rel="nofollow"> View page source</a>
@@ -172,12 +190,112 @@ elements or species.</p></li>
 </dd></dl>
 
 </section>
+<section id="module-surface_pd.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-surface_pd.util" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.all_int">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">all_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.all_int" title="Permalink to this definition"></a></dt>
+<dd><p>Check if every item in the list is an integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – Input list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.check_int">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">check_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.check_int" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.csv2dict">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">csv2dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csvlist</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.csv2dict" title="Permalink to this definition"></a></dt>
+<dd><p>Convert list of comma separated values to a dictionary.</p>
+<p>The hierarchy of the dictionary is expressed by equal signs (“=”) and
+colons (“:”).  For example</p>
+<blockquote>
+<div><p>[“Co=Co:0.5,Ni:0.5”, “Li=Na”]</p>
+</div></blockquote>
+<p>will be converted to</p>
+<blockquote>
+<div><p>{“Co”: {“Co”: 0.5, “Ni”: 0.5}, “Li”: “Na”}</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.define_scaling_matrix">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">define_scaling_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.define_scaling_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Generate the scaling matrix based on the different values of the
+lattice parameters a and b.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – Lattice parameter a</p></li>
+<li><p><strong>b</strong> – Lattice parameter a</p></li>
+<li><p><strong>multiple</strong> – Maximum target cell size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Scaling matrix that will be used to create the supercell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.get_values_nested_dict">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">get_values_nested_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.get_values_nested_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Get the values inside the nested dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> – Dict</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.have_zero">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">have_zero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.have_zero" title="Permalink to this definition"></a></dt>
+<dd><p>Check if any item in the list is zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – Input list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="surface_pd.util.replace_dummy">
+<span class="sig-prename descclassname"><span class="pre">surface_pd.util.</span></span><span class="sig-name descname"><span class="pre">replace_dummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#surface_pd.util.replace_dummy" title="Permalink to this definition"></a></dt>
+<dd><p>Replace the keys (species) in the “replace” dict with “dummy” species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subs_dict</strong> – Species and occupancy dictionaries containing the species
+mapping in string-string pairs.</p></li>
+<li><p><strong>dummy_species</strong> – A special specie for representing non-traditional
+elements or species.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated dict with “dummy” species as the keys</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="surface_pd.plot.html" class="btn btn-neutral float-left" title="surface_pd.plot package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="how_to_cite.html" class="btn btn-neutral float-right" title="How to cite" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

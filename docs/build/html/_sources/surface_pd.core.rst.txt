@@ -12,14 +12,6 @@ surface\_pd.core.enum module
    :undoc-members:
    :show-inheritance:
 
-surface\_pd.core.pre\_check module
-----------------------------------
-
-.. automodule:: surface_pd.core.pre_check
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 surface\_pd.core.post\_check module
 -----------------------------------
 
@@ -28,10 +20,26 @@ surface\_pd.core.post\_check module
    :undoc-members:
    :show-inheritance:
 
+surface\_pd.core.pre\_check module
+----------------------------------
+
+.. automodule:: surface_pd.core.pre_check
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 surface\_pd.core.slab module
 ----------------------------
 
 .. automodule:: surface_pd.core.slab
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: surface_pd.core
    :members:
    :undoc-members:
    :show-inheritance:

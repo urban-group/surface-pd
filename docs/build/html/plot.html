@@ -110,39 +110,56 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.PdData.get_surface_energy">
-<span class="sig-name descname"><span class="pre">get_surface_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot.PdData.get_surface_energy" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<span class="sig-name descname"><span class="pre">get_surface_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot.PdData.get_surface_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Using the user defined voltage and temperature meshes to calculate
+the surface free energy.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>V</strong> – </p></li>
-<li><p><strong>T</strong> – </p></li>
+<li><p><strong>V</strong> – voltage mesh</p></li>
+<li><p><strong>T</strong> – temperature mesh</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of surface energies</p>
+</dd>
 </dl>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.PdData.get_the_shift_energy">
 <span class="sig-name descname"><span class="pre">get_the_shift_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checked_phases</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot.PdData.get_the_shift_energy" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Shift energy is calculated using the slab models with different
+number of layers. Though they have different number of layers,
+but proper normalization will make them same. This energy will be
+used to eliminate the energy difference between these models.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>checked_phases</strong> – </p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>shift energy</p>
+</dd>
 </dl>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.PdData.standardize_pd_data">
 <span class="sig-name descname"><span class="pre">standardize_pd_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot.PdData.standardize_pd_data" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:</p>
+<dd><p>Normalized the pandas dataframe based on the number of TM species.
+This is to make the DFT energies directly comparable.</p>
+<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.PdData.tm_species">
 <span class="sig-name descname"><span class="pre">tm_species</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot.PdData.tm_species" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:</p>
+<dd><p>Find the transition metal species in the material</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>transition metal species</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -153,33 +170,45 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="plot.SurfaceEnergy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">plot.</span></span><span class="sig-name descname"><span class="pre">SurfaceEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nLi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nTM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dft_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TM_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">functional</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot.SurfaceEnergy" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Surface free energy class.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>V</strong> – </p></li>
-<li><p><strong>T</strong> – </p></li>
-<li><p><strong>nLi</strong> – </p></li>
-<li><p><strong>nTM</strong> – </p></li>
-<li><p><strong>nO</strong> – </p></li>
-<li><p><strong>dft_energy</strong> – </p></li>
-<li><p><strong>a</strong> – </p></li>
-<li><p><strong>b</strong> – </p></li>
-<li><p><strong>gamma</strong> – </p></li>
-<li><p><strong>TM_species</strong> – </p></li>
-<li><p><strong>functional</strong> – </p></li>
+<li><p><strong>V</strong> – Voltage.</p></li>
+<li><p><strong>T</strong> – Temperature.</p></li>
+<li><p><strong>nLi</strong> – Number of Li atoms.</p></li>
+<li><p><strong>nTM</strong> – Number of transition metal atoms.</p></li>
+<li><p><strong>nO</strong> – Number of O atoms.</p></li>
+<li><p><strong>dft_energy</strong> – DFT energy.</p></li>
+<li><p><strong>a</strong> – Lattice parameter a, used to calculate the surface area.</p></li>
+<li><p><strong>b</strong> – Lattice parameter b, used to calculate the surface area.</p></li>
+<li><p><strong>gamma</strong> – Lattice parameter gamma, used to calculate the surface area.</p></li>
+<li><p><strong>TM_species</strong> – Transition metal species in the material.</p></li>
+<li><p><strong>functional</strong> – Functional used to perform the calculations.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.SurfaceEnergy.g_oxygen">
 <span class="sig-name descname"><span class="pre">g_oxygen</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot.SurfaceEnergy.g_oxygen" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:</p>
+<dd><p>Equation to calculate the temperature dependent oxygen chemical
+potential.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Oxygen chemical potential.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="plot.SurfaceEnergy.gibbs_free_energy">
 <span class="sig-name descname"><span class="pre">gibbs_free_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot.SurfaceEnergy.gibbs_free_energy" title="Permalink to this definition"></a></dt>
-<dd><p>Returns:</p>
+<dd><p>Equation to calculate the surface Gibbs free energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Surface Gibbs free energy.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -203,9 +232,9 @@
 </dl>
 </li>
 <li><dl class="simple">
-<dt>Stack arrays in sequence horizontally</dt><dd><dl class="simple">
+<dt>Stack arrays in sequence horizontally,</dt><dd><dl class="simple">
 <dt>[[1, 2, 3, 4],</dt><dd><p>[5, 6, 7, 8],
-[9, 10, 11, 12]]
+[9, 10, 11, 12]],
 –&gt;</p>
 </dd>
 <dt>[[1, 5, 9],</dt><dd><p>[2, 6, 10],
@@ -221,12 +250,14 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>G</strong> – </p></li>
+<li><p><strong>G</strong> – list of phases</p></li>
 <li><p><strong>dataframe</strong> – </p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Indices of the most stable phase of each composition</p>
+</dd>
 </dl>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="py function">

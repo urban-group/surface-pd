@@ -12,3 +12,10 @@ surface\_pd.analysis.slab\_analysis module
    :undoc-members:
    :show-inheritance:
 
+Module contents
+---------------
+
+.. automodule:: surface_pd.analysis
+   :members:
+   :undoc-members:
+   :show-inheritance:
