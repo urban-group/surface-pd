@@ -142,6 +142,8 @@ class PdData(object):
         A = float(np.sin(gamma * np.pi / 180) * a * b)
         E_bulk = E_bulk_by_funtional[self.tm_species()][self.functional]
         E_shift = (1 / (2 * A)) * (E[0] - E[1] + num_bulk * E_bulk)
+        if not all(E):
+            E_shift = 0
         print('Surface area:', A, '\n',
               'E_bulk:', E_bulk, '\n',
               'E_shift:', E_shift)
