@@ -5,14 +5,13 @@ Introduction
 
 Overview
 ********
-The surface degradation of layered transition metal (TM) oxide and other
-related cathode compositions have been characterized extensively in
-experiments, however how the reactions take place on the
-cathode surface and the surface reconstructions form on the atomic scale is
-still lacking.
-The surface phase diagram as a function of the state of charge
-and the temperature can offer insights into atomic-scale processes that are
-challenging to probe experimentally.
+The surface degradation of layered transition metal (TM) oxides and other
+related cathode compositions has been characterized extensively in
+experiments. However, how the reactions take place on the cathode surface
+and how surface reconstructions form on the atomic scale remains unclear.
+The surface phase diagram as a function of state of charge and temperature
+can offer insights into atomic-scale processes that are challenging to probe
+experimentally.
 
 .. image:: images/2D-3D-surface-pd-demo.png
     :width: 600
@@ -30,14 +29,14 @@ when "all" enumerated slab models are considered.
 
 Strategy
 ********
-This package takes use of the method developed in `enumlib code
-<https://github.com/msg-byu/enumlib>`__, but
-in contrast to conventional enumlib code, we apply the systematic
-enumeration to only part of the slab model, creating vacancies on
-the surface. Then by taking the advantage of inherent inversion symmetry
-center of the slab models, the top surface will be symmetrized to the bottom
-surface, i.e. a symmetrically equivalent modification was introduced at the
-bottom of the slab models. For detailed description, please see: :ref:`label_surface_enumeration`.
+This package uses the method developed in the `enumlib code
+<https://github.com/msg-byu/enumlib>`__. In contrast to the conventional
+enumlib code, we apply systematic enumeration to only part of the slab model,
+creating vacancies on the surface. By taking advantage of the inherent
+inversion symmetry center of the slab models, the top surface is symmetrized
+to the bottom surface, i.e., a symmetrically equivalent modification is
+introduced at the bottom of the slab models. For a detailed description,
+please see: :ref:`label_surface_enumeration`.
 
 
 

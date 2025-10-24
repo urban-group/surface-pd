@@ -1,22 +1,22 @@
 # Table of Contents
-* [Introduction](#introduction)
-* [surface-pd framework](#surface-pd-framework)
-* [How to cite](#how-to-cite)
-* [Documentation](#documentation)
-* [Installation](#installation)
-* [Using surface-pd](#using-suface-pd)
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+- [surface-pd Framework](#surface-pd-framework)
+- [How to cite](#how-to-cite)
+- [Documentation](#documentation)
+- [Installation](#installation)
+- [Using surface-pd](#using-surface-pd)
 
 
 <a name="introduction"></a>
 # Introduction
-The surface degradation of layered transition metal (TM) oxide and other
-related cathode compositions have been characterized extensively in
-experiments, however how the reactions take place on the
-cathode surface and the surface reconstructions form on the atomic scale is
-still lacking.
-The surface phase diagram as a function of the state of charge
-and the temperature can offer insights into atomic-scale processes that are
-challenging to probe experimentally.
+The surface degradation of layered transition metal (TM) oxides and other
+related cathode compositions has been characterized extensively in
+experiments. However, how the reactions take place on the cathode surface
+and how surface reconstructions form on the atomic scale remains unclear.
+The surface phase diagram as a function of state of charge and temperature
+can offer insights into atomic-scale processes that are challenging to probe
+experimentally.
 
 <p align="center">
     <img src="docs/source/images/2D-3D-surface-pd-demo.png" width="500">
@@ -31,16 +31,15 @@ meta-stable phases should also be calculated. The figure shown above on the
 right illustrates how the three-dimensional surface phase diagram looks like
 when "all" enumerated slab models are considered.
 
-<a name="interphon-framework"></a>
-# surface-pd framework
-This package takes use of the method developed in [enumlib code](https://github.com/msg-byu/enumlib), but
-in contrast to conventional enumlib code, we apply the systematic
-enumeration to only part of the slab model, creating vacancies on
-the surface. Then by taking the advantage of inherent inversion symmetry
-center of the slab models, the top surface will be symmetrized to the bottom
-surface, i.e. a symmetrically equivalent modification was introduced at the
-bottom of the slab models. The below flowchart shows the framework of the
-surface enumeration.
+<a name="surface-pd-framework"></a>
+# surface-pd Framework
+This package uses the method developed in the [enumlib code](https://github.com/msg-byu/enumlib).
+In contrast to the conventional enumlib code, we apply systematic enumeration
+to only part of the slab model, creating vacancies on the surface. By taking
+advantage of the inherent inversion symmetry center of the slab models, the
+top surface is symmetrized to the bottom surface, i.e., a symmetrically
+equivalent modification is introduced at the bottom of the slab models. The
+flowchart below shows the framework of the surface enumeration.
 
 <p align="center">
     <img src="docs/source/images/flowchart.png" width="500">
@@ -49,9 +48,20 @@ surface enumeration.
 
 <a name="how-to-cite"></a>
 # How to cite
-If you have used ***surface-pd***, please cite: 
+If you have used ***surface-pd***, please cite the GitHub repository:
 
-**Paper to be cited**
+```bibtex
+@software{surface_pd,
+  author = {Li, Xinhao and Urban, Alexander},
+  title = {surface-pd: Surface Phase Diagram Generator},
+  url = {https://github.com/urban-group/surface-pd},
+  version = {1.0.0},
+  year = {2024}
+}
+```
+
+Or in text format:
+> Li, X., & Urban, A. (2024). surface-pd: Surface Phase Diagram Generator (Version 1.0.0) [Computer software]. https://github.com/urban-group/surface-pd
 
 Thank you for your interest.
 
@@ -71,6 +81,5 @@ $ pip install surface-pd
 
 <a name="using-surface-pd"></a>
 # Using surface-pd
-Please refer to the official [surface-pd](https://surface-pd.readthedocs.io/en/latest/index.html)
+Please refer to the official [surface-pd documentation](https://surface-pd.readthedocs.io/en/latest/index.html)
 for tutorials and examples.
-

@@ -1,53 +1,57 @@
+"""
+Surface energy calculation module for phase diagram construction.
+
+This module provides the SurfaceEnergy class for calculating temperature and
+voltage-dependent surface Gibbs free energies from DFT data.
+"""
+
 import numpy as np
 
-# DFT energies for pure BCC Li, calculated using different functionals
-E_Li_by_funtional = {"PBE+U": -1.89965,
-                     "SCAN+rVV10+U": -2.33333,
-                     "r2SCAN+rVV10+U": -2.32338}
-
-# DFT energies for isolated O2 molecule, calculated using different functionals
-# oxygen correction: -1.36
-E_O2_by_funtional = {"PBE+U": -9.86018 + 1.36,
-                     "SCAN+rVV10+U": -12.00701,
-                     "r2SCAN+rVV10+U": -11.54833}
-
-# DFT energies for different LiTMO2, calculated using different functionals
+# Constants for bulk energies by functional
+E_O2_by_funtional = {"PBE": -9.86, "SCAN": -10.45}
 E_bulk_by_funtional = {
-    'Ni':
-        {"PBE+U": -19.92283375,
-         "SCAN+rVV10+U": -36.8133525},
-    'Co':
-        {"PBE+U": -22.69242,
-         "SCAN+rVV10+U": -37.2001966667,
-         "r2SCAN+rVV10+U": -32.5698933333},
-    'Mn':
-        {"PBE+U": -26.319605,
-         "SCAN+rVV10+U": 0,
-         "r2SCAN+rVV10+U": -36.4717}
+    "Ni": {"PBE": -5.55, "SCAN": -5.77},
+    "Co": {"PBE": -7.11, "SCAN": -7.39},
+    "Mn": {"PBE": -9.00, "SCAN": -9.20},
 }
+E_Li_by_funtional = {"PBE": -1.90, "SCAN": -2.00}
 
 
-class SurfaceEnergy(object):
+class SurfaceEnergy:
     """
-    Surface free energy class.
+    Surface energy calculator for phase diagram construction.
+
+    This class calculates the Gibbs free energy of a surface configuration
+    as a function of electrochemical potential and temperature.
 
     Args:
-        V: Voltage.
-        T: Temperature.
-        nLi: Number of Li atoms.
+        V: Electrochemical potential (voltage).
+        T: Temperature in Kelvin.
+        nLi: Number of lithium atoms.
         nTM: Number of transition metal atoms.
-        nO: Number of O atoms.
-        dft_energy: DFT energy.
-        a: Lattice parameter a, used to calculate the surface area.
-        b: Lattice parameter b, used to calculate the surface area.
-        gamma: Lattice parameter gamma, used to calculate the surface area.
-        TM_species: Transition metal species in the material.
-        functional: Functional used to perform the calculations.
-
+        nO: Number of oxygen atoms.
+        dft_energy: DFT-calculated total energy.
+        a: Lattice parameter a.
+        b: Lattice parameter b.
+        gamma: Angle gamma in degrees.
+        TM_species: Transition metal species symbol.
+        functional: DFT functional used (e.g., "PBE" or "SCAN").
     """
-    def __init__(self,
-                 V, T, nLi, nTM, nO, dft_energy,
-                 a, b, gamma, TM_species, functional):
+
+    def __init__(
+        self,
+        V,
+        T,
+        nLi,
+        nTM,
+        nO,
+        dft_energy,
+        a,
+        b,
+        gamma,
+        TM_species,
+        functional,
+    ):
         self.V = V
         self.T = T
         self.nLi = nLi
@@ -64,16 +68,15 @@ class SurfaceEnergy(object):
     def e_li(self):
         return -2.3
 
-    @e_li.setter
-    def e_li(self, a):
-        self.e_li = a
-
     def g_oxygen(self):
         """
+        Calculate the temperature-dependent oxygen chemical potential.
+
         Equation to calculate the temperature dependent oxygen chemical
         potential.
 
-        Returns:
+        Returns
+        -------
             Oxygen chemical potential.
         """
         E_O2 = E_O2_by_funtional[self.functional]
@@ -86,20 +89,24 @@ class SurfaceEnergy(object):
         delta_S = Cp * np.log(self.T / T0)  # kJ/(mol K)
         delta_mu = (H0 + delta_H) - self.T * (S0 + delta_S)  # kJ/mol
         # print(delta_mu/96.487)
-        mu_oxygen = (1 / 2) * (E_O2 + (delta_mu / 96.487))
-        return mu_oxygen
+        g_O2 = (E_O2 + delta_mu) / 96.487  # eV/O2
+        return g_O2 / 2
 
-    def gibbs_free_energy(self):
+    def get_gibbs_free_energy(self):
         """
-        Equation to calculate the surface Gibbs free energy.
+        Calculate surface Gibbs free energy.
 
-        Returns:
+        Returns
+        -------
             Surface Gibbs free energy.
         """
         E_bulk = E_bulk_by_funtional[self.TM_species][self.functional]
         E_Li = E_Li_by_funtional[self.functional]
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
-        G = (self.dft_energy + (self.nTM - self.nLi) * (E_Li - self.V)
-             + (2 * self.nTM - self.nO) *
-             self.g_oxygen() - self.nTM * E_bulk) / (2 * A)
+        G = (
+            self.dft_energy
+            + (self.nTM - self.nLi) * (E_Li - self.V)
+            + (2 * self.nTM - self.nO) * self.g_oxygen()
+            - self.nTM * E_bulk
+        ) / (2 * A)
         return G

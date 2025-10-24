@@ -4,13 +4,17 @@ Installation
 
 Requirements
 ************
-* `Monty <https://pythonhosted.org/monty/index.html>`_
-* `Python>=3 <https://www.python.org/>`_
-* `Numpy <https://numpy.org/doc/stable/>`_
-* `Matplotlib <https://matplotlib.org/>`_
-* `Pandas <https://pandas.pydata.org/>`_
-* `Pymatgen <https://pymatgen.org/>`_
-* `Enumlib <https://github.com/msg-byu/enumlib/>`_
+* `Python ≥ 3.9 <https://www.python.org/>`_
+* `numpy ≥ 2.0 <https://numpy.org/doc/stable/>`_
+* `pymatgen ≥ 2024.10.3 <https://pymatgen.org/>`_
+* `matplotlib ≥ 3.5.0 <https://matplotlib.org/>`_
+* `pandas ≥ 2.0.0 <https://pandas.pydata.org/>`_
+* `monty ≥ 2024.2.2 <https://pythonhosted.org/monty/index.html>`_
+* `Enumlib v2.0.4+ <https://github.com/msg-byu/enumlib/>`_ (for structure enumeration)
+
+.. note::
+    This package is compatible with **pymatgen 2024.10.3** and later versions.
+    Earlier versions of pymatgen may not work correctly due to API changes.
 
 Installation using pip
 **********************
@@ -98,4 +102,3 @@ should be automatically generated. Something like::
     https://doi.org/10.1016/j.commatsci.2017.04.015.
     ...
     ...
-

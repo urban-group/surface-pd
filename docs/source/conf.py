@@ -14,11 +14,9 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../surface_pd'))
 
-import mock
-MOCK_MODULES = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
-  
+# Use autodoc_mock_imports for better compatibility
+autodoc_mock_imports = ['numpy', 'matplotlib', 'pandas', 'pymatgen', 'monty']
+
 # -- Project information -----------------------------------------------------
 
 project = 'surface-pd'
@@ -26,7 +24,7 @@ copyright = '2022, Xinhao Li'
 author = 'Xinhao Li'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,7 +32,7 @@ release = '0.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.doctest', 'sphinx.ext.githubpages', 
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.doctest', 'sphinx.ext.githubpages',
               'sphinx.ext.viewcode', 'sphinx.ext.mathjax']
 
 # Add any paths that contain templates here, relative to this directory.

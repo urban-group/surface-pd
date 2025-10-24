@@ -1,101 +1,66 @@
-import copy
+"""
+Post-processing validation module for enumerated structures.
+
+This module provides the PostCheck class for validating enumerated slab
+structures after enumeration, ensuring they maintain required symmetry
+properties and geometric consistency.
+"""
 
 import numpy as np
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-from pymatgen.core.composition import Element
+from surface_pd.core.slab import Slab
+from surface_pd.error import (
+    IncompatibleSymmError,
+    NoInversionSymmetryError,
+    NonCentralInversionSymmetryError,
+    PrimitiveStructureFinderError,
+)
 
-from surface_pd.core import Slab
-from surface_pd.error import (PrimitiveStructureFinderError,
-                              NoInversionSymmetryError,
-                              SlabOrientationError,
-                              NonCentralInversionSymmetryError)
 
+class PostCheck:
+    def __init__(
+        self,
+        structure: Slab,
+        tolerance: float = 0.03,
+        direction: int = 2,
+        symprec: float = 1e-2,
+    ):
+        self.structure = structure
+        self.tolerance = tolerance
+        self.direction = direction
+        self.symprec = symprec
 
-class PostCheck(object):
-    """
-    PostCheck class to check whether the output slab model is valid.
-
-    Args:
-        refined_structure: After refined structure, to be checked.
-
-    """
-
-    def __init__(self, refined_structure: Slab):
-        self.refined_structure = refined_structure
-
-    def slab_size_check(self,
-                        total_num_sites,
-                        enumerated_num_sites,
-                        criteria):
+    def has_correct_num_sites(self, curr_num_sites: int):
         """
-        Check whether the after refined structure has the right geometry.
+        Check if the enumerated structure has the correct number of sites.
 
         Args:
-            total_num_sites: Number of sites that should be after enumeration.
-            enumerated_num_sites: Actual number of sites for the enumerated
-                slab model.
-            criteria: Lattice parameter perpendicular to the input(parent)
-                slab model surface.
+            curr_num_sites: Expected number of sites.
 
-        Returns:
-            Indicator and after-operated structure.
-
+        Returns
+        -------
+            True if number of sites matches expectation.
         """
-        if enumerated_num_sites > total_num_sites:
-            refined_prim = self.refined_structure.copy()
-            refined_prim = refined_prim.get_primitive_structure() \
-                .get_reduced_structure().get_sorted_structure()
-            return -1, refined_prim
-        elif enumerated_num_sites < total_num_sites:
-            if total_num_sites % enumerated_num_sites != 0:
-                raise PrimitiveStructureFinderError
-            else:
-                return 1, self.refined_structure
-        else:
-            # Handle the case that the slab is repeated in the space
-            if max(self.refined_structure.lattice.abc) > criteria * 2 - 5:
-                refined_prim = copy.deepcopy(self.refined_structure)
-                refined_prim = refined_prim.get_primitive_structure() \
-                    .get_reduced_structure().get_sorted_structure()
-                return -1, refined_prim
-            # Handle the rotated case
-            if max(self.refined_structure.lattice.abc) != \
-                    self.refined_structure.lattice.c:
-                if (max(self.refined_structure.lattice.abc) ==
-                        self.refined_structure.lattice.a):
-                    refined_rotated = copy.deepcopy(self.refined_structure)
-                    refined_rotated.make_supercell(
-                        [[0, 0, 1],
-                         [0, 1, 0],
-                         [1, 0, 0]]
-                    )
-                elif (max(self.refined_structure.lattice.abc) ==
-                      self.refined_structure.lattice.b):
-                    refined_rotated = copy.deepcopy(self.refined_structure)
-                    refined_rotated.make_supercell(
-                        [[1, 0, 0],
-                         [0, 0, 1],
-                         [0, 1, 0]]
-                    )
-                return 2, refined_rotated
-            else:
-                return 0, self.refined_structure
+        return self.structure.num_sites == curr_num_sites
 
-    def final_check(self,
-                    species,
-                    composition_list,
-                    index,
-                    keep_symmetric,
-                    criteria,
-                    symprec=1e-5):
-        """
+    def post_check(
+        self,
+        species,
+        composition_list,
+        index,
+        keep_symmetric,
+        criteria,
+        symprec=1e-5,
+    ):
+        r"""
         Perform final check to see whether the enumerated slab models are
-        correct. \n
-        1. Has the correct geometry. \n
+        correct.
+
+        1. Has the correct geometry.
         2. Has the inversion symmetry center even with a quite high symmetry
-        detection parameter. \n
-        3. Has the inversion symmetry center shifted to the origin (0,
-        0, 0).
+           detection parameter.
+        3. Has the inversion symmetry center shifted to the origin (0, 0, 0).
 
         Args:
             species: Target species that will be enumerated.
@@ -106,51 +71,164 @@ class PostCheck(object):
             criteria:
             symprec: Tolerance for symmetry finding. Defaults to 1e-5.
 
-        Returns:
+        Returns
+        -------
             If everything is fine, it will just pass. If something
             unexpected happens, the specific error report will generate.
 
         """
-
         if keep_symmetric:
             try:
-                symmetric, origin, _ = Slab.from_sites(
-                    self.refined_structure).is_symmetry(
-                    symprec=symprec,
-                    return_isc=True)
+                symmetric, origin, _ = self.structure.is_symmetry(
+                    symprec=symprec, return_isc=True
+                )
             except TypeError:
-                symmetric = Slab.from_sites(
-                    self.refined_structure).is_symmetry(
-                    symprec, return_isc=False)
+                symmetric = self.structure.is_symmetry(
+                    symprec, return_isc=False
+                )
+
             if not symmetric:
-                print("{}{} -- structure_{}".format(species,
-                                                    composition_list,
-                                                    index))
-                self.refined_structure.to(
-                    fmt='poscar',
-                    filename='debug-structure-{}.vasp'.format(index))
+                species_str = ""
+                if isinstance(species, list):
+                    for spec in species:
+                        species_str += f"{spec}"
+                else:
+                    species_str = f"{species}"
+                composition_str = (
+                    f"{composition_list}".format()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace(", ", "-")
+                )
+
+                # Save structure for debugging
+                self.structure.to(
+                    fmt="poscar",
+                    filename=(f"debug-enumed-{species_str}_"
+                              + f"{composition_str}-{index}.vasp"),
+                )
+                print(
+                    f'Please see the saved "debug-enumed-{species_str}'
+                    f'_{composition_str}_{index}.vasp" '
+                    "structure and see if it makes sense."
+                )
                 raise NoInversionSymmetryError
+
+            # Make sure that the inversion symmetry center is in the c
+            # direction origin
+            if (
+                abs(origin[self.direction])
+                > self.tolerance + self.symprec * 100
+            ):
+                print(origin)
+                raise NonCentralInversionSymmetryError
+        return self.structure
+
+    def get_refined_structure(
+        self,
+        species,
+        composition_list,
+        index,
+        symprec=1e-1,
+    ):
+        """
+        Get refined primitive structure.
+
+        Args:
+            species: Target species that will be enumerated.
+            composition_list: Compositions of enumerated species.
+            index: Unique index of this slab model.
+            symprec: Tolerance for symmetry finding. Defaults to 1e-1.
+
+        Returns
+        -------
+            Refined primitive structure.
+        """
+        refined_structure = Slab.from_sites(
+            SpacegroupAnalyzer(
+                self.structure, symprec=symprec
+            ).get_refined_structure()
+        )
+        refined_structure.direction = self.direction
+        refined_structure.tolerance = self.tolerance
+        refined_structure.to_be_enumerated_species = (
+            self.structure.to_be_enumerated_species
+        )
+        refined_structure.num_layers_enumed = self.structure.num_layers_enumed
+        refined_structure.symmetric = self.structure.symmetric
+
+        if (
+            refined_structure.num_sites % self.structure.num_sites == 0
+            and refined_structure.num_sites != self.structure.num_sites
+        ):
+            refined_structure.make_supercell(
+                np.array(
+                    [
+                        [
+                            self.structure.num_sites
+                            / refined_structure.num_sites,
+                            0,
+                            0,
+                        ],
+                        [
+                            0,
+                            self.structure.num_sites
+                            / refined_structure.num_sites,
+                            0,
+                        ],
+                        [0, 0, 1],
+                    ]
+                )
+            )
+
+        if self.structure.num_sites != refined_structure.num_sites:
+            species_str = ""
+            if isinstance(species, list):
+                for spec in species:
+                    species_str += f"{spec}"
             else:
-                if any(origin) != 0.:
-                    print("{}{} -- structure_{}".format(species,
-                                                        composition_list,
-                                                        index))
-                    self.refined_structure.to(
-                        fmt='poscar',
-                        filename='debug-structure-{}.vasp'.format(index))
-                    raise NonCentralInversionSymmetryError
+                species_str = f"{species}"
+            composition_str = (
+                f"{composition_list}".format()
+                .replace("[", "")
+                .replace("]", "")
+                .replace(", ", "-")
+            )
+
+            # Save structure for debugging
+            refined_structure.to(
+                fmt="poscar",
+                filename=(f"debug-refined-{species_str}"
+                          + f"_{composition_str}-{index}.vasp"),
+            )
+            print(
+                f'Please see the saved "debug-refined-{species_str}'
+                f'_{composition_str}_{index}.vasp" '
+                "structure and see if it makes sense."
+            )
+            raise PrimitiveStructureFinderError
+
+        return refined_structure
+
+    def user_symmetric_compatible(
+        self, user_symmetric: bool, code_determined_symmetric: bool
+    ):
+        """
+        Check if the user-defined symmetric parameter is compatible.
+
+        Args:
+            user_symmetric: User-defined symmetric parameter.
+            code_determined_symmetric: Code-determined symmetric parameter.
+
+        Returns
+        -------
+            True if compatible.
+
+        Raises
+        ------
+            IncompatibleSymmError: If parameters are incompatible.
+        """
+        if user_symmetric != code_determined_symmetric:
+            raise IncompatibleSymmError
         else:
-            pass
-        if (round(criteria, 2) - 0.02) >=\
-                round(self.refined_structure.lattice.abc[
-                      self.refined_structure.direction], 2) or \
-                round(criteria, 2) + 0.02 <= \
-                round(self.refined_structure.lattice.abc[
-                          self.refined_structure.direction], 3):
-            print("{}{} -- structure_{}".format(species,
-                                                composition_list,
-                                                index))
-            self.refined_structure.to(
-                fmt='poscar',
-                filename='debug-structure-{}.vasp'.format(index))
-            raise SlabOrientationError
+            return True

@@ -19,40 +19,56 @@ Phys. Rev. B 2009, 80 (1), 014120.
 https://doi.org/10.1103/PhysRevB.80.014120.
 
 """
+
 __author__ = "Xinhao Li"
 __email__ = "xinhao.li@columbia.edu"
 __date__ = "2023-08-23"
-__version__ = '0.1.0'
+__version__ = "0.1.0"
 
-import os
-import json
-import copy
 import argparse
+import copy
+import json
+import os
 import warnings
-
 from itertools import product
 
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.periodic_table import DummySpecies
 from pymatgen.core.surface import get_slab_regions
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-from surface_pd.core import Slab, EnumWithComposition, PreCheck, PostCheck
-from surface_pd.analysis.slab_analysis import (structure_filter,
-                                               selective_dynamics_completion)
-from surface_pd.util import (get_values_nested_dict,
-                             all_int, replace_dummy, have_zero)
-from surface_pd.error import *
+from surface_pd.analysis.slab_analysis import (
+    selective_dynamics_completion,
+    structure_filter,
+)
+from surface_pd.core import EnumWithComposition, PostCheck, PreCheck, Slab
+from surface_pd.error import (
+    InvalidInputFormatError,
+    IncompatibleSymmError,
+    NonDefinedSelectiveDynamicsError,
+    NonSlabError,
+    InvalidCompositionError,
+    SlabOrientationError,
+    NoInversionSymmetryError
+)
+from surface_pd.util import (
+    all_int,
+    get_values_nested_dict,
+    have_zero,
+    replace_dummy,
+)
 
 warnings.filterwarnings("ignore")
 
 
-def automate_surface(target_slab_path: str,
-                     species: list,
-                     replace: list,
-                     num_layers_enumed: dict,
-                     max_cell_size: int,
-                     symmetric: bool,
-                     to_vasp: bool = False):
+def automate_surface(
+    target_slab_path: str,
+    species: list,
+    replace: list,
+    num_layers_enumed: dict,
+    max_cell_size: int,
+    symmetric: bool,
+    to_vasp: bool = False,
+):
     """
     This function contains the general framework to enumerate the parent
     slab model surface with different target species and compositions.
@@ -81,12 +97,12 @@ def automate_surface(target_slab_path: str,
         to_vasp: Whether to generate all the output slab models in VASP
         format. Defaults to False.
 
-    Returns:
+    Returns
+    -------
         All enumerated slab models with different composition of target
         species.
 
     """
-
     # Load parent slab model
     input_structure = Slab.from_file(target_slab_path)
 
@@ -133,13 +149,15 @@ def automate_surface(target_slab_path: str,
     # Get the indices of the to-be-enumerated atoms on the surface.
     # Get the c_frac coordinates of the lower and upper boundaries of the
     # fixed region in the central slab.
-    center_bottom, center_top, relaxed_index = \
+    center_bottom, center_top, relaxed_index = (
         input_structure.index_extraction(only_top=False)
+    )
 
     # Define the "dummy" species that will be used to substitute the target
     # species
-    dummy_species = [DummySpecies(symbol='X' + str(i + 1))
-                     for i in range(len(species))]
+    dummy_species = [
+        DummySpecies(symbol="X" + str(i + 1)) for i in range(len(species))
+    ]
 
     # Replace the to-be-enumerated species from the slab top surface with
     # "dummy" species. This will facilitate the enumeration code.
@@ -158,28 +176,31 @@ def automate_surface(target_slab_path: str,
         composition_list = list(get_values_nested_dict(subs_dict))
         if all_int(composition_list):
             structure = input_structure.supplemental_structures_gene(
-                subs_dict, relaxed_index)
+                subs_dict, relaxed_index
+            )
             supplemental_structures = [structure]
             enumerated_structures = [structure]
         else:
             if have_zero(composition_list):
-                slab_substituted = slab_substituted \
-                    .supplemental_structures_gene(subs_dict, relaxed_index)
+                slab_substituted = (
+                    slab_substituted.supplemental_structures_gene(
+                        subs_dict, relaxed_index
+                    )
+                )
 
             subs_dict = replace_dummy(subs_dict, dummy_species)
 
             ewc = EnumWithComposition(
-                subs_dict=subs_dict,
-                max_cell_size=max_cell_size
+                subs_dict=subs_dict, max_cell_size=max_cell_size
             )
 
             structures = ewc.apply_enumeration(slab_substituted)
 
             # Filtered out the structures which has c lattice as the
             # largest lattice (a tall cuboid)
-            filtered_structures = structure_filter(structures,
-                                                   direction=direction,
-                                                   criteria=criteria)
+            filtered_structures = structure_filter(
+                structures, direction=direction, criteria=criteria
+            )
 
             # Add selective dynamics for enumerated sites
             for filtered_structure in filtered_structures:
@@ -189,7 +210,7 @@ def automate_surface(target_slab_path: str,
                     dummy_species=dummy_species,
                     center_bottom=center_bottom,
                     center_top=center_top,
-                    tolerance=tolerance
+                    tolerance=tolerance,
                 )
 
             # Symmetrize slab models based on the top enumerated
@@ -198,11 +219,13 @@ def automate_surface(target_slab_path: str,
             for filtered_structure in filtered_structures:
                 for i in range(len(species)):
                     filtered_structure.replace_species(
-                        {dummy_species[i]: species[i]})
+                        {dummy_species[i]: species[i]}
+                    )
                 filtered_structure = Slab.from_sites(filtered_structure)
                 if symmetric:
                     enumerated_structures.append(
-                        filtered_structure.symmetrize_top_base())
+                        filtered_structure.symmetrize_top_base()
+                    )
                 else:
                     enumerated_structures.append(filtered_structure)
 
@@ -213,10 +236,10 @@ def automate_surface(target_slab_path: str,
             indicator = 0
             if symmetric:
                 _, origin, _ = symmetrized_structure.is_symmetry(
-                    return_isc=True)
+                    return_isc=True
+                )
                 min_c, _ = symmetrized_structure.get_max_min_c_frac()
-                sga = SpacegroupAnalyzer(symmetrized_structure,
-                                         symprec=0.1)
+                sga = SpacegroupAnalyzer(symmetrized_structure, symprec=0.1)
                 # Create the refined structures
                 refined_structure = sga.get_refined_structure()
 
@@ -224,65 +247,75 @@ def automate_surface(target_slab_path: str,
                 total_num_sites = input_structure.calculate_num_sites(
                     composition_list=composition_list,
                     relaxed_index=relaxed_index,
-                    max_cell_size=max_cell_size)
+                    max_cell_size=max_cell_size,
+                )
 
                 num_sites = refined_structure.num_sites
 
-                while ((num_sites > total_num_sites) or
-                       (max(refined_structure.lattice.abc) >
-                        criteria * 2 - 5) or
-                       (max(refined_structure.lattice.abc) !=
-                        refined_structure.lattice.abc[direction])):
+                while (
+                    (num_sites > total_num_sites)
+                    or (max(refined_structure.lattice.abc) > criteria * 2 - 5)
+                    or (
+                        max(refined_structure.lattice.abc)
+                        != refined_structure.lattice.abc[direction]
+                    )
+                ):
                     pc = PostCheck(refined_structure)
                     indicator, refined_structure = pc.slab_size_check(
                         total_num_sites=total_num_sites,
                         enumerated_num_sites=num_sites,
-                        criteria=criteria)
+                        criteria=criteria,
+                    )
                     num_sites = refined_structure.num_sites
 
                 refined_structure = Slab.from_sites(refined_structure)
-                noncontiguous = (len(get_slab_regions(refined_structure)) == 2)
+                noncontiguous = len(get_slab_regions(refined_structure)) == 2
                 # print(input_structure.layers_finder())
 
                 if noncontiguous:
                     refined_structure = refined_structure.tune_isc(
-                        origin=origin, shift_isc_back=True)
+                        origin=origin, shift_isc_back=True
+                    )
                     refined_structure = refined_structure.tune_c(
-                        target_min_c=min_c)
+                        target_min_c=min_c
+                    )
                     # print(refined_structure.layers_finder())
-                    refined_structure = \
+                    refined_structure = (
                         refined_structure.add_selective_dynamics(
-                            lower_limit=center_bottom,
-                            upper_limit=center_top
+                            lower_limit=center_bottom, upper_limit=center_top
                         )
+                    )
                 else:
                     refined_structure = refined_structure.tune_c(
-                        target_min_c=min_c)
+                        target_min_c=min_c
+                    )
                     # print(refined_structure.layers_finder())
-                    refined_structure = \
+                    refined_structure = (
                         refined_structure.add_selective_dynamics(
-                            lower_limit=center_bottom,
-                            upper_limit=center_top
+                            lower_limit=center_bottom, upper_limit=center_top
                         )
+                    )
 
                 refined_structure = refined_structure.tune_isc(
-                    origin=origin, shift_isc_back=False)
+                    origin=origin, shift_isc_back=False
+                )
             else:
                 refined_structure = symmetrized_structure
 
             # Perform final check
             pc = PostCheck(refined_structure)
-            pc.final_check(
+            pc.post_check(
                 species=species,
                 composition_list=composition_list,
                 keep_symmetric=symmetric,
                 criteria=criteria,
-                index=k)
+                index=k,
+            )
 
             # Generate slab models
             if to_vasp:
                 # Make directories
-                dirname = ''
+                dirname = ""
                 for n in range(len(species)):
                     dirname += str(composition_list[n]) + str(species[n])
                 if not os.path.exists(dirname):
@@ -290,41 +323,45 @@ def automate_surface(target_slab_path: str,
 
                 if indicator == -1:
                     refined_structure.to(
-                        fmt='poscar',
+                        fmt="poscar",
                         filename=os.path.join(
                             dirname,
-                            "refined-prim{}.vasp".format(
-                                unique_index.format(k))))
+                            f"refined-prim{unique_index.format(k)}.vasp",
+                        ),
+                    )
                 elif indicator == 1:
                     refined_structure.to(
-                        fmt='poscar',
+                        fmt="poscar",
                         filename=os.path.join(
                             dirname,
-                            "refined-reduced{}.vasp".format(
-                                unique_index.format(k))))
+                            f"refined-reduced{unique_index.format(k)}.vasp",
+                        ),
+                    )
                 elif indicator == 2:
                     refined_structure.to(
-                        fmt='poscar',
+                        fmt="poscar",
                         filename=os.path.join(
                             dirname,
-                            "refined-rotated{}.vasp".format(
-                                unique_index.format(k))))
+                            f"refined-rotated{unique_index.format(k)}.vasp",
+                        ),
+                    )
                 else:
                     refined_structure.to(
-                        fmt='poscar',
+                        fmt="poscar",
                         filename=os.path.join(
                             dirname,
-                            "refined-structure{}.vasp".format(
-                                unique_index.format(k))))
+                            f"refined-structure{unique_index.format(k)}.vasp",
+                        ),
+                    )
 
         num += len(enumerated_structures)
         print(
-            'The enumeration found {}({}+{}) distinct structures for {} '
-            'with {} composition.'.format(
-                len(enumerated_structures), prev,
-                len(supplemental_structures), species,
-                composition_list))
-    print(f'{num} distinct structures are found totally.')
+            f"The enumeration found {len(enumerated_structures)}"
+            f"({prev}+{len(supplemental_structures)}) "
+            f"distinct structures for {species} "
+            f"with {composition_list} composition."
+        )
+    print(f"{num} distinct structures are found totally.")
 
 
 def run(json_file_path, to_vasp):
@@ -337,7 +374,6 @@ def run(json_file_path, to_vasp):
         to_vasp: Whether to generate all output slab models.
 
     """
-
     # Load json input file
     try:
         with open(json_file_path) as fp:
@@ -346,16 +382,16 @@ def run(json_file_path, to_vasp):
         raise InvalidInputFormatError
 
     # Generate all composition combo
-    to_be_enumerated_species = list(data['replacements'])
-    num_layers_enumed = data['num_layers_enumed']
-    composition_list = list(
-        get_values_nested_dict(data['replacements']))
-    composition_list = [sorted(x, reverse=True) for x in
-                        composition_list]
+    to_be_enumerated_species = list(data["replacements"])
+    num_layers_enumed = data["num_layers_enumed"]
+    composition_list = list(get_values_nested_dict(data["replacements"]))
+    composition_list = [sorted(x, reverse=True) for x in composition_list]
 
-    print("target_cell_size = {}".format(data['max_cell_size']))
-    print("Composition of {} on the surface will be {}, "
-          "respectively.".format(to_be_enumerated_species, composition_list))
+    print("target_cell_size = {}".format(data["max_cell_size"]))
+    print(
+        f"Composition of {to_be_enumerated_species} on the surface "
+        f"will be {composition_list}, respectively."
+    )
 
     composition_combo = []
     for combo in product(*composition_list):
@@ -364,31 +400,64 @@ def run(json_file_path, to_vasp):
             replace_dict[key] = {key: float(value)}
         composition_combo.append(replace_dict)
 
-    automate_surface(target_slab_path=data['target_slab_path'],
-                     species=to_be_enumerated_species,
-                     replace=composition_combo,
-                     num_layers_enumed=num_layers_enumed,
-                     max_cell_size=data['max_cell_size'],
-                     symmetric=data['symmetric'],
-                     to_vasp=to_vasp)
+    automate_surface(
+        target_slab_path=data["target_slab_path"],
+        species=to_be_enumerated_species,
+        replace=composition_combo,
+        num_layers_enumed=num_layers_enumed,
+        max_cell_size=data["max_cell_size"],
+        symmetric=data["symmetric"],
+        to_vasp=to_vasp,
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=__doc__ + "\n{} {}".format(__date__, __author__) +
-                    "\n version: {}".format(__version__),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=(
+            "Enumerate surface structures with different compositions.\n\n"
+            "This tool systematically generates all symmetrically unique "
+            "surface structures by creating vacancies or substitutions on "
+            "specified surface layers.\n\n"
+            "Example usage:\n"
+            "  %(prog)s input.json\n"
+            "  %(prog)s input.json --generate-poscar\n"
+            "  %(prog)s examples/enumeration-examples/input/input-Li.json -g"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            f"Version: {__version__}\n"
+            f"Author: {__author__} ({__email__})\n"
+            f"Date: {__date__}\n\n"
+            "For detailed algorithm, see:\n"
+            "  Morgan et al., Comput. Mater. Sci. 2017, 136, 144-149.\n"
+            "  Hart et al., Comput. Mater. Sci. 2012, 59, 101-107."
+        ),
+    )
 
     parser.add_argument(
         "json_file_path",
-        help="Path to a JSON file which has the necessary parameters defined.")
+        metavar="INPUT_JSON",
+        help=(
+            "Path to JSON configuration file containing:\n"
+            "  - target_slab_path: VASP structure file\n"
+            "  - replacements: species compositions to enumerate\n"
+            "  - num_layers_enumed: layers to modify per species\n"
+            "  - max_cell_size: maximum supercell expansion\n"
+            "  - symmetric: maintain top-bottom symmetry"
+        ),
+    )
 
     parser.add_argument(
-        "--generate-poscar", "-g",
-        help="Generate POSCAR files of enumerated structures.",
-        action="store_true")
+        "--generate-poscar",
+        "-g",
+        dest="generate_poscar",
+        action="store_true",
+        help=(
+            "Generate VASP POSCAR files for all enumerated structures. "
+            "Output organized in directories by composition (e.g., 1.0Li/)."
+        ),
+    )
 
     args = parser.parse_args()
 
-    run(args.json_file_path,
-        args.generate_poscar)
+    run(args.json_file_path, args.generate_poscar)

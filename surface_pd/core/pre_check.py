@@ -3,7 +3,7 @@ from monty.dev import requires
 
 from pymatgen.core.surface import get_slab_regions
 
-from surface_pd.core import Slab
+from surface_pd.core.slab import Slab
 from surface_pd.util import check_int
 
 
@@ -67,13 +67,15 @@ class PreCheck(object):
         """
         for site in self.structure:
             try:
-                if site.properties['selective_dynamics'] == \
-                        ([False, False, False] or [True, True, True]):
+                sd = site.properties['selective_dynamics']
+                # Handle both list and numpy array
+                if (all(not x for x in sd) or all(x for x in sd)):
                     return True
             except KeyError:
                 return False
             else:
-                if site.properties['selective_dynamics'] == [False]:
+                sd = site.properties['selective_dynamics']
+                if len(sd) == 1 and not sd[0]:
                     return False
 
     def has_inversion_symmetry(self, symprec=0.1):
@@ -100,16 +102,23 @@ class PreCheck(object):
 
         fixed_atoms_c_set = []
         for site in self.structure:
-            if site.properties['selective_dynamics'] == [False, False, False]:
+            # Handle both list and numpy array for selective_dynamics
+            sd = site.properties['selective_dynamics']
+            if all(not x for x in sd):  # All False
                 fixed_atoms_c_set.append(
                     site.frac_coords[self.structure.direction])
         min_fixed_atom_c = min(fixed_atoms_c_set)
 
         # Check the slab region
         ranges = get_slab_regions(self.structure)
+        # Note: pymatgen 2024.10.3+ returns 1 region (slab only),
+        # older versions returned 2 regions (slab + vacuum)
         if len(ranges) == 2:
             lower_boundary = min(ranges[0][1], ranges[1][0])
+        elif len(ranges) == 1:
+            lower_boundary = min(ranges[0])
         else:
+            # Should not happen, but handle edge case
             lower_boundary = min(ranges[0])
 
         if min_fixed_atom_c - lower_boundary < self.structure.tolerance:

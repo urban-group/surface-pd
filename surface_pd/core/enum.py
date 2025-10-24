@@ -1,12 +1,22 @@
-from pymatgen.transformations.advanced_transformations import \
-    EnumerateStructureTransformation
-from pymatgen.transformations.standard_transformations \
-    import SubstitutionTransformation
+"""
+Enumeration module for systematic surface composition generation.
+
+This module provides the EnumWithComposition class that wraps pymatgen's
+enumeration functionality to systematically generate surface structures
+with different compositions.
+"""
+
+from pymatgen.transformations.advanced_transformations import (
+    EnumerateStructureTransformation,
+)
+from pymatgen.transformations.standard_transformations import (
+    SubstitutionTransformation,
+)
 
 from surface_pd.core.slab import Slab
 
 
-class EnumWithComposition(object):
+class EnumWithComposition:
     """
     EnumWithComposition class to enumerate the parent slab model with
     defined composition.
@@ -22,19 +32,19 @@ class EnumWithComposition(object):
             enumlib. Defaults to 1e-5.
     """
 
-    def __init__(self,
-                 subs_dict: dict,
-                 min_cell_size: int = 1,
-                 max_cell_size: int = 1,
-                 enum_precision_parameter: float = 1e-5):
+    def __init__(
+        self,
+        subs_dict: dict,
+        min_cell_size: int = 1,
+        max_cell_size: int = 1,
+        enum_precision_parameter: float = 1e-5,
+    ):
         self.subs_dict = subs_dict
         self.min_cell_size = min_cell_size
-        self.max_cell_zie = max_cell_size
+        self.max_cell_size = max_cell_size
         self.enum_precision_parameter = enum_precision_parameter
 
-    def apply_enumeration(self,
-                          structure: Slab,
-                          max_structures: int = 2000):
+    def apply_enumeration(self, structure: Slab, max_structures: int = 2000):
         """
         Apply enumeration to parent slab model.
 
@@ -43,20 +53,19 @@ class EnumWithComposition(object):
             max_structures: Number of structures to be returned at most for
                 each composition. Defaults to 2000.
 
-        Returns:
+        Returns
+        -------
             A sequence of all enumerated structures.
 
         """
-
         subs = SubstitutionTransformation(self.subs_dict)
-        surface_structure_partial = subs.apply_transformation(
-            structure)
+        surface_structure_partial = subs.apply_transformation(structure)
         enum = EnumerateStructureTransformation(
             min_cell_size=self.min_cell_size,
-            max_cell_size=self.max_cell_zie,
-            enum_precision_parameter=self.enum_precision_parameter
+            max_cell_size=self.max_cell_size,
+            enum_precision_parameter=self.enum_precision_parameter,
         )
         enumerated_structures = enum.apply_transformation(
-            surface_structure_partial,
-            return_ranked_list=max_structures)
+            surface_structure_partial, return_ranked_list=max_structures
+        )
         return enumerated_structures

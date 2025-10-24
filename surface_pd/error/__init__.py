@@ -8,11 +8,19 @@ error.py --> Collection of error class defined by developer to guide user.
 
 from .error import *
 
-__all__ = ['NoInversionSymmetryError', 'SlabOrientationError',
-           'NonCentralInversionSymmetryError',
-           'PrimitiveStructureFinderError',
-           'NonDefinedSelectiveDynamicsError',
-           'PolarSurfaceError', 'NonPolarSurfaceError', 'NonSlabError',
-           'TooLargeSlabError', 'InvalidCompositionError',
-           'InvalidPhasesAlignError', 'IncompatibleSymmError',
-           'NonIntegerError', 'InvalidInputFormatError']
+__all__ = [
+    "NoInversionSymmetryError",
+    "SlabOrientationError",
+    "NonCentralInversionSymmetryError",
+    "PrimitiveStructureFinderError",
+    "NonDefinedSelectiveDynamicsError",
+    "PolarSurfaceError",
+    "NonPolarSurfaceError",
+    "NonSlabError",
+    "TooLargeSlabError",
+    "InvalidCompositionError",
+    "InvalidPhasesAlignError",
+    "IncompatibleSymmError",
+    "NonIntegerError",
+    "InvalidInputFormatError",
+]

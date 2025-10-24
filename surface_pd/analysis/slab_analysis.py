@@ -1,9 +1,15 @@
+"""
+Slab analysis functions for structure filtering and processing.
+
+This module provides functions to filter enumerated slab structures based on
+geometric criteria and complete selective dynamics properties for DFT
+calculations.
+"""
+
 from surface_pd.core import Slab
 
 
-def structure_filter(input_slabs,
-                     direction,
-                     criteria):
+def structure_filter(input_slabs, direction, criteria):
     """
     Filter out the slab models that does not satisfy the criteria.
 
@@ -13,13 +19,14 @@ def structure_filter(input_slabs,
         criteria: Lattice parameter perpendicular to the input(parent)
             slab model surface.
 
-    Returns:
+    Returns
+    -------
         List of structures.
 
     """
     filtered_structures = []
     for i, slab in enumerate(input_slabs):
-        lattice = slab['structure'].lattice.abc
+        lattice = slab["structure"].lattice.abc
         ############################################
         # structure['structure'].remove_site_property(
         #     'selective_dynamics')
@@ -28,20 +35,22 @@ def structure_filter(input_slabs,
         ############################################
         # Strict criteria -- keeps slabs with c lattice
         # as parent slab models
-        if any((x - 0.0001) <= criteria
-               <= (x + 0.0001) for x in lattice):
-            slab['structure'] = Slab.from_sites(
-                slab['structure']).check_rotate(criteria)
-            filtered_structures.append(slab['structure'])
+        if any((x - 0.0001) <= criteria <= (x + 0.0001) for x in lattice):
+            slab["structure"] = Slab.from_sites(
+                slab["structure"]
+            ).check_rotate(criteria)
+            filtered_structures.append(slab["structure"])
     return filtered_structures
 
 
-def selective_dynamics_completion(structure: Slab,
-                                  direction: int,
-                                  dummy_species: list,
-                                  center_bottom: float,
-                                  center_top: float,
-                                  tolerance: float):
+def selective_dynamics_completion(
+    structure: Slab,
+    direction: int,
+    dummy_species: list,
+    center_bottom: float,
+    center_top: float,
+    tolerance: float,
+):
     """
     Complete the selective dynamics properties after the enumeration based
     on the rules of species and locations.
@@ -54,7 +63,8 @@ def selective_dynamics_completion(structure: Slab,
         center_top: Same as before.
         tolerance: Same as before.
 
-    Returns:
+    Returns
+    -------
         Slab model with all sites have selective dynamics.
     """
     # print(structure)
@@ -62,15 +72,14 @@ def selective_dynamics_completion(structure: Slab,
     for t in structure:
         for ds in dummy_species:
             if ds in t:
-                t.properties = {
-                    'selective_dynamics': [True, True, True]}
-        if t.properties['selective_dynamics'] is None:
-            if (center_bottom - tolerance <=
-                    t.frac_coords[direction] <=
-                    center_top + tolerance):
-                t.properties = {
-                    'selective_dynamics': [False, False, False]}
+                t.properties = {"selective_dynamics": [True, True, True]}
+        if t.properties["selective_dynamics"] is None:
+            if (
+                center_bottom - tolerance
+                <= t.frac_coords[direction]
+                <= center_top + tolerance
+            ):
+                t.properties = {"selective_dynamics": [False, False, False]}
             else:
-                t.properties = {
-                    'selective_dynamics': [True, True, True]}
+                t.properties = {"selective_dynamics": [True, True, True]}
     return structure

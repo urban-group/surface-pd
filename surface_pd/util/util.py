@@ -1,22 +1,40 @@
+"""
+Utility functions for surface-pd operations.
+
+This module provides various helper functions for scaling matrices, data
+conversions, validation, and dictionary manipulations used throughout the
+surface-pd package.
+"""
+
 import copy
 
 import pandas as pd
 
-from surface_pd.error import TooLargeSlabError, NonIntegerError
+from surface_pd.error import NonIntegerError, TooLargeSlabError
 
 
-def define_scaling_matrix(a, b, multiple):
+def define_scaling_matrix(a: float, b: float, multiple: int) -> list[int]:
     """
-    Generate the scaling matrix based on the different values of the
-    lattice parameters a and b.
+    Generate the scaling matrix for creating supercells.
+
+    This function determines the appropriate scaling matrix based on the ratio
+    of lattice parameters a and b, and the desired supercell size. The scaling
+    is constrained to a maximum size of 4 to prevent excessive computation.
 
     Args:
-        a: Lattice parameter a
-        b: Lattice parameter a
-        multiple: Maximum target cell size
+        a: Lattice parameter a in Angstroms.
+        b: Lattice parameter b in Angstroms.
+        multiple: Maximum target cell size (supercell multiplier). Must be ≤ 4.
 
-    Returns:
-        Scaling matrix that will be used to create the supercell.
+    Returns
+    -------
+        Scaling matrix [scale_a, scale_b, scale_c] where scale_c is always 1
+        (no scaling in the slab direction).
+
+    Raises
+    ------
+        TooLargeSlabError: If multiple > 4, as this would generate too many
+            structures.
     """
     if multiple > 4:
         raise TooLargeSlabError
@@ -32,25 +50,29 @@ def define_scaling_matrix(a, b, multiple):
     return scaling_matrix
 
 
-def csv2dict(csvlist: list):
+def csv2dict(csvlist: list) -> dict:
     """
-     Convert list of comma separated values to a dictionary.
+    Convert list of comma-separated values to a structured dictionary.
 
     The hierarchy of the dictionary is expressed by equal signs ("=") and
-    colons (":").  For example
+    colons (":"). This is useful for parsing user input for species
+    substitutions and compositions. Numeric values are automatically
+    converted from strings.
 
-       ["Co=Co:0.5,Ni:0.5", "Li=Na"]
-
-    will be converted to
-
-       {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
+    Example:
+        Input: ["Co=Co:0.5,Ni:0.5", "Li=Na"]
+        Output: {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
 
     Args:
-        csvlist: list of comma separated values.
+        csvlist: List of comma-separated values with hierarchy defined by
+            "=" (key-value) and ":" (nested dictionary) or "&" (separator
+            for nested entries).
 
-    Returns:
-        dictionary
+    Returns
+    -------
+        Structured dictionary with automatic numeric conversion where applicable.
     """
+
     def trynumeric(v):
         try:
             out = int(v)
@@ -65,23 +87,34 @@ def csv2dict(csvlist: list):
     for item in csvlist:
         key, value = item.split("=")
         if ":" in value:
-            value = {s.strip(): trynumeric(v.strip()) for s, v in
-                     [el.split(":") for el in value.split("&")]}
+            value = {
+                s.strip(): trynumeric(v.strip())
+                for s, v in [el.split(":") for el in value.split("&")]
+            }
         else:
             value = trynumeric(value.strip())
         outdict[key.strip()] = value
     return outdict
 
 
-def check_int(num):
+def check_int(num: float) -> float:
     """
-    Check if the number is an integer.
+    Validate that a number is effectively an integer within tolerance.
+
+    This function checks if a floating-point number is close enough to an
+    integer (within 1e-2) and returns the integer value if valid.
 
     Args:
-        num:
+        num: Number to check (typically a float from calculations).
 
-    Returns:
+    Returns
+    -------
+        The rounded integer value as a float if within tolerance.
 
+    Raises
+    ------
+        NonIntegerError: If the number differs from the nearest integer by
+            more than 0.01.
     """
     eps = 1e-2
     int_f = float(round(num))
@@ -93,14 +126,17 @@ def check_int(num):
 
 def get_values_nested_dict(m: dict):
     """
-    Get the values inside the nested dictionary.
+    Recursively extract all values from a nested dictionary.
+
+    This generator function traverses through nested dictionaries and yields
+    all leaf values (non-dictionary values).
 
     Args:
-        m: Dict
+        m: Dictionary that may contain nested dictionaries.
 
-    Returns:
-        values
-
+    Yields
+    ------
+        All non-dictionary values found in the nested structure.
     """
     for val in m.values():
         if isinstance(val, dict):
@@ -109,13 +145,16 @@ def get_values_nested_dict(m: dict):
             yield val
 
 
-def all_int(n: list):
+def all_int(n: list) -> bool:
     """
     Check if every item in the list is an integer.
 
     Args:
-        n: Input list
+        n: List of numbers to check (must have is_integer() method).
 
+    Returns
+    -------
+        True if all items are integers, False otherwise.
     """
     m = [x.is_integer() for x in n]
     if all(m):
@@ -124,35 +163,43 @@ def all_int(n: list):
         return False
 
 
-def have_zero(n: list):
+def have_zero(n: list) -> bool:
     """
     Check if any item in the list is zero.
 
     Args:
-        n: Input list
+        n: List of numbers to check.
 
+    Returns
+    -------
+        True if any item equals zero, False otherwise.
     """
     return any([x == 0 for x in n])
 
 
-def replace_dummy(subs_dict: dict,
-                  dummy_species: list):
+def replace_dummy(subs_dict: dict, dummy_species: list) -> dict:
     """
-    Replace the keys (species) in the "replace" dict with "dummy" species.
+    Replace real species keys with dummy species in substitution dictionary.
+
+    This function replaces actual chemical species with dummy/placeholder
+    species in the substitution dictionary. This is useful for enumeration
+    algorithms that need to track specific sites without chemical meaning.
+    Entries with zero occupancy are removed from the output.
 
     Args:
         subs_dict: Species and occupancy dictionaries containing the species
-            mapping in string-string pairs.
-        dummy_species: A special specie for representing non-traditional
-            elements or species.
+            mapping in string-string pairs. Format: {species: {species: occupancy}}.
+        dummy_species: List of dummy species names (e.g., ["X", "Y"]) to
+            replace real species as dictionary keys.
 
-    Returns:
-        Updated dict with "dummy" species as the keys
-
+    Returns
+    -------
+        Updated dictionary with dummy species as keys and real species as
+        nested values. Entries with zero occupancy are removed.
     """
-    for i, key, value in zip(range(len(dummy_species)),
-                             subs_dict.keys(),
-                             subs_dict.values()):
+    for i, key, value in zip(
+        range(len(dummy_species)), subs_dict.keys(), subs_dict.values()
+    ):
         subs_dict[dummy_species[i]] = subs_dict.pop(key)
         value[dummy_species[i]] = value.pop(key)
 

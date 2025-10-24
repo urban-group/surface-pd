@@ -1,13 +1,21 @@
-import copy
-import numpy as np
-import collections
-from typing import Union, List, Sequence
+"""
+Slab model class for surface structure representation and manipulation.
 
+This module provides the Slab class, which extends pymatgen's Structure class
+with specialized functionality for handling surface slab models, including
+layer identification, symmetry operations, and enumeration support.
+"""
+
+import collections
+import copy
+from collections.abc import Sequence
+
+import numpy as np
+from pymatgen.core import Composition, DummySpecies, Element, Species
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from pymatgen.core.surface import get_slab_regions
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.core import Element, Species, DummySpecies, Composition
 
 from surface_pd.error import NoInversionSymmetryError
 from surface_pd.util import check_int
@@ -46,25 +54,36 @@ class Slab(Structure):
 
     """
 
-    def __init__(self, lattice: Union[List, np.ndarray, Lattice],
-                 species: Sequence[Union[str, Element, Species,
-                                         DummySpecies, Composition]],
-                 coords: Sequence[Sequence[float]],
-                 charge: float = None,
-                 validate_proximity: bool = False,
-                 to_unit_cell: bool = False,
-                 coords_are_cartesian: bool = False,
-                 site_properties: dict = None,
-                 _direction: int = 2,
-                 _tolerance: float = 0.03,
-                 _to_be_enumerated_species: list = None,
-                 _num_layers_enumed: dict = None,
-                 _symmetric: bool = None
-                 ):
-        super().__init__(lattice, species, coords,
-                         charge, validate_proximity,
-                         to_unit_cell, coords_are_cartesian,
-                         site_properties)
+    def __init__(
+        self,
+        lattice: list | np.ndarray | Lattice,
+        species: Sequence[
+            str | Element | Species | DummySpecies | Composition
+        ],
+        coords: Sequence[Sequence[float]],
+        charge: float = None,
+        validate_proximity: bool = False,
+        to_unit_cell: bool = False,
+        coords_are_cartesian: bool = False,
+        site_properties: dict = None,
+        _direction: int = 2,
+        _tolerance: float = 0.03,
+        _to_be_enumerated_species: list = None,
+        _num_layers_enumed: dict = None,
+        _symmetric: bool = None,
+        **kwargs,
+    ):
+        super().__init__(
+            lattice,
+            species,
+            coords,
+            charge,
+            validate_proximity,
+            to_unit_cell,
+            coords_are_cartesian,
+            site_properties,
+            **kwargs,
+        )
         self._direction = _direction
         self._tolerance = _tolerance
         self._to_be_enumerated_species = _to_be_enumerated_species
@@ -111,8 +130,7 @@ class Slab(Structure):
     def symmetric(self, a: bool):
         self._symmetric = a
 
-    def group_atoms_by_layer(self,
-                             layers: dict):
+    def group_atoms_by_layer(self, layers: dict):
         """
         Group misclassified atoms into the right layers.
         For example, c_atom1 = 0.01, c_atoms2 = 0.02, they should be
@@ -125,15 +143,16 @@ class Slab(Structure):
             layers: Dict which contains different c fractional
               coordinates as keys and number of atoms as values.
 
-        Returns:
+        Returns
+        -------
             Dict which contains different c fractional
             coordinates as keys and number of atoms as values.
 
         """
-
         res = dict()
         o_layer_sorted = dict(
-            sorted(layers.items(), key=lambda x: x[0], reverse=True))
+            sorted(layers.items(), key=lambda x: x[0], reverse=True)
+        )
         for i, (height_, num_) in enumerate(o_layer_sorted.items()):
             if i == 0:
                 res[height_] = num_
@@ -151,7 +170,8 @@ class Slab(Structure):
         Wrap out of the boundary fractional coordinates back into the unit
         cell.
 
-        Returns:
+        Returns
+        -------
             Slab model with all sites in the unit cell.
 
         """
@@ -178,15 +198,16 @@ class Slab(Structure):
         Get the center sites in the slab model on the basis of the
         "selective_dynamics" defined.
 
-        Returns:
+        Returns
+        -------
             lower and upper limits of the central fixed region, and the
             central fixed structure
         """
-
         center_sites = []
         for s in self:
-            if ('selective_dynamics' in s.properties
-                    and not any(s.properties['selective_dynamics'])):
+            if "selective_dynamics" in s.properties and not any(
+                s.properties["selective_dynamics"]
+            ):
                 center_sites.append(copy.deepcopy(s))
 
         # Get the central slab boundaries
@@ -195,8 +216,7 @@ class Slab(Structure):
         lower_limit, upper_limit = center_region[0]
         return lower_limit, upper_limit, center
 
-    def layers_finder(self,
-                      precision: int = 2):
+    def layers_finder(self, precision: int = 2):
         """
         This function is used to find the c fractional coordinates of all
         species in the input slab model and the number of atoms in each
@@ -206,7 +226,8 @@ class Slab(Structure):
             precision: Round c fraction coordinates to a given precision in
                 decimal digits. Defaults to 2.
 
-        Returns:
+        Returns
+        -------
             {"species": {"c fractional coordinates": number of atoms at here}}
 
         """
@@ -221,7 +242,8 @@ class Slab(Structure):
                     # misclassified atoms will be regrouped by
                     # "group_atoms_by_layer" function.
                     partial_layers[
-                        round(s.frac_coords[self.direction], precision)] += 1
+                        round(s.frac_coords[self.direction], precision)
+                    ] += 1
             partial_layers = self.group_atoms_by_layer(partial_layers)
             layers[species] = partial_layers
         return layers
@@ -230,14 +252,14 @@ class Slab(Structure):
         """
         This function is used to distinguish the layers that will be relaxed.
 
-        Returns:
+        Returns
+        -------
             c fractional coordinates of the upper and lower boundaries
             of the central fixed region. (1, 2)\n
             {"species": [top (lower surface relaxed region) and bottom (upper
             surface relaxed region) c fractional coordinates]}
 
         """
-
         # Initialize three dictionaries to store layer information of Li,
         # TM, and O atoms
         layers = self.layers_finder()
@@ -245,24 +267,26 @@ class Slab(Structure):
         # Get the boundaries of the surface relaxed region in fractional
         # coordinates format (c-direction)
         target_layers = {}
-        for species, c_frac in zip(self.to_be_enumerated_species,
-                                   self.num_layers_enumed):
+        for species, c_frac in zip(
+            self.to_be_enumerated_species, self.num_layers_enumed
+        ):
             all_c_frac = list(layers[species])
             if self.symmetric:
-                target_layers[species] = \
-                    [all_c_frac[self.num_layers_enumed[species] - 1],
-                     all_c_frac[-self.num_layers_enumed[species]]]
+                target_layers[species] = [
+                    all_c_frac[self.num_layers_enumed[species] - 1],
+                    all_c_frac[-self.num_layers_enumed[species]],
+                ]
             else:
-                target_layers[species] = \
-                    [all_c_frac[self.num_layers_enumed[species] - 1]]
+                target_layers[species] = [
+                    all_c_frac[self.num_layers_enumed[species] - 1]
+                ]
 
         # Collect the central layers based on the "selective_dynamics"
         lower_limit, upper_limit, _ = self.get_center_sites()
 
         return lower_limit, upper_limit, target_layers
 
-    def index_extraction(self,
-                         only_top: bool = False):
+    def index_extraction(self, only_top: bool = False):
         """
         This function is used to get the indices of the target species in the
         relaxed surface layers.
@@ -271,11 +295,11 @@ class Slab(Structure):
             only_top: Whether to only return indices of the target species in
                 the top relaxed surface layer.
 
-        Returns:
+        Returns
+        -------
             {"species": [indices of the target species]}
 
         """
-
         [lower_limit, upper_limit, target_layers] = self.layer_distinguisher()
 
         relaxed_index_by_species = {}
@@ -284,16 +308,19 @@ class Slab(Structure):
             for index, site in enumerate(self):
                 # Surface Li atoms index extraction (both top and bottom)
                 if species in site:
-                    if (site.frac_coords[self.direction] >=
-                            target_layers[species][0] - self.tolerance):
+                    if (
+                        site.frac_coords[self.direction]
+                        >= target_layers[species][0] - self.tolerance
+                    ):
                         relaxed_index.append(index)
                     if self.symmetric:
                         if only_top:
                             pass
                         else:
-                            if (site.frac_coords[self.direction] <=
-                                    target_layers[species][1] +
-                                    self.tolerance):
+                            if (
+                                site.frac_coords[self.direction]
+                                <= target_layers[species][1] + self.tolerance
+                            ):
                                 relaxed_index.append(index)
                     else:
                         pass
@@ -301,8 +328,7 @@ class Slab(Structure):
 
         return lower_limit, upper_limit, relaxed_index_by_species
 
-    def surface_substitute(self,
-                           dummy_species: list):
+    def surface_substitute(self, dummy_species: list):
         """
         This function is used to substitute the to-be-enumerated species from
         the slab top surface with dummy species. This will facilitate the
@@ -312,26 +338,29 @@ class Slab(Structure):
             dummy_species: A special specie for representing non-traditional
                 elements or species.
 
-        Returns:
+        Returns
+        -------
             Substituted slab model
 
         """
         slab_surface_substitute = copy.deepcopy(self)
         _, _, relaxed_index = slab_surface_substitute.index_extraction(
-            only_top=True)
+            only_top=True
+        )
 
         for i, species in enumerate(self.to_be_enumerated_species):
             for j in relaxed_index[species]:
                 slab_surface_substitute.replace(
-                    j, dummy_species[i],
-                    properties={'selective_dynamics': [True, True, True]}
+                    j,
+                    dummy_species[i],
+                    properties={"selective_dynamics": [True, True, True]},
                 )
 
         return slab_surface_substitute
 
-    def supplemental_structures_gene(self,
-                                     subs_dict: dict,
-                                     relaxed_index: dict):
+    def supplemental_structures_gene(
+        self, subs_dict: dict, relaxed_index: dict
+    ):
         """
         This function is used to generate supplemental structures.
         Supplemental structures include the cases that the to-be-enumerated
@@ -344,7 +373,8 @@ class Slab(Structure):
             relaxed_index: The indices of the to-be-enumerated atoms on the
                 surface.
 
-        Returns:
+        Returns
+        -------
             New slab model with some sites removed.
 
         """
@@ -356,8 +386,7 @@ class Slab(Structure):
         structure.remove_sites(removed_index)
         return structure
 
-    def symmetrize_top_base(self,
-                            symprec: float = 1e-4):
+    def symmetrize_top_base(self, symprec: float = 1e-4):
         """
         Symmetrize the top surface enumerated slab
         model on the basis of the inversion symmetry center to create a
@@ -372,11 +401,11 @@ class Slab(Structure):
         Args:
             symprec: Tolerance for the symmetry detection. Defaults to 1e-4.
 
-        Returns:
+        Returns
+        -------
             Symmetrized slab model with equivalent top and bottom
             surfaces.
         """
-
         # Generate the reference slab which is just the central fixed region
         _, _, slab_ref = self.get_center_sites()
 
@@ -384,14 +413,17 @@ class Slab(Structure):
         # the reference slab has an inversion center
         try:
             symmetric, origin, inversion = slab_ref.is_symmetry(
-                symprec=symprec, return_isc=True)
+                symprec=symprec, return_isc=True
+            )
         except TypeError:
             symmetric = slab_ref.is_symmetry(symprec, return_isc=False)
 
         if not symmetric:
-            slab_ref.to(fmt='poscar', filename='debug-center.vasp')
-            print("Please see the saved \"debug-center.vasp\" structure and "
-                  "see if it makes sense.")
+            slab_ref.to(fmt="poscar", filename="debug-center.vasp")
+            print(
+                'Please see the saved "debug-center.vasp" structure and '
+                "see if it makes sense."
+            )
             raise NoInversionSymmetryError
 
         # New way to implement wrap_pbc
@@ -402,15 +434,23 @@ class Slab(Structure):
         bottom_sites = []
         center_sites = slab_ref.sites
 
-        for s in [s for s in self
-                  if s.frac_coords[self.direction] > origin[self.direction]]:
-            if ('selective_dynamics' in s.properties and
-                    any(s.properties['selective_dynamics'])):
+        for s in [
+            s
+            for s in self
+            if s.frac_coords[self.direction] > origin[self.direction]
+        ]:
+            if "selective_dynamics" in s.properties and any(
+                s.properties["selective_dynamics"]
+            ):
                 top_sites.append(copy.deepcopy(s))
-        for s in [s for s in self
-                  if s.frac_coords[self.direction] < origin[self.direction]]:
-            if ('selective_dynamics' in s.properties and
-                    any(s.properties['selective_dynamics'])):
+        for s in [
+            s
+            for s in self
+            if s.frac_coords[self.direction] < origin[self.direction]
+        ]:
+            if "selective_dynamics" in s.properties and any(
+                s.properties["selective_dynamics"]
+            ):
                 bottom_sites.append(copy.deepcopy(s))
 
         # # Extend the center sites list in case of some sites have exactly the
@@ -442,7 +482,8 @@ class Slab(Structure):
         all sites. This is used to find the location of the slab region in
         the model.
 
-        Returns:
+        Returns
+        -------
             maximum and minimum c fractional coordinates of a slab model
 
         """
@@ -454,9 +495,7 @@ class Slab(Structure):
                 minimum = site.frac_coords[self.direction]
         return minimum, maximum
 
-    def is_symmetry(self,
-                    symprec: float = 1e-1,
-                    return_isc: bool = False):
+    def is_symmetry(self, symprec: float = 1e-1, return_isc: bool = False):
         """
         Check whether the slab model is symmetric. If it is, the inversion
         symmetry center and the inversion operation are able to return.
@@ -490,7 +529,8 @@ class Slab(Structure):
         Check if the enumerated slab models need to rotate to satisfy the
         shape (cuboid) requirement.
 
-        Returns:
+        Returns
+        -------
             Cuboid slab model
 
         """
@@ -498,13 +538,16 @@ class Slab(Structure):
         directions.remove(self.direction)
         slab_rotated = copy.deepcopy(self)
 
-        if round(self.lattice.abc[self.direction], 4) - 0.0001 >= criteria \
-                or \
-                round(self.lattice.abc[self.direction], 4) + 0.0001 <= \
-                criteria:
+        if (
+            round(self.lattice.abc[self.direction], 4) - 0.0001 >= criteria
+            or round(self.lattice.abc[self.direction], 4) + 0.0001 <= criteria
+        ):
             for d in directions:
-                if round(self.lattice.abc[d], 4) - 0.0001 <= criteria <= \
-                        round(self.lattice.abc[d], 4) + 0.0001:
+                if (
+                    round(self.lattice.abc[d], 4) - 0.0001
+                    <= criteria
+                    <= round(self.lattice.abc[d], 4) + 0.0001
+                ):
                     slab_rotated = copy.deepcopy(self)
                     matrix = np.zeros((3, 3))
                     matrix[self.direction, d] = 1
@@ -517,10 +560,9 @@ class Slab(Structure):
         else:
             return slab_rotated
 
-    def calculate_num_sites(self,
-                            composition_list: list,
-                            relaxed_index: dict,
-                            max_cell_size: int):
+    def calculate_num_sites(
+        self, composition_list: list, relaxed_index: dict, max_cell_size: int
+    ):
         """
         Calculate the num of sites should be in the slab model on the basis
         of the user defined composition.
@@ -530,7 +572,8 @@ class Slab(Structure):
             relaxed_index: {"species": [indices of the target species]}
             max_cell_size: Maximum number of supercells of the input slab.
 
-        Returns:
+        Returns
+        -------
             Number of sites in the slab model.
 
         """
@@ -539,26 +582,30 @@ class Slab(Structure):
         num_rest_atoms = {}
         num_curr_atoms = {}
         for i, species in enumerate(self.to_be_enumerated_species):
-            num_relaxed_atoms[species] = len(
-                relaxed_index[species]) * max_cell_size
-            total_target_atoms[species] = \
+            num_relaxed_atoms[species] = (
+                len(relaxed_index[species]) * max_cell_size
+            )
+            total_target_atoms[species] = (
                 self.composition[species] * max_cell_size
-            num_rest_atoms[species] = \
+            )
+            num_rest_atoms[species] = (
                 total_target_atoms[species] - num_relaxed_atoms[species]
-            num_curr_atoms[species] = \
-                num_relaxed_atoms[species] * composition_list[i] + \
-                num_rest_atoms[species]
+            )
+            num_curr_atoms[species] = (
+                num_relaxed_atoms[species] * composition_list[i]
+                + num_rest_atoms[species]
+            )
 
         total_rest_atoms = self.num_sites * max_cell_size - sum(
-            list(total_target_atoms.values()))
+            list(total_target_atoms.values())
+        )
 
-        curr_num_sites = check_int(sum(list(num_curr_atoms.values())) +
-                                   total_rest_atoms)
+        curr_num_sites = check_int(
+            sum(list(num_curr_atoms.values())) + total_rest_atoms
+        )
         return curr_num_sites
 
-    def tune_isc(self,
-                 origin,
-                 shift_isc_back: bool = True):
+    def tune_isc(self, origin, shift_isc_back: bool = True):
         """
         Shift or shift back the inversion symmetry center.
 
@@ -567,7 +614,8 @@ class Slab(Structure):
             shift_isc_back: Whether to shift the inversion symmetry center to
                 the origin.
 
-        Returns:
+        Returns
+        -------
             Slab model with inversion symmetry center shifted to the origin /
                 back.
 
@@ -578,15 +626,14 @@ class Slab(Structure):
             self.wrap_pbc()
         else:
             symmetric, origin, _ = self.is_symmetry(
-                symprec=0.1,
-                return_isc=True)
+                symprec=0.1, return_isc=True
+            )
             for site in self:
-                site .frac_coords -= origin
+                site.frac_coords -= origin
             self.wrap_pbc()
         return self
 
-    def tune_c(self,
-               target_min_c: float):
+    def tune_c(self, target_min_c: float):
         """
         Slightly adjust the slab along the slab direction defined before.
         This is to make sure that the central region is still located at
@@ -596,7 +643,8 @@ class Slab(Structure):
             target_min_c: Desired minimum fractional coordinate along the
                 slab direction defined before.
 
-        Returns:
+        Returns
+        -------
             Slight adjusted slab model
 
         """
@@ -610,9 +658,7 @@ class Slab(Structure):
             site.frac_coords[self.direction] += displace
         return self
 
-    def add_selective_dynamics(self,
-                               lower_limit: float,
-                               upper_limit: float):
+    def add_selective_dynamics(self, lower_limit: float, upper_limit: float):
         """
         Add selective dynamics to the after refined slab model based on the
         number of layers that will be relaxed on the surface.
@@ -621,7 +667,8 @@ class Slab(Structure):
             lower_limit: Lower limit of the central fixed region
             upper_limit: Upper limit of the central fixed region
 
-        Returns:
+        Returns
+        -------
             Enumerated slab model with "selective dynamics" labeled.
 
         """
@@ -629,9 +676,12 @@ class Slab(Structure):
         tolerance = self.tolerance
         structure = copy.deepcopy(self)
         for site in structure:
-            if lower_limit - tolerance <= site.frac_coords[direction] <= \
-                    upper_limit + tolerance:
-                site.properties = {'selective_dynamics': [False, False, False]}
+            if (
+                lower_limit - tolerance
+                <= site.frac_coords[direction]
+                <= upper_limit + tolerance
+            ):
+                site.properties = {"selective_dynamics": [False, False, False]}
             else:
-                site.properties = {'selective_dynamics': [True, True, True]}
+                site.properties = {"selective_dynamics": [True, True, True]}
         return structure

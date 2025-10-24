@@ -1,6 +1,0 @@
-monty
-numpy
-pandas
-matplotlib
-pymatgen
-setuptools

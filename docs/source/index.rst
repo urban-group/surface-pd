@@ -5,15 +5,14 @@
 
 Welcome to surface-pd's documentation!
 ======================================
-The Surface Phase Diagram Generator (**surface-pd**, **the abbreviation**)is an
-open-source Python package designed to automate the surface reconstruction
-enumeration and plotting surface phase diagram.
+The Surface Phase Diagram Generator (**surface-pd**) is an open-source Python
+package designed to automate surface reconstruction enumeration and surface
+phase diagram generation.
 
-This program uses the density functional theory (DFT) energies
-to calculate the surface free energy of each reconstruction. It can be
-directly used to do surface enumeration for catalysts,
-electrodes, and metals
-surfaces as well as corrosion on the surfaces.
+This program uses density functional theory (DFT) energies to calculate the
+surface free energy of each reconstruction. It can be directly used for surface
+enumeration of catalysts, electrodes, and metal surfaces, as well as for
+studying corrosion on surfaces.
 
 If you have any questions or issues, please contact:
 
