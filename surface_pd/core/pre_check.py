@@ -1,13 +1,15 @@
-from shutil import which
-from monty.dev import requires
+"""Pre-enumeration validation helpers for slab models."""
 
+from shutil import which
+
+from monty.dev import requires
 from pymatgen.core.surface import get_slab_regions
 
 from surface_pd.core.slab import Slab
 from surface_pd.util import check_int
 
 
-class PreCheck(object):
+class PreCheck:
     """
     PreCheck class to check whether the input slab model is valid.
 
@@ -32,10 +34,7 @@ class PreCheck(object):
         "Installation)."
     )
     def is_slab(self):
-        """
-        Check whether the input structure is a slab.
-
-        """
+        """Check whether the input structure is a slab."""
         try:
             ranges = get_slab_regions(self.structure)
         except ValueError:
@@ -51,23 +50,17 @@ class PreCheck(object):
                 return False
 
     def is_cuboid(self):
-        """
-        Check whether the input structure is a cuboid.
-
-        """
+        """Check whether the input structure is a cuboid."""
         if max(self.structure.lattice.abc) != self.structure.lattice.c:
             return False
         else:
             return True
 
     def all_has_selective_dynamics(self):
-        """
-        Check if all sites have selective dynamics as the site properties.
-
-        """
+        """Check if all sites have selective dynamics properties."""
         for site in self.structure:
             try:
-                sd = site.properties['selective_dynamics']
+                sd = site.properties["selective_dynamics"]
                 # Handle both list and numpy array
                 if (all(not x for x in sd) or all(x for x in sd)):
                     return True
@@ -88,22 +81,18 @@ class PreCheck(object):
 
         """
         return Slab.from_sites(self.structure).is_symmetry(
-            symprec=symprec,
-            return_isc=False)
+            symprec=symprec, return_isc=False
+        )
 
     def relax_both_surfaces(self):
-        """
-        Check if the input slab model has only one side of the surface
-        will be relaxed.
-
-        """
+        """Check whether only one side of the surface is relaxed."""
         # Wrap any out of unit cell atoms back
         self.structure.wrap_pbc()
 
         fixed_atoms_c_set = []
         for site in self.structure:
             # Handle both list and numpy array for selective_dynamics
-            sd = site.properties['selective_dynamics']
+            sd = site.properties["selective_dynamics"]
             if all(not x for x in sd):  # All False
                 fixed_atoms_c_set.append(
                     site.frac_coords[self.structure.direction])
@@ -122,11 +111,13 @@ class PreCheck(object):
             lower_boundary = min(ranges[0])
 
         if min_fixed_atom_c - lower_boundary < self.structure.tolerance:
-            print('*'*40)
-            print(' The slab model provided has whole bottom surface fixed. '
-                  '\n '
-                  ' Therefore, no symmetrization is needed.')
-            print('*'*40)
+            print("*" * 40)
+            print(
+                " The slab model provided has whole bottom surface fixed. "
+                "\n "
+                " Therefore, no symmetrization is needed."
+            )
+            print("*" * 40)
             return False
         else:
             return True

@@ -19,6 +19,8 @@ from surface_pd.error import (
 
 
 class PostCheck:
+    """Validate enumerated slab structures after generation."""
+
     def __init__(
         self,
         structure: Slab,
@@ -54,8 +56,7 @@ class PostCheck:
         symprec=1e-5,
     ):
         r"""
-        Perform final check to see whether the enumerated slab models are
-        correct.
+        Perform final checks on enumerated slab models.
 
         1. Has the correct geometry.
         2. Has the inversion symmetry center even with a quite high symmetry

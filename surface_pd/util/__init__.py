@@ -6,7 +6,15 @@ conversions, validation, and dictionary manipulations used throughout the
 surface-pd package.
 """
 
-from .util import *
+from .util import (
+    all_int,
+    check_int,
+    csv2dict,
+    define_scaling_matrix,
+    get_values_nested_dict,
+    have_zero,
+    replace_dummy,
+)
 
 __all__ = [
     "define_scaling_matrix",

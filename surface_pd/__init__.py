@@ -1,5 +1,5 @@
 """
-surface-pd: Surface Phase Diagram Generator
+surface-pd: Surface Phase Diagram Generator.
 
 An open-source Python package designed to automate surface reconstruction
 enumeration and plotting of surface phase diagrams for materials science

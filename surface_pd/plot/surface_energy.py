@@ -66,6 +66,7 @@ class SurfaceEnergy:
 
     @property
     def e_li(self):
+        """Return the reference lithium energy."""
         return -2.3
 
     def g_oxygen(self):

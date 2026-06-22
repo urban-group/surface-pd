@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-This code will enumerate the surface of the input slab model with user defined
-target species and composition.
+Enumerate surface slabs by target species and composition.
+
 For the detailed algorithm behind the enumeration, please see the
 following references below.
 (1) Morgan, W. S.; Hart, G. L. W.; Forcade, R. W.
@@ -42,13 +42,13 @@ from surface_pd.analysis.slab_analysis import (
 )
 from surface_pd.core import EnumWithComposition, PostCheck, PreCheck, Slab
 from surface_pd.error import (
-    InvalidInputFormatError,
     IncompatibleSymmError,
+    InvalidCompositionError,
+    InvalidInputFormatError,
+    NoInversionSymmetryError,
     NonDefinedSelectiveDynamicsError,
     NonSlabError,
-    InvalidCompositionError,
     SlabOrientationError,
-    NoInversionSymmetryError
 )
 from surface_pd.util import (
     all_int,
@@ -70,8 +70,8 @@ def automate_surface(
     to_vasp: bool = False,
 ):
     """
-    This function contains the general framework to enumerate the parent
-    slab model surface with different target species and compositions.
+    Enumerate a parent slab over target species and compositions.
+
     TODO:
         1. Check the meaning of num_layers_enumed. Is this really the number of
         layers enumed or number of layers relaxed? Can the number of layers
@@ -231,7 +231,7 @@ def automate_surface(
 
             prev = len(enumerated_structures)
 
-        unique_index = "-{:0%dd}" % (len(str(len(enumerated_structures))))
+        unique_index = f"-{{:0{len(str(len(enumerated_structures)))}d}}"
         for k, symmetrized_structure in enumerate(enumerated_structures):
             indicator = 0
             if symmetric:
@@ -378,8 +378,8 @@ def run(json_file_path, to_vasp):
     try:
         with open(json_file_path) as fp:
             data = json.load(fp)
-    except (json.decoder.JSONDecodeError, IsADirectoryError):
-        raise InvalidInputFormatError
+    except (json.decoder.JSONDecodeError, IsADirectoryError) as err:
+        raise InvalidInputFormatError from err
 
     # Generate all composition combo
     to_be_enumerated_species = list(data["replacements"])
@@ -396,7 +396,7 @@ def run(json_file_path, to_vasp):
     composition_combo = []
     for combo in product(*composition_list):
         replace_dict = {}
-        for key, value in zip(to_be_enumerated_species, combo):
+        for key, value in zip(to_be_enumerated_species, combo, strict=True):
             replace_dict[key] = {key: float(value)}
         composition_combo.append(replace_dict)
 

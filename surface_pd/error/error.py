@@ -29,8 +29,10 @@ class SlabOrientationError(Exception):
 
 class NonCentralInversionSymmetryError(Exception):
     """
-    An error class defined for the slab model which does not have the
-    inversion symmetry center located at the origin.
+    Error for a non-central inversion symmetry center.
+
+    Raised when the slab has inversion symmetry but the center is not located
+    at the origin.
     """
 
     def __str__(self):
@@ -42,8 +44,9 @@ class NonCentralInversionSymmetryError(Exception):
 
 class PrimitiveStructureFinderError(Exception):
     """
-    An error class defined for wrong refined structure (some sites are lost or
-    redundant).
+    Error for invalid refined structures.
+
+    Raised when some sites are lost or redundant.
     """
 
     def __str__(self):
@@ -56,9 +59,9 @@ class PrimitiveStructureFinderError(Exception):
 
 class NonDefinedSelectiveDynamicsError(Exception):
     """
-    An error class defined for the slab model that does not have selective
-    dynamics defined for all sites (selective dynamics is extremely useful
-    in several steps).
+    Error for slabs missing complete selective dynamics data.
+
+    Selective dynamics must be defined for all sites.
     """
 
     def __str__(self):
@@ -67,8 +70,9 @@ class NonDefinedSelectiveDynamicsError(Exception):
 
 class NonSlabError(Exception):
     """
-    An error class defined for the structure that is not a slab model
-    (no enough vacuum region in the model).
+    Error for structures that are not slab models.
+
+    Raised when there is not enough vacuum in the model.
     """
 
     def __str__(self):
@@ -128,8 +132,10 @@ class TooLargeSlabError(Exception):
 
 class InvalidCompositionError(Exception):
     """
-    An error class defined for the invalid user defined composition list to
-    be enumerated.
+    Error for invalid user-defined enumeration compositions.
+
+    Raised when a requested composition is incompatible with the slab and
+    target cell size.
     """
 
     def __str__(self):
@@ -142,8 +148,10 @@ class InvalidCompositionError(Exception):
 
 class InvalidPhasesAlignError(Exception):
     """
-    An error class defined for the invalid phases used to calculate the
-    alignment energy.
+    Error for invalid phases used to calculate alignment energy.
+
+    Alignment phases must be comparable on the basis of the same surface
+    area.
     """
 
     def __str__(self):
@@ -156,8 +164,9 @@ class InvalidPhasesAlignError(Exception):
 
 class NonIntegerError(Exception):
     """
-    An error class defined to check whether the after enumerated number of
-    atoms is an integer with tolerance.
+    Error for non-integer atom counts after enumeration.
+
+    Raised when the computed atom count is outside tolerance from an integer.
     """
 
     def __str__(self):
@@ -166,8 +175,9 @@ class NonIntegerError(Exception):
 
 class IncompatibleSymmError(Exception):
     """
-    An error class defined to show that the user defined symmetric parameter is
-     not compatible with code determined symmetric parameter.
+    Error for incompatible user-defined slab symmetry.
+
+    Raised when the input parameter conflicts with the slab-derived symmetry.
     """
 
     def __str__(self):
@@ -179,8 +189,9 @@ class IncompatibleSymmError(Exception):
 
 class InvalidInputFormatError(Exception):
     """
-    An error class defined to show that the user defined input format is not
-    valid.
+    Error for invalid user-defined input format.
+
+    Raised when the CLI input cannot be parsed as the expected JSON format.
     """
 
     def __str__(self):

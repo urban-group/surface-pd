@@ -30,11 +30,13 @@ def find_stable_phases(G: list, dataframe: pd.DataFrame) -> np.ndarray:
     Args:
         G: List of Gibbs free energies for all phases and compositions.
             Length should be (number of phases) × (number of compositions).
-        dataframe: DataFrame containing composition and energy data for each phase.
+        dataframe: DataFrame containing composition and energy data for each
+            phase.
 
     Returns
     -------
-        Array of indices indicating the most stable phase at each composition point.
+        Array of indices indicating the most stable phase at each composition
+        point.
     """
     # Split an array into multiple sub-arrays
     G_split = np.split(G, len(dataframe))
@@ -121,15 +123,16 @@ def get_compositions(
 
     Args:
         dataframe: DataFrame containing composition data with species columns.
-        num_files: Number of data files processed (affects composition calculation).
+        num_files: Number of data files processed. This affects composition
+            calculation.
         species: Chemical species name (e.g., "Li", "O", "Ni") for which to
             calculate compositions.
         ticks: List of tick positions on the colorbar.
 
     Returns
     -------
-        List of formatted strings showing percentage composition of the species,
-        e.g., ["25.0%Li", "50.0%Li", "75.0%Li"].
+        List of formatted strings showing percentage composition of the
+        species, e.g., ["25.0%Li", "50.0%Li", "75.0%Li"].
     """
     total_relaxed = (
         max(dataframe.iloc[:]["O"]) - min(dataframe.iloc[:]["O"])
@@ -166,7 +169,8 @@ def get_labels(
 
     Args:
         dataframe: DataFrame containing composition data for all species.
-        num_files: Number of data files processed (affects composition calculation).
+        num_files: Number of data files processed. This affects composition
+            calculation.
         species: List of chemical species names (e.g., ["Li", "O"]) to include
             in the labels.
         ticks: List of tick positions on the colorbar.

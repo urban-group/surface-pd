@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-This code will be used to construct the surface phase diagram.
-"""
+"""Construct surface phase diagrams from energy data."""
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
@@ -10,10 +8,17 @@ __date__ = "2022-08-05"
 
 import argparse
 
+import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from surface_pd.plot.pd_data import PdData
-from surface_pd.plot.plot import *
+from surface_pd.plot.plot import (
+    convert_numbers,
+    find_stable_phases,
+    get_labels,
+    get_ticks_and_levels,
+)
 
 rcparams = {
     "font.size": 20,
@@ -43,6 +48,7 @@ def surface_pd_plot(
     discharge=False,
     save=False,
 ):
+    """Plot a surface phase diagram from one or more data files."""
     # Create x and y axes
     V = np.linspace(0.0, 5.0, 500)
     T = np.linspace(low_T, high_T, 500)

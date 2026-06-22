@@ -70,7 +70,8 @@ def csv2dict(csvlist: list) -> dict:
 
     Returns
     -------
-        Structured dictionary with automatic numeric conversion where applicable.
+        Structured dictionary with automatic numeric conversion where
+        applicable.
     """
 
     def trynumeric(v):
@@ -174,7 +175,7 @@ def have_zero(n: list) -> bool:
     -------
         True if any item equals zero, False otherwise.
     """
-    return any([x == 0 for x in n])
+    return any(x == 0 for x in n)
 
 
 def replace_dummy(subs_dict: dict, dummy_species: list) -> dict:
@@ -188,7 +189,8 @@ def replace_dummy(subs_dict: dict, dummy_species: list) -> dict:
 
     Args:
         subs_dict: Species and occupancy dictionaries containing the species
-            mapping in string-string pairs. Format: {species: {species: occupancy}}.
+            mapping in string-string pairs. Format:
+            {species: {species: occupancy}}.
         dummy_species: List of dummy species names (e.g., ["X", "Y"]) to
             replace real species as dictionary keys.
 
@@ -197,9 +199,7 @@ def replace_dummy(subs_dict: dict, dummy_species: list) -> dict:
         Updated dictionary with dummy species as keys and real species as
         nested values. Entries with zero occupancy are removed.
     """
-    for i, key, value in zip(
-        range(len(dummy_species)), subs_dict.keys(), subs_dict.values()
-    ):
+    for i, (key, value) in enumerate(list(subs_dict.items())):
         subs_dict[dummy_species[i]] = subs_dict.pop(key)
         value[dummy_species[i]] = value.pop(key)
 

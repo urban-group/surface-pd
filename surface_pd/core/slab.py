@@ -23,7 +23,8 @@ from surface_pd.util import check_int
 
 class Slab(Structure):
     """
-    Constructor of periodic Slab class.
+    Represent a periodic surface slab.
+
     This child class is inherited from the pymatgen.core.structure.Structure.
     The args defined have the same meanings as in the pymatgen
     documentation.
@@ -92,6 +93,7 @@ class Slab(Structure):
 
     @property
     def direction(self):
+        """Return the lattice direction perpendicular to the surface."""
         return self._direction
 
     @direction.setter
@@ -100,6 +102,7 @@ class Slab(Structure):
 
     @property
     def tolerance(self):
+        """Return the layer grouping tolerance."""
         return self._tolerance
 
     @tolerance.setter
@@ -108,6 +111,7 @@ class Slab(Structure):
 
     @property
     def to_be_enumerated_species(self):
+        """Return the species selected for enumeration."""
         return self._to_be_enumerated_species
 
     @to_be_enumerated_species.setter
@@ -116,6 +120,7 @@ class Slab(Structure):
 
     @property
     def num_layers_enumed(self):
+        """Return the number of layers selected for enumeration."""
         return self._num_layers_enumed
 
     @num_layers_enumed.setter
@@ -124,6 +129,7 @@ class Slab(Structure):
 
     @property
     def symmetric(self):
+        """Return whether the slab should remain symmetric."""
         return self._symmetric
 
     @symmetric.setter
@@ -133,6 +139,7 @@ class Slab(Structure):
     def group_atoms_by_layer(self, layers: dict):
         """
         Group misclassified atoms into the right layers.
+
         For example, c_atom1 = 0.01, c_atoms2 = 0.02, they should be
         classified in one layer. But actually they are not. So this function
         here will search the difference between two closest atoms, if the
@@ -149,7 +156,7 @@ class Slab(Structure):
             coordinates as keys and number of atoms as values.
 
         """
-        res = dict()
+        res = {}
         o_layer_sorted = dict(
             sorted(layers.items(), key=lambda x: x[0], reverse=True)
         )
@@ -167,8 +174,7 @@ class Slab(Structure):
 
     def wrap_pbc(self):
         """
-        Wrap out of the boundary fractional coordinates back into the unit
-        cell.
+        Wrap fractional coordinates back into the unit cell.
 
         Returns
         -------
@@ -195,8 +201,7 @@ class Slab(Structure):
 
     def get_center_sites(self):
         """
-        Get the center sites in the slab model on the basis of the
-        "selective_dynamics" defined.
+        Get center sites from fixed selective dynamics flags.
 
         Returns
         -------
@@ -218,9 +223,7 @@ class Slab(Structure):
 
     def layers_finder(self, precision: int = 2):
         """
-        This function is used to find the c fractional coordinates of all
-        species in the input slab model and the number of atoms in each
-        layer.
+        Find species layer populations by fractional coordinate.
 
         Args:
             precision: Round c fraction coordinates to a given precision in
@@ -249,8 +252,8 @@ class Slab(Structure):
         return layers
 
     def layer_distinguisher(self):
-        """
-        This function is used to distinguish the layers that will be relaxed.
+        r"""
+        Distinguish the layers that will be relaxed.
 
         Returns
         -------
@@ -267,9 +270,7 @@ class Slab(Structure):
         # Get the boundaries of the surface relaxed region in fractional
         # coordinates format (c-direction)
         target_layers = {}
-        for species, c_frac in zip(
-            self.to_be_enumerated_species, self.num_layers_enumed
-        ):
+        for species in self.to_be_enumerated_species:
             all_c_frac = list(layers[species])
             if self.symmetric:
                 target_layers[species] = [
@@ -288,8 +289,7 @@ class Slab(Structure):
 
     def index_extraction(self, only_top: bool = False):
         """
-        This function is used to get the indices of the target species in the
-        relaxed surface layers.
+        Get target species indices in the relaxed surface layers.
 
         Args:
             only_top: Whether to only return indices of the target species in
@@ -330,9 +330,7 @@ class Slab(Structure):
 
     def surface_substitute(self, dummy_species: list):
         """
-        This function is used to substitute the to-be-enumerated species from
-        the slab top surface with dummy species. This will facilitate the
-        EnumWithComposition class to find the targeted species.
+        Substitute top-surface target species with dummy species.
 
         Args:
             dummy_species: A special specie for representing non-traditional
@@ -362,7 +360,8 @@ class Slab(Structure):
         self, subs_dict: dict, relaxed_index: dict
     ):
         """
-        This function is used to generate supplemental structures.
+        Generate supplemental structures.
+
         Supplemental structures include the cases that the to-be-enumerated
         structure is straight forward to generate and does not require the
         EnumWithComposition class to involve.
@@ -388,9 +387,10 @@ class Slab(Structure):
 
     def symmetrize_top_base(self, symprec: float = 1e-4):
         """
-        Symmetrize the top surface enumerated slab
-        model on the basis of the inversion symmetry center to create a
-        fully enumerated slab model. The inversion symmetry center is
+        Symmetrize the top surface by the inversion symmetry center.
+
+        This creates a fully enumerated slab model. The inversion symmetry
+        center is
         determined based on the central fixed region only because the input
         slab model is not symmetric since on the one hand, the top surface
         of the slab is substituted by other dummy species,
@@ -478,9 +478,7 @@ class Slab(Structure):
 
     def get_max_min_c_frac(self):
         """
-        Get the maximum and minimum values of the c fractional coordinates for
-        all sites. This is used to find the location of the slab region in
-        the model.
+        Get the maximum and minimum fractional c coordinates.
 
         Returns
         -------
@@ -497,8 +495,10 @@ class Slab(Structure):
 
     def is_symmetry(self, symprec: float = 1e-1, return_isc: bool = False):
         """
-        Check whether the slab model is symmetric. If it is, the inversion
-        symmetry center and the inversion operation are able to return.
+        Check whether the slab model is symmetric.
+
+        If it is, the inversion symmetry center and the inversion operation
+        are able to return.
 
         Args:
             symprec: Tolerance for symmetry finding. Defaults to 1e-1.
@@ -526,8 +526,7 @@ class Slab(Structure):
 
     def check_rotate(self, criteria: float):
         """
-        Check if the enumerated slab models need to rotate to satisfy the
-        shape (cuboid) requirement.
+        Check if the slab needs rotation to satisfy the cuboid requirement.
 
         Returns
         -------
@@ -564,8 +563,7 @@ class Slab(Structure):
         self, composition_list: list, relaxed_index: dict, max_cell_size: int
     ):
         """
-        Calculate the num of sites should be in the slab model on the basis
-        of the user defined composition.
+        Calculate the number of sites for the user-defined composition.
 
         Args:
             composition_list: Compositions of enumerated species.
@@ -636,6 +634,7 @@ class Slab(Structure):
     def tune_c(self, target_min_c: float):
         """
         Slightly adjust the slab along the slab direction defined before.
+
         This is to make sure that the central region is still located at
         around the same place.
 
@@ -660,8 +659,7 @@ class Slab(Structure):
 
     def add_selective_dynamics(self, lower_limit: float, upper_limit: float):
         """
-        Add selective dynamics to the after refined slab model based on the
-        number of layers that will be relaxed on the surface.
+        Add selective dynamics to a refined slab model.
 
         Args:
             lower_limit: Lower limit of the central fixed region

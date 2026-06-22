@@ -18,8 +18,7 @@ from surface_pd.core.slab import Slab
 
 class EnumWithComposition:
     """
-    EnumWithComposition class to enumerate the parent slab model with
-    defined composition.
+    Enumerate a parent slab model with a defined composition.
 
     Args:
         subs_dict (dict): Species and occupancy dictionaries containing the

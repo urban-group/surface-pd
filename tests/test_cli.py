@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_ENTRY_POINTS = {
     "surface-enumeration": "surface_pd.cli.surface_enumeration:main",

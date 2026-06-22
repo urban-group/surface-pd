@@ -3,6 +3,5 @@
 
 from surface_pd.cli.discharge_pd_gene import main
 
-
 if __name__ == "__main__":
     main()

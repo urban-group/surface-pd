@@ -3,13 +3,15 @@
 import tomllib
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _dependency_names(dependencies):
     """Return normalized package names from dependency specifiers."""
-    return {dependency.split(">=", maxsplit=1)[0] for dependency in dependencies}
+    return {
+        dependency.split(">=", maxsplit=1)[0]
+        for dependency in dependencies
+    }
 
 
 def test_dev_extra_declares_configured_tools():
@@ -39,3 +41,14 @@ def test_docs_requirements_match_docs_extra():
     ]
 
     assert docs_requirements == docs_extra
+
+
+def test_package_exports_resolve_to_defined_names():
+    """Package-level public exports should refer to importable symbols."""
+    import surface_pd.analysis as analysis
+    import surface_pd.error as error
+    import surface_pd.plot as plot
+    import surface_pd.util as util
+
+    for module in (analysis, error, plot, util):
+        assert all(hasattr(module, name) for name in module.__all__)

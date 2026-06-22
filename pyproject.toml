@@ -107,6 +107,16 @@ select = [
 ignore = [
     "D203",  # one-blank-line-before-class
     "D213",  # multi-line-summary-second-line
+    # Scientific APIs and formulas commonly use symbols such as V, T, G,
+    # nLi, and nTM. Renaming existing public arguments would be disruptive
+    # and would make formulas less recognizable.
+    "N803",  # invalid-argument-name
+    "N806",  # non-lowercase-variable-in-function
+    # These docstring checks are too prescriptive for existing exception
+    # message methods and descriptive scientific APIs.
+    "D105",  # undocumented-magic-method
+    "D401",  # non-imperative-mood
+    "D404",  # docstring-starts-with-this
 ]
 
 [tool.ruff.lint.pydocstyle]

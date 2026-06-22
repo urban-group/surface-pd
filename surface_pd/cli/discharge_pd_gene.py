@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-This code will be used to generate the discharge surface pd data.
-"""
+"""Generate discharge surface phase diagram data."""
 
 __author__ = "Xinhao Li"
 __email__ = "xl2778@columbia.edu"
@@ -16,6 +14,7 @@ from surface_pd.plot.pd_data import PdData
 
 
 def find_max_min_composition(data: pd.DataFrame, column_name: str):
+    """Return the span of values in a dataframe column."""
     a_max = data[column_name].max()
     b_min = data[column_name].min()
     return a_max - b_min
@@ -27,6 +26,7 @@ def add_composition2df(
     lithium_like_species: str = None,
     oxygen_like_species: str = None,
 ):
+    """Add lithium and oxygen composition columns to phase data."""
     df1 = pd.read_csv(data1, sep=r"\s+", index_col=0)
     df1_c = PdData(
         df1,
@@ -80,6 +80,7 @@ def create_discharge_pd(
     oxygen_like_species: str = None,
     save=False,
 ):
+    """Create discharge phase data from one or two charge phase datasets."""
     if len(data_files) == 1:
         df1 = add_composition2df(
             data_files[0],

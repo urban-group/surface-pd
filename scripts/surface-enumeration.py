@@ -3,6 +3,5 @@
 
 from surface_pd.cli.surface_enumeration import main
 
-
 if __name__ == "__main__":
     main()

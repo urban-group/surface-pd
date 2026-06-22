@@ -65,15 +65,17 @@ class PdData:
 
         This is to make the DFT energies directly comparable.
 
-        Returns
-        -------
-
         """
         self.dataframe.reset_index(inplace=True)
 
         # Standardize column names for compatibility
-        if 'E' in self.dataframe.columns and 'dft_energy' not in self.dataframe.columns:
-            self.dataframe.rename(columns={'E': 'dft_energy'}, inplace=True)
+        if (
+            "E" in self.dataframe.columns
+            and "dft_energy" not in self.dataframe.columns
+        ):
+            self.dataframe.rename(
+                columns={"E": "dft_energy"}, inplace=True
+            )
 
         max_TM_species = max(self.dataframe.iloc[:][self.tm_species()])
         for i, num in enumerate(self.dataframe.iloc[:][self.tm_species()]):
@@ -97,13 +99,7 @@ class PdData:
         return self.dataframe
 
     def get_check_phases(self):
-        """
-        Get phases to check for alignment energy calculation.
-
-        Returns
-        -------
-
-        """
+        """Get phases to check for alignment energy calculation."""
         max_Li = max(self.dataframe.iloc[:][self.lithium_like_species])
         max_O = max(self.dataframe.iloc[:][self.oxygen_like_species])
         if max_Li == max_O / 2:
@@ -114,7 +110,7 @@ class PdData:
                 & (self.dataframe[self.oxygen_like_species] == min_O)
             ]
             phases_list = []
-            for i, phase in phases_set.iterrows():
+            for _, phase in phases_set.iterrows():
                 phases_list.append(phase)
             return phases_list
 

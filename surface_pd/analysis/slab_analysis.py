@@ -25,7 +25,7 @@ def structure_filter(input_slabs, direction, criteria):
 
     """
     filtered_structures = []
-    for i, slab in enumerate(input_slabs):
+    for slab in input_slabs:
         lattice = slab["structure"].lattice.abc
         ############################################
         # structure['structure'].remove_site_property(
@@ -52,8 +52,7 @@ def selective_dynamics_completion(
     tolerance: float,
 ):
     """
-    Complete the selective dynamics properties after the enumeration based
-    on the rules of species and locations.
+    Complete selective dynamics properties after enumeration.
 
     Args:
         structure: Enumerated slab model.
