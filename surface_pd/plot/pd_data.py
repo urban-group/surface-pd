@@ -5,10 +5,14 @@ This module provides the PdData class for loading, processing, and normalizing
 DFT energy data for surface phase diagram construction.
 """
 
+import logging
+
 import numpy as np
 import pandas as pd
 
 from surface_pd.plot.surface_energy import SurfaceEnergy
+
+logger = logging.getLogger(__name__)
 
 # Constants for bulk energies by functional
 E_O2_by_funtional = {"PBE": -9.86, "SCAN": -10.45}
@@ -147,14 +151,10 @@ class PdData:
         E_shift = (1 / (2 * A)) * (E[0] - E[1] + num_bulk * E_bulk)
         if not all(E):
             E_shift = 0
-        print(
-            "Surface area:",
+        logger.info(
+            "Surface area: %s\nE_bulk: %s\nShift energy: %s",
             A,
-            "\n",
-            "E_bulk:",
             E_bulk,
-            "\n",
-            "Shift energy:",
             E_shift,
         )
         return E_shift

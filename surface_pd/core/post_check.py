@@ -7,6 +7,7 @@ properties and geometric consistency.
 """
 
 import copy
+import logging
 
 import numpy as np
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -18,6 +19,8 @@ from surface_pd.error import (
     NonCentralInversionSymmetryError,
     PrimitiveStructureFinderError,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class PostCheck:
@@ -194,15 +197,18 @@ class PostCheck:
                 )
 
                 # Save structure for debugging
+                debug_filename = (
+                    f"debug-enumed-{species_str}_"
+                    f"{composition_str}-{index}.vasp"
+                )
                 self.structure.to(
                     fmt="poscar",
-                    filename=(f"debug-enumed-{species_str}_"
-                              + f"{composition_str}-{index}.vasp"),
+                    filename=debug_filename,
                 )
-                print(
-                    f'Please see the saved "debug-enumed-{species_str}'
-                    f'_{composition_str}_{index}.vasp" '
-                    "structure and see if it makes sense."
+                logger.error(
+                    "Saved debug structure %s for enumerated slab without "
+                    "inversion symmetry.",
+                    debug_filename,
                 )
                 raise NoInversionSymmetryError
 
@@ -212,7 +218,10 @@ class PostCheck:
                 abs(origin[self.direction])
                 > self.tolerance + self.symprec * 100
             ):
-                print(origin)
+                logger.error(
+                    "Detected non-central inversion symmetry origin: %s",
+                    origin,
+                )
                 raise NonCentralInversionSymmetryError
         return self.structure
 
@@ -288,15 +297,18 @@ class PostCheck:
             )
 
             # Save structure for debugging
+            debug_filename = (
+                f"debug-refined-{species_str}_"
+                f"{composition_str}-{index}.vasp"
+            )
             refined_structure.to(
                 fmt="poscar",
-                filename=(f"debug-refined-{species_str}"
-                          + f"_{composition_str}-{index}.vasp"),
+                filename=debug_filename,
             )
-            print(
-                f'Please see the saved "debug-refined-{species_str}'
-                f'_{composition_str}_{index}.vasp" '
-                "structure and see if it makes sense."
+            logger.error(
+                "Saved debug structure %s for refined slab with unexpected "
+                "site count.",
+                debug_filename,
             )
             raise PrimitiveStructureFinderError
 

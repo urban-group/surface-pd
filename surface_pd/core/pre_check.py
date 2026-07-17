@@ -1,5 +1,6 @@
 """Pre-enumeration validation helpers for slab models."""
 
+import logging
 from shutil import which
 
 from monty.dev import requires
@@ -7,6 +8,8 @@ from pymatgen.core.surface import get_slab_regions
 
 from surface_pd.core.slab import Slab
 from surface_pd.util import check_int
+
+logger = logging.getLogger(__name__)
 
 
 class PreCheck:
@@ -111,13 +114,10 @@ class PreCheck:
             lower_boundary = min(ranges[0])
 
         if min_fixed_atom_c - lower_boundary < self.structure.tolerance:
-            print("*" * 40)
-            print(
-                " The slab model provided has whole bottom surface fixed. "
-                "\n "
-                " Therefore, no symmetrization is needed."
+            logger.info(
+                "The slab model provided has the whole bottom surface fixed; "
+                "no symmetrization is needed."
             )
-            print("*" * 40)
             return False
         else:
             return True

@@ -8,6 +8,7 @@ layer identification, symmetry operations, and enumeration support.
 
 import collections
 import copy
+import logging
 from collections.abc import Sequence
 
 import numpy as np
@@ -19,6 +20,8 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from surface_pd.error import NoInversionSymmetryError
 from surface_pd.util import check_int
+
+logger = logging.getLogger(__name__)
 
 
 class Slab(Structure):
@@ -419,10 +422,12 @@ class Slab(Structure):
             symmetric = slab_ref.is_symmetry(symprec, return_isc=False)
 
         if not symmetric:
-            slab_ref.to(fmt="poscar", filename="debug-center.vasp")
-            print(
-                'Please see the saved "debug-center.vasp" structure and '
-                "see if it makes sense."
+            debug_filename = "debug-center.vasp"
+            slab_ref.to(fmt="poscar", filename=debug_filename)
+            logger.error(
+                "Saved debug structure %s for central slab without inversion "
+                "symmetry.",
+                debug_filename,
             )
             raise NoInversionSymmetryError
 
@@ -510,7 +515,6 @@ class Slab(Structure):
         if sga.is_laue():  # has Laue symmetry (centro-symmetry)
             if return_isc:
                 ops = sga.get_symmetry_operations()
-                # print(ops)
                 for op in ops:
                     if np.all(op.rotation_matrix == -np.identity(3)):
                         inversion = op
