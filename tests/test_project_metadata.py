@@ -4,6 +4,8 @@ import tomllib
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SUPPORTED_PYTHON_VERSIONS = ("3.11", "3.12", "3.13", "3.14")
+REQUIRES_PYTHON = ">=3.11,<3.15"
 STALE_DOC_COMMANDS = (
     "surface-enumeration.py",
     "surface-pd-plot.py",
@@ -66,8 +68,8 @@ def test_documented_installation_commands_match_metadata():
         for path in (PROJECT_ROOT / "docs" / "source").glob("*.rst")
     )
 
-    assert metadata["project"]["requires-python"] == ">=3.11"
-    assert "Python >= 3.11" in docs_text
+    assert metadata["project"]["requires-python"] == REQUIRES_PYTHON
+    assert "Python >= 3.11, < 3.15" in docs_text
     for script_name in metadata["project"]["scripts"]:
         assert script_name in docs_text
     for stale_command in STALE_DOC_COMMANDS:
@@ -91,7 +93,10 @@ def test_ci_workflow_runs_verification_commands():
     workflow = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
     workflow_text = workflow.read_text()
 
-    assert 'python-version: ["3.11", "3.12"]' in workflow_text
+    matrix_versions = ", ".join(f'"{version}"' for version in (
+        SUPPORTED_PYTHON_VERSIONS
+    ))
+    assert f"python-version: [{matrix_versions}]" in workflow_text
     assert 'python -m pip install -e ".[dev]"' in workflow_text
     assert "ruff check ." in workflow_text
     assert "python -m pytest" in workflow_text
@@ -102,3 +107,13 @@ def test_ci_workflow_runs_verification_commands():
         workflow_text
     )
     assert "actions/upload-artifact" in workflow_text
+
+
+def test_python_metadata_matches_supported_versions():
+    """Python version metadata should match the tested support policy."""
+    metadata = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
+    classifiers = set(metadata["project"]["classifiers"])
+
+    assert metadata["project"]["requires-python"] == REQUIRES_PYTHON
+    for version in SUPPORTED_PYTHON_VERSIONS:
+        assert f"Programming Language :: Python :: {version}" in classifiers

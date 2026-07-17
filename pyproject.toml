@@ -7,7 +7,7 @@ name = "surface-pd"
 version = "1.0.0"
 description = "Generation of surface phase diagrams"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
 license = {text = "MIT"}
 authors = [
     {name = "Xinhao Li", email = "xinhao.li@columbia.edu"},
@@ -25,6 +25,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Software Development :: Libraries :: Python Modules",

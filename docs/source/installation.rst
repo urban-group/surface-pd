@@ -4,7 +4,7 @@ Installation
 
 Requirements
 ************
-* `Python >= 3.11 <https://www.python.org/>`_
+* `Python >= 3.11, < 3.15 <https://www.python.org/>`_
 * `numpy ≥ 2.0 <https://numpy.org/doc/stable/>`_
 * `pymatgen ≥ 2024.10.3 <https://pymatgen.org/>`_
 * `matplotlib ≥ 3.8.0 <https://matplotlib.org/>`_
