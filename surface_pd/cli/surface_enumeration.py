@@ -261,7 +261,10 @@ def automate_surface(
                     )
                 ):
                     pc = PostCheck(refined_structure)
-                    indicator, refined_structure = pc.slab_size_check(
+                    (
+                        indicator,
+                        refined_structure,
+                    ) = pc.repair_refined_slab_geometry(
                         total_num_sites=total_num_sites,
                         enumerated_num_sites=num_sites,
                         criteria=criteria,

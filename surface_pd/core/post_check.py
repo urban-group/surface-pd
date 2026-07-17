@@ -6,6 +6,8 @@ structures after enumeration, ensuring they maintain required symmetry
 properties and geometric consistency.
 """
 
+import copy
+
 import numpy as np
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
@@ -45,6 +47,95 @@ class PostCheck:
             True if number of sites matches expectation.
         """
         return self.structure.num_sites == curr_num_sites
+
+    def repair_refined_slab_geometry(
+        self,
+        total_num_sites: int,
+        enumerated_num_sites: int,
+        criteria: float,
+    ):
+        """
+        Repair refined slab geometry after symmetry refinement.
+
+        Symmetric enumeration refines enumerated structures with pymatgen's
+        space-group analyzer. The refined cell can be primitive, expanded, or
+        oriented with the longest lattice vector away from the slab direction.
+        This method applies the historical post-refinement adjustments used by
+        the enumeration workflow so the returned slab has the expected size and
+        orientation.
+
+        Args:
+            total_num_sites: Expected number of sites after enumeration.
+            enumerated_num_sites: Actual number of sites in the refined slab.
+            criteria: Lattice parameter perpendicular to the parent slab
+                surface.
+
+        Returns
+        -------
+            Tuple of ``(indicator, structure)``. The indicator preserves the
+            historical filename behavior: ``-1`` means primitive/reduced,
+            ``1`` means reduced, ``2`` means rotated, and ``0`` means no
+            repair was needed.
+
+        Raises
+        ------
+            PrimitiveStructureFinderError: If a refined slab has fewer sites
+                than expected and cannot tile the expected site count.
+        """
+        if enumerated_num_sites > total_num_sites:
+            refined_prim = self.structure.copy()
+            refined_prim = (
+                refined_prim.get_primitive_structure()
+                .get_reduced_structure()
+                .get_sorted_structure()
+            )
+            return -1, refined_prim
+
+        if enumerated_num_sites < total_num_sites:
+            if total_num_sites % enumerated_num_sites != 0:
+                raise PrimitiveStructureFinderError
+            return 1, self.structure
+
+        if max(self.structure.lattice.abc) > criteria * 2 - 5:
+            refined_prim = copy.deepcopy(self.structure)
+            refined_prim = (
+                refined_prim.get_primitive_structure()
+                .get_reduced_structure()
+                .get_sorted_structure()
+            )
+            return -1, refined_prim
+
+        if max(self.structure.lattice.abc) != self.structure.lattice.c:
+            refined_rotated = copy.deepcopy(self.structure)
+            if max(self.structure.lattice.abc) == self.structure.lattice.a:
+                refined_rotated.make_supercell(
+                    [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+                )
+            elif max(self.structure.lattice.abc) == self.structure.lattice.b:
+                refined_rotated.make_supercell(
+                    [[1, 0, 0], [0, 0, 1], [0, 1, 0]]
+                )
+            return 2, refined_rotated
+
+        return 0, self.structure
+
+    def slab_size_check(
+        self,
+        total_num_sites: int,
+        enumerated_num_sites: int,
+        criteria: float,
+    ):
+        """
+        Repair refined slab geometry after symmetry refinement.
+
+        This compatibility wrapper preserves the historical ``PostCheck`` API.
+        New code should call :meth:`repair_refined_slab_geometry` directly.
+        """
+        return self.repair_refined_slab_geometry(
+            total_num_sites=total_num_sites,
+            enumerated_num_sites=enumerated_num_sites,
+            criteria=criteria,
+        )
 
     def post_check(
         self,
