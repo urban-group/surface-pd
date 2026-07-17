@@ -60,7 +60,6 @@ def built_wheel(tmp_path_factory):
             "pip",
             "wheel",
             "--no-deps",
-            "--no-build-isolation",
             "--wheel-dir",
             str(wheel_dir),
             ".",
