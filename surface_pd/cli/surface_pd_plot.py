@@ -154,7 +154,7 @@ def surface_pd_plot(
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
         labels = get_labels(
             dataframe=df,
-            num_files=num_files,
+            num_groups=num_files,
             species=[lithium_like_species],
             ticks=ticks,
         )
@@ -193,7 +193,7 @@ def surface_pd_plot(
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
         labels = get_labels(
             dataframe=df,
-            num_files=num_files,
+            num_groups=num_files,
             species=[oxygen_like_species],
             ticks=ticks,
         )
@@ -205,7 +205,7 @@ def surface_pd_plot(
         ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
         labels = get_labels(
             dataframe=df,
-            num_files=num_files,
+            num_groups=num_files,
             species=[lithium_like_species, oxygen_like_species],
             ticks=ticks,
         )

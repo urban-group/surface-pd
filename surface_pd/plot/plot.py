@@ -113,18 +113,22 @@ def get_ticks_and_levels(
 
 
 def get_compositions(
-    dataframe: pd.DataFrame, num_files: int, species: str, ticks: list
+    dataframe: pd.DataFrame, num_groups: int, species: str, ticks: list
 ) -> list[str]:
     """
     Calculate composition percentages for colorbar labels.
 
     This function computes the percentage composition of a specified species
-    at each tick position for labeling the phase diagram colorbar.
+    at each tick position for labeling the phase diagram colorbar. Each
+    concatenated data group is normalized independently by that species' own
+    range. If a species is constant within a group, labels are reported as
+    fully occupied (100.0%) because there is no lower-composition reference
+    state in that group.
 
     Args:
         dataframe: DataFrame containing composition data with species columns.
-        num_files: Number of data files processed. This affects composition
-            calculation.
+        num_groups: Number of concatenated data groups represented in the
+            dataframe.
         species: Chemical species name (e.g., "Li", "O", "Ni") for which to
             calculate compositions.
         ticks: List of tick positions on the colorbar.
@@ -134,31 +138,33 @@ def get_compositions(
         List of formatted strings showing percentage composition of the
         species, e.g., ["25.0%Li", "50.0%Li", "75.0%Li"].
     """
-    total_relaxed = (
-        max(dataframe.iloc[:]["O"]) - min(dataframe.iloc[:]["O"])
-    ) * num_files
-    boundary = int(len(dataframe) / num_files)
+    if num_groups < 1:
+        raise ValueError("num_groups must be at least 1")
+
+    boundary = int(len(dataframe) / num_groups)
     labels = []
     for tick in ticks:
-        if tick < boundary:
-            comp = (
-                dataframe.iloc[tick][species]
-                - min(dataframe.iloc[0:boundary][species])
-            ) / total_relaxed
-            if num_files != 1:
-                comp += 0.5
-            labels.append(str(round(comp * 100, 1)) + "%" + str(species))
+        group_index = min(int(tick) // boundary, num_groups - 1)
+        group_start = group_index * boundary
+        group_stop = len(dataframe) if group_index == num_groups - 1 else (
+            group_start + boundary
+        )
+        group_values = dataframe.iloc[group_start:group_stop][species]
+        species_span = max(group_values) - min(group_values)
+
+        if species_span == 0:
+            comp = 1.0
         else:
             comp = (
                 dataframe.iloc[tick][species]
-                - min(dataframe.iloc[boundary:][species])
-            ) / total_relaxed
-            labels.append(str(round(comp * 100, 1)) + "%" + str(species))
+                - min(group_values)
+            ) / species_span
+        labels.append(str(round(comp * 100, 1)) + "%" + str(species))
     return labels
 
 
 def get_labels(
-    dataframe: pd.DataFrame, num_files: int, species: list, ticks: list
+    dataframe: pd.DataFrame, num_groups: int, species: list, ticks: list
 ) -> list[str]:
     """
     Generate multi-species composition labels for phase diagram colorbar.
@@ -169,10 +175,10 @@ def get_labels(
 
     Args:
         dataframe: DataFrame containing composition data for all species.
-        num_files: Number of data files processed. This affects composition
-            calculation.
+        num_groups: Number of concatenated data groups represented in the
+            dataframe.
         species: List of chemical species names (e.g., ["Li", "O"]) to include
-            in the labels.
+        in the labels.
         ticks: List of tick positions on the colorbar.
 
     Returns
@@ -182,7 +188,7 @@ def get_labels(
     """
     labels = collections.defaultdict(list)
     for s in species:
-        species_label = get_compositions(dataframe, num_files, s, ticks)
+        species_label = get_compositions(dataframe, num_groups, s, ticks)
         labels[s] = species_label
 
     display = labels[str(species[0])]

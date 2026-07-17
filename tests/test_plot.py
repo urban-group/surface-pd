@@ -1,5 +1,7 @@
 """Tests for plotting utilities."""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -7,6 +9,7 @@ from surface_pd.plot.plot import (
     convert_numbers,
     find_stable_phases,
     get_compositions,
+    get_labels,
     get_ticks_and_levels,
 )
 
@@ -123,7 +126,7 @@ class TestGetCompositions:
     """Tests for get_compositions function."""
 
     def test_single_file(self):
-        """Test with single data file."""
+        """Species labels should normalize by requested species."""
         df = pd.DataFrame(
             {
                 "Li": [1, 2, 3],
@@ -135,15 +138,10 @@ class TestGetCompositions:
 
         labels = get_compositions(df, 1, "Li", ticks)
 
-        # Should show Li compositions as percentages
-        assert len(labels) == 3
-        # Check that labels are formatted correctly
-        for label in labels:
-            assert "%" in label
-            assert "Li" in label
+        assert labels == ["0.0%Li", "50.0%Li", "100.0%Li"]
 
     def test_multiple_files(self):
-        """Test with multiple data files."""
+        """Concatenated data groups should normalize independently."""
         df = pd.DataFrame(
             {
                 "Li": [2, 4, 6, 8, 10, 12],
@@ -151,13 +149,51 @@ class TestGetCompositions:
                 "Ni": [5, 5, 5, 5, 5, 5],
             }
         )
-        ticks = [0, 1, 2]
+        ticks = [0, 1, 2, 3, 4, 5]
 
         labels = get_compositions(df, 2, "Li", ticks)
 
-        # Should normalize by num_files
-        assert len(labels) == 3
-        # Check that labels are formatted correctly
-        for label in labels:
-            assert "%" in label
-            assert "Li" in label
+        assert labels == [
+            "0.0%Li",
+            "50.0%Li",
+            "100.0%Li",
+            "0.0%Li",
+            "50.0%Li",
+            "100.0%Li",
+        ]
+
+    def test_constant_species_labels_as_fully_occupied(self):
+        """Constant species labels should be defined and warning-free."""
+        df = pd.DataFrame(
+            {
+                "Li": [1, 2, 3],
+                "O": [5, 5, 5],
+                "Ni": [5, 5, 5],
+            }
+        )
+        ticks = [0, 1, 2]
+
+        labels = get_compositions(df, 1, "O", ticks)
+
+        assert labels == ["100.0%O", "100.0%O", "100.0%O"]
+
+    def test_compositions_do_not_emit_runtime_warnings(self):
+        """Normal label generation should not emit runtime warnings."""
+        df = pd.DataFrame(
+            {
+                "Li": [1, 2, 3],
+                "O": [5, 5, 5],
+                "Ni": [5, 5, 5],
+            }
+        )
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+
+            labels = get_labels(df, 1, ["Li", "O"], [0, 1, 2])
+
+        assert labels == [
+            "0.0%Li 100.0%O",
+            "50.0%Li 100.0%O",
+            "100.0%Li 100.0%O",
+        ]
