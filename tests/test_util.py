@@ -51,10 +51,15 @@ class TestCsv2dict:
         result = csv2dict(["Li='Na'"])
         assert result == {"Li": "Na"}
 
+    def test_unquoted_string_value(self):
+        """Test unquoted strings are preserved as strings."""
+        result = csv2dict(["Li=Na"])
+        assert result == {"Li": "Na"}
+
     def test_numeric_value(self):
         """Test numeric value conversion."""
-        result = csv2dict(["Co=0.5"])
-        assert result == {"Co": 0.5}
+        result = csv2dict(["Co=0.5", "Li=2", "O=-1.5e-2"])
+        assert result == {"Co": 0.5, "Li": 2, "O": -1.5e-2}
 
     def test_nested_dictionary(self):
         """Test nested dictionary creation."""
@@ -66,10 +71,19 @@ class TestCsv2dict:
         result = csv2dict(["Co=Co:0.5&Ni:0.5", "Li='Na'"])
         assert result == {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
 
-    def test_expression_evaluation(self):
-        """Test that pandas eval works for expressions."""
-        result = csv2dict(["x=1+1"])
-        assert result == {"x": 2}
+    def test_expression_evaluation_is_rejected(self):
+        """Expressions should not be evaluated while parsing user input."""
+        with pytest.raises(ValueError, match="Unsupported expression"):
+            csv2dict(["x=1+1"])
+        with pytest.raises(ValueError, match="Unsupported expression"):
+            csv2dict(["x=1+"])
+
+    def test_malformed_entries_are_rejected(self):
+        """Malformed key-value and nested entries should fail explicitly."""
+        with pytest.raises(ValueError, match="Expected KEY=VALUE"):
+            csv2dict(["Li"])
+        with pytest.raises(ValueError, match="Expected nested KEY:VALUE"):
+            csv2dict(["Co=Co:0.5&Ni"])
 
 
 class TestCheckInt:

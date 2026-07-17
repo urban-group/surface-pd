@@ -6,11 +6,17 @@ conversions, validation, and dictionary manipulations used throughout the
 surface-pd package.
 """
 
+import ast
 import copy
-
-import pandas as pd
+import re
 
 from surface_pd.error import NonIntegerError, TooLargeSlabError
+
+_INT_PATTERN = re.compile(r"^[+-]?\d+$")
+_FLOAT_PATTERN = re.compile(
+    r"^[+-]?(?:(?:\d+\.\d*)|(?:\.\d+)|(?:\d+[eE][+-]?\d+)|"
+    r"(?:(?:\d+\.\d*)|(?:\.\d+))[eE][+-]?\d+)$"
+)
 
 
 def define_scaling_matrix(a: float, b: float, multiple: int) -> list[int]:
@@ -50,17 +56,55 @@ def define_scaling_matrix(a: float, b: float, multiple: int) -> list[int]:
     return scaling_matrix
 
 
-def csv2dict(csvlist: list) -> dict:
+def _parse_csv_scalar(value: str):
+    """
+    Parse a scalar value from ``csv2dict`` input.
+
+    Accepted values are integers, floats, quoted strings, and unquoted string
+    tokens. Other Python expressions are rejected instead of evaluated.
+    """
+    value = value.strip()
+    if not value:
+        raise ValueError("Expected non-empty value")
+
+    if _INT_PATTERN.fullmatch(value):
+        return int(value)
+    if _FLOAT_PATTERN.fullmatch(value):
+        return float(value)
+    if value[0] in {"'", '"'}:
+        try:
+            parsed = ast.literal_eval(value)
+        except (SyntaxError, ValueError) as exc:
+            raise ValueError(f"Invalid quoted string: {value}") from exc
+        if not isinstance(parsed, str):
+            raise ValueError(f"Unsupported literal value: {value}")
+        return parsed
+
+    try:
+        expression = ast.parse(value, mode="eval")
+    except SyntaxError:
+        if value[0].isdigit() or value[0] in {"+", "-", "."}:
+            raise ValueError(
+                f"Unsupported expression in csv2dict value: {value}"
+            ) from None
+        return value
+    if isinstance(expression.body, ast.Name):
+        return value
+    raise ValueError(f"Unsupported expression in csv2dict value: {value}")
+
+
+def csv2dict(csvlist: list[str]) -> dict:
     """
     Convert list of comma-separated values to a structured dictionary.
 
     The hierarchy of the dictionary is expressed by equal signs ("=") and
     colons (":"). This is useful for parsing user input for species
-    substitutions and compositions. Numeric values are automatically
-    converted from strings.
+    substitutions and compositions. Scalar values are parsed as integers,
+    floats, quoted strings, or unquoted strings. Expressions such as
+    ``1+1`` are rejected instead of evaluated.
 
     Example:
-        Input: ["Co=Co:0.5,Ni:0.5", "Li=Na"]
+        Input: ["Co=Co:0.5&Ni:0.5", "Li=Na"]
         Output: {"Co": {"Co": 0.5, "Ni": 0.5}, "Li": "Na"}
 
     Args:
@@ -70,31 +114,40 @@ def csv2dict(csvlist: list) -> dict:
 
     Returns
     -------
-        Structured dictionary with automatic numeric conversion where
+        Structured dictionary with deterministic scalar conversion where
         applicable.
+
+    Raises
+    ------
+        ValueError: If an item is malformed or contains an unsupported
+            expression.
     """
-
-    def trynumeric(v):
-        try:
-            out = int(v)
-        except ValueError:
-            try:
-                out = pd.eval(v)
-            except ValueError:
-                out = v
-        return out
-
     outdict = {}
     for item in csvlist:
-        key, value = item.split("=")
+        if "=" not in item:
+            raise ValueError(f"Expected KEY=VALUE entry: {item}")
+        key, value = (part.strip() for part in item.split("=", 1))
+        if not key or not value:
+            raise ValueError(f"Expected KEY=VALUE entry: {item}")
         if ":" in value:
-            value = {
-                s.strip(): trynumeric(v.strip())
-                for s, v in [el.split(":") for el in value.split("&")]
-            }
+            nested_value = {}
+            for nested_item in value.split("&"):
+                if ":" not in nested_item:
+                    raise ValueError(
+                        f"Expected nested KEY:VALUE entry: {nested_item}"
+                    )
+                nested_key, nested_scalar = (
+                    part.strip() for part in nested_item.split(":", 1)
+                )
+                if not nested_key or not nested_scalar:
+                    raise ValueError(
+                        f"Expected nested KEY:VALUE entry: {nested_item}"
+                    )
+                nested_value[nested_key] = _parse_csv_scalar(nested_scalar)
+            value = nested_value
         else:
-            value = trynumeric(value.strip())
-        outdict[key.strip()] = value
+            value = _parse_csv_scalar(value)
+        outdict[key] = value
     return outdict
 
 
