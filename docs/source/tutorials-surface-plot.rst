@@ -5,7 +5,7 @@ Surface Phase Diagram Construction
 Overview
 ========
 
-The ``surface-pd-plot.py`` script generates voltage-temperature phase diagrams
+The ``surface-pd-plot`` command generates voltage-temperature phase diagrams
 for surface structures. These diagrams show which surface composition is
 thermodynamically stable under different electrochemical conditions.
 
@@ -46,7 +46,7 @@ Command Line Interface
 
 .. code-block:: bash
 
-    surface-pd-plot.py DATA_FILE -L LITHIUM_SPECIES -O OXYGEN_SPECIES -f FUNCTIONAL
+    surface-pd-plot DATA_FILE -L LITHIUM_SPECIES -O OXYGEN_SPECIES -f FUNCTIONAL
 
 Required Arguments
 ------------------
@@ -59,10 +59,11 @@ Required Arguments
 Optional Arguments
 ------------------
 
-* ``-t, --temperature`` - Temperature for 2D plot (K)
-* ``-v, --voltage`` - Voltage for 2D plot (V)
-* ``--voltage-range`` - Voltage range for 3D plot (V)
-* ``--temperature-range`` - Temperature range for 3D plot (K)
+* ``-lt, --low-T`` - Low temperature boundary (K)
+* ``-ht, --high-T`` - High temperature boundary (K)
+* ``-cl, --color-by-Li-content`` - Color the diagram by lithium-like species content
+* ``-co, --color-by-O-content`` - Color the diagram by oxygen-like species content
+* ``-d, --discharge`` - Treat the data as a discharge phase diagram
 * ``-s, --save`` - Save plot to file instead of displaying
 
 Examples
@@ -75,47 +76,47 @@ Generate an interactive 3D voltage-temperature phase diagram:
 
 .. code-block:: bash
 
-    ./scripts/surface-pd-plot.py \
+    surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
         -L Li -O O -f SCAN
 
 This will display an interactive matplotlib window showing stable phases
 across voltage and temperature space.
 
-2D Phase Diagram at Fixed Temperature
---------------------------------------
+Color by Lithium Content
+------------------------
 
-Generate a 2D phase diagram at room temperature (298 K):
+Generate a phase diagram colored by lithium content:
 
 .. code-block:: bash
 
-    ./scripts/surface-pd-plot.py \
+    surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN -t 298
+        -L Li -O O -f SCAN --color-by-Li-content
 
-2D Phase Diagram at Fixed Voltage
-----------------------------------
+Color by Oxygen Content
+-----------------------
 
-Generate a 2D phase diagram at 3.0 V vs Li/Li⁺:
+Generate a phase diagram colored by oxygen content:
 
 .. code-block:: bash
 
-    ./scripts/surface-pd-plot.py \
+    surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN -v 3.0
+        -L Li -O O -f SCAN --color-by-O-content
 
-Custom Voltage and Temperature Ranges
---------------------------------------
+Custom Temperature Range
+------------------------
 
-Specify custom ranges for 3D plotting:
+Specify custom temperature boundaries:
 
 .. code-block:: bash
 
-    ./scripts/surface-pd-plot.py \
+    surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
         -L Li -O O -f SCAN \
-        --voltage-range 2.0 4.5 \
-        --temperature-range 200 400
+        --low-T 200 \
+        --high-T 400
 
 Save Plot to File
 -----------------
@@ -124,7 +125,7 @@ Save the generated plot instead of displaying it:
 
 .. code-block:: bash
 
-    ./scripts/surface-pd-plot.py \
+    surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
         -L Li -O O -f SCAN -s
 
@@ -204,10 +205,10 @@ files separately and overlay the results:
 .. code-block:: bash
 
     # Generate charge phase diagram
-    ./scripts/surface-pd-plot.py charge-data.dat -L Li -O O -f SCAN
+    surface-pd-plot charge-data.dat -L Li -O O -f SCAN
 
     # Generate discharge phase diagram
-    ./scripts/surface-pd-plot.py discharge-data.dat -L Li -O O -f SCAN
+    surface-pd-plot discharge-data.dat -L Li -O O -f SCAN --discharge
 
 Custom Chemical Potentials
 ---------------------------
@@ -220,5 +221,5 @@ See Also
 
 * :doc:`surface_energy` - Surface energy calculation details
 * :doc:`theory` - Theoretical background
-* ``surface-enumeration.py`` - Generate input structures
-* ``discharge_pd_gene.py`` - Convert charge to discharge data
+* ``surface-enumeration`` - Generate input structures
+* ``discharge-pd-gene`` - Convert charge to discharge data

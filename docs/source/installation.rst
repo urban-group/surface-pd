@@ -4,12 +4,12 @@ Installation
 
 Requirements
 ************
-* `Python ≥ 3.9 <https://www.python.org/>`_
+* `Python >= 3.11 <https://www.python.org/>`_
 * `numpy ≥ 2.0 <https://numpy.org/doc/stable/>`_
 * `pymatgen ≥ 2024.10.3 <https://pymatgen.org/>`_
-* `matplotlib ≥ 3.5.0 <https://matplotlib.org/>`_
+* `matplotlib ≥ 3.8.0 <https://matplotlib.org/>`_
 * `pandas ≥ 2.0.0 <https://pandas.pydata.org/>`_
-* `monty ≥ 2024.2.2 <https://pythonhosted.org/monty/index.html>`_
+* `monty ≥ 2024.0.0 <https://pythonhosted.org/monty/index.html>`_
 * `Enumlib v2.0.4+ <https://github.com/msg-byu/enumlib/>`_ (for structure enumeration)
 
 .. note::
@@ -19,10 +19,9 @@ Requirements
 Installation using pip
 **********************
 
-**surface-pd** is a Python 3 package and the stable version can be installed
-via pip_. ::
+**surface-pd** can be installed directly from its Git repository with pip_. ::
 
-    $ pip install ***
+    $ pip install git+https://github.com/urban-group/surface-pd.git
 
 .. _PIP: https://pip.pypa.io/en/stable/
 
@@ -34,11 +33,11 @@ Installation from source code
 The package can also be built from `surface-pd
 GitHub <https://github.com/urban-group/surface-pd>`_ by git
 clone
-and setup::
+and installed locally::
 
     $ git clone git@github.com:urban-group/surface-pd.git
     $ cd surface-pd
-    $ pip install --user .
+    $ pip install .
 
 Additional requirements
 ***********************
@@ -77,20 +76,20 @@ Installation test
 After installation, you should be able to see three scripts, they
 are::
 
-    $ surface-enumeration.py
-    $ surface-pd-plot.py
-    $ discharge_pd_gene.py
+    $ surface-enumeration
+    $ surface-pd-plot
+    $ discharge-pd-gene
 
 To check whether the **surface-pd** package is successfully installed, you
 can try if the following command can be executed::
 
-    $ surface-enumeration.py -h
+    $ surface-enumeration -h
 
 The user-friendly command-line interfaces with help and usage messages
 should be automatically generated. Something like::
 
-    $  surface-enumeration.py -h
-    usage: surface-enumeration.py [-h] [--max-structures MAX_STRUCTURES] [--generate-poscar] json_file_path
+    $ surface-enumeration -h
+    usage: surface-enumeration [-h] [--generate-poscar] INPUT_JSON
     This code will enumerate the input slab model with user defined target
     species and composition. The input slab structure should be as small as
     possible because the unit cell of the slab will also be enumerated, and it

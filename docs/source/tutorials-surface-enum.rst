@@ -121,19 +121,19 @@ Command line execution
 
 The general usage of the code can be seen by calling: ::
 
-    $ surface-enumeration.py --help
+    $ surface-enumeration --help
 
 All of the available options and their default values will be shown.
 
 General format::
 
-    $ surface-enumeration.py JSON_FILE -g
+    $ surface-enumeration JSON_FILE -g
 
 For example, you can go to ``surface-pd``
 and try to do a full enumeration on the (104) surface slab model of
 |LiCoO2|. ::
 
-    $ surface-enumeration.py example/enumeration-examples/input/input-LCO.json
+    $ surface-enumeration example/enumeration-examples/input/input-LCO.json
 
 For this slab model, the most top O atoms (8 atoms after creating the
 supercell) will be enumerated. The first and second top surface Li atoms (8
