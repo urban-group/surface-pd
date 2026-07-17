@@ -316,17 +316,13 @@ class Slab(Structure):
                         >= target_layers[species][0] - self.tolerance
                     ):
                         relaxed_index.append(index)
-                    if self.symmetric:
-                        if only_top:
-                            pass
-                        else:
-                            if (
-                                site.frac_coords[self.direction]
-                                <= target_layers[species][1] + self.tolerance
-                            ):
-                                relaxed_index.append(index)
-                    else:
-                        pass
+                    if (
+                        self.symmetric
+                        and not only_top
+                        and site.frac_coords[self.direction]
+                        <= target_layers[species][1] + self.tolerance
+                    ):
+                        relaxed_index.append(index)
             relaxed_index_by_species[species] = relaxed_index
 
         return lower_limit, upper_limit, relaxed_index_by_species

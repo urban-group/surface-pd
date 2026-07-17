@@ -228,8 +228,6 @@ def surface_pd_plot(
     ax.set_ylabel("Temperature (K)", fontsize=20)
     if discharge:
         ax.invert_xaxis()
-    else:
-        pass
     colorbar = fig.colorbar(PD, ticks=ticky, pad=0.05)
     colorbar.ax.set_yticklabels(labels)
     colorbar.ax.tick_params(size=0)

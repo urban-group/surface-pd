@@ -101,9 +101,7 @@ def create_discharge_pd(
     df1.drop(["li_composition", "o_composition"], axis=1, inplace=True)
     if save:
         df1.to_csv("discharge-data1.csv", sep="\t")
-    if len(data_files) == 1:
-        pass
-    else:
+    if len(data_files) > 1:
         for i in df2.index:
             if df2["o_composition"][i] > charge_pd_end_composition:
                 df2["E"][i] = 0

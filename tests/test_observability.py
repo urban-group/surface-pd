@@ -10,6 +10,11 @@ LIBRARY_MODULES_WITHOUT_STDOUT = [
     PROJECT_ROOT / "surface_pd" / "core" / "slab.py",
     PROJECT_ROOT / "surface_pd" / "plot" / "pd_data.py",
 ]
+PACKAGE_MODULES_WITHOUT_PASS = [
+    path
+    for path in (PROJECT_ROOT / "surface_pd").rglob("*.py")
+    if "__pycache__" not in path.parts
+]
 
 
 def _print_call_lines(path: Path) -> list[int]:
@@ -24,6 +29,14 @@ def _print_call_lines(path: Path) -> list[int]:
     ]
 
 
+def _pass_statement_lines(path: Path) -> list[int]:
+    """Return source lines that contain active pass statements."""
+    tree = ast.parse(path.read_text(), filename=str(path))
+    return [
+        node.lineno for node in ast.walk(tree) if isinstance(node, ast.Pass)
+    ]
+
+
 def test_library_modules_do_not_print_to_stdout():
     """Library diagnostics should use logging or exceptions, not stdout."""
     print_calls = {
@@ -34,4 +47,17 @@ def test_library_modules_do_not_print_to_stdout():
     assert print_calls == {
         path.relative_to(PROJECT_ROOT).as_posix(): []
         for path in LIBRARY_MODULES_WITHOUT_STDOUT
+    }
+
+
+def test_package_modules_do_not_use_silent_pass_statements():
+    """Package control flow should make intentional no-op paths explicit."""
+    pass_statements = {
+        path.relative_to(PROJECT_ROOT).as_posix(): _pass_statement_lines(path)
+        for path in PACKAGE_MODULES_WITHOUT_PASS
+    }
+
+    assert pass_statements == {
+        path.relative_to(PROJECT_ROOT).as_posix(): []
+        for path in PACKAGE_MODULES_WITHOUT_PASS
     }
