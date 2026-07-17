@@ -84,3 +84,21 @@ def test_package_exports_resolve_to_defined_names():
 
     for module in (analysis, error, plot, util):
         assert all(hasattr(module, name) for name in module.__all__)
+
+
+def test_ci_workflow_runs_verification_commands():
+    """The CI workflow should mirror the documented local checks."""
+    workflow = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
+    workflow_text = workflow.read_text()
+
+    assert 'python-version: ["3.11", "3.12"]' in workflow_text
+    assert 'python -m pip install -e ".[dev]"' in workflow_text
+    assert "ruff check ." in workflow_text
+    assert "python -m pytest" in workflow_text
+    assert "python -m sphinx -b html docs/source docs/_build/html" in (
+        workflow_text
+    )
+    assert "python -m pip wheel --no-deps --wheel-dir dist ." in (
+        workflow_text
+    )
+    assert "actions/upload-artifact" in workflow_text
