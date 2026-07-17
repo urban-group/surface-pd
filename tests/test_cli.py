@@ -4,6 +4,7 @@ import importlib
 import subprocess
 import sys
 import tomllib
+import warnings
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,24 @@ EXPECTED_ENTRY_POINTS = {
     "surface-pd-plot": "surface_pd.cli.surface_pd_plot:main",
     "discharge-pd-gene": "surface_pd.cli.discharge_pd_gene:main",
 }
+
+
+def test_surface_enumeration_import_does_not_suppress_warnings(monkeypatch):
+    """Importing the enumeration CLI should not suppress all warnings."""
+    module_name = "surface_pd.cli.surface_enumeration"
+    previous_module = sys.modules.pop(module_name, None)
+    global_ignore_filter = ("ignore", None, Warning, None, 0)
+    baseline_filters = [("default", None, Warning, None, 0)]
+    monkeypatch.setattr(warnings, "filters", list(baseline_filters))
+
+    try:
+        importlib.import_module(module_name)
+
+        assert global_ignore_filter not in warnings.filters
+    finally:
+        sys.modules.pop(module_name, None)
+        if previous_module is not None:
+            sys.modules[module_name] = previous_module
 
 
 def test_project_scripts_target_cli_modules():

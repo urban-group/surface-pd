@@ -29,7 +29,6 @@ import argparse
 import copy
 import json
 import os
-import warnings
 from itertools import product
 
 from pymatgen.core.periodic_table import DummySpecies
@@ -56,8 +55,6 @@ from surface_pd.util import (
     have_zero,
     replace_dummy,
 )
-
-warnings.filterwarnings("ignore")
 
 
 def automate_surface(
