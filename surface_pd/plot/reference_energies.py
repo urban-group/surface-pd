@@ -11,17 +11,17 @@ class ReferenceEnergies:
 
     Parameters
     ----------
-    method
+    method : str
         Free-text calculation-method provenance. The text is retained for
         auditing and is never interpreted as a lookup key.
-    li_ev_per_atom
+    li_ev_per_atom : float
         Energy of the lithium reference in eV per atom.
-    o2_raw_ev_per_molecule
+    o2_raw_ev_per_molecule : float
         Raw energy of the oxygen reference in eV per O2 molecule.
-    o2_correction_ev_per_molecule
+    o2_correction_ev_per_molecule : float
         Explicit correction added to the raw oxygen energy, in eV per O2
         molecule. Use zero when no correction is applied.
-    bulk_litmo2_ev_per_formula_unit
+    bulk_litmo2_ev_per_formula_unit : float
         Bulk LiTMO2 energy in eV per formula unit.
 
     Raises

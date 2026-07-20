@@ -21,15 +21,15 @@ class PdData:
 
     Parameters
     ----------
-    dataframe
+    dataframe : pandas.DataFrame
         Phase rows containing atom counts, DFT energies, and in-plane lattice
         parameters. A defensive copy is stored; the caller's dataframe is
         never mutated.
-    lithium_like_species
+    lithium_like_species : str
         Column containing lithium-like species counts.
-    oxygen_like_species
+    oxygen_like_species : str
         Column containing oxygen-like species counts.
-    reference_energies
+    reference_energies : ReferenceEnergies
         Validated user-provided Li, O2, and bulk LiTMO2 reference energies.
 
     Raises
@@ -282,7 +282,7 @@ class PdData:
 
         Parameters
         ----------
-        other
+        other : PdData
             The second standardized dataset whose surface energies will be
             shifted.
 
@@ -382,9 +382,9 @@ class PdData:
 
         Parameters
         ----------
-        V
+        V : array-like
             Voltage values in volts.
-        T
+        T : array-like
             Absolute temperatures in kelvin, with the same shape as ``V``.
 
         Returns

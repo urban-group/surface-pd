@@ -8,7 +8,7 @@ users in resolving issues.
 
 
 class NoInversionSymmetryError(Exception):
-    """An error class defined for not finding the inversion symmetry center."""
+    """Raised when an inversion symmetry center cannot be found."""
 
     def __str__(self):
         return (
@@ -18,7 +18,7 @@ class NoInversionSymmetryError(Exception):
 
 
 class SlabOrientationError(Exception):
-    """An error class defined for wrong slab orientation error."""
+    """Raised when slab vacuum is not aligned with the expected direction."""
 
     def __str__(self):
         return (
@@ -28,12 +28,7 @@ class SlabOrientationError(Exception):
 
 
 class NonCentralInversionSymmetryError(Exception):
-    """
-    Error for a non-central inversion symmetry center.
-
-    Raised when the slab has inversion symmetry but the center is not located
-    at the origin.
-    """
+    """Raised when a slab's inversion center is not at the origin."""
 
     def __str__(self):
         return (
@@ -43,11 +38,7 @@ class NonCentralInversionSymmetryError(Exception):
 
 
 class PrimitiveStructureFinderError(Exception):
-    """
-    Error for invalid refined structures.
-
-    Raised when some sites are lost or redundant.
-    """
+    """Raised when refinement loses sites or introduces redundant sites."""
 
     def __str__(self):
         return (
@@ -58,22 +49,14 @@ class PrimitiveStructureFinderError(Exception):
 
 
 class NonDefinedSelectiveDynamicsError(Exception):
-    """
-    Error for slabs missing complete selective dynamics data.
-
-    Selective dynamics must be defined for all sites.
-    """
+    """Raised when some slab sites lack selective-dynamics flags."""
 
     def __str__(self):
         return "Not all sites in the slab model have selective dynamics."
 
 
 class NonSlabError(Exception):
-    """
-    Error for structures that are not slab models.
-
-    Raised when there is not enough vacuum in the model.
-    """
+    """Raised when a structure lacks enough vacuum to be a slab model."""
 
     def __str__(self):
         """Return error message."""
@@ -120,7 +103,7 @@ class NonPolarSurfaceError(Exception):
 
 
 class TooLargeSlabError(Exception):
-    """An error class defined for the too large slab model."""
+    """Raised when a requested cell would produce too many structures."""
 
     def __str__(self):
         return (
@@ -131,12 +114,7 @@ class TooLargeSlabError(Exception):
 
 
 class InvalidCompositionError(Exception):
-    """
-    Error for invalid user-defined enumeration compositions.
-
-    Raised when a requested composition is incompatible with the slab and
-    target cell size.
-    """
+    """Raised when a composition is incompatible with the target cell size."""
 
     def __str__(self):
         return (
@@ -147,22 +125,14 @@ class InvalidCompositionError(Exception):
 
 
 class NonIntegerError(Exception):
-    """
-    Error for non-integer atom counts after enumeration.
-
-    Raised when the computed atom count is outside tolerance from an integer.
-    """
+    """Raised when an enumerated atom count is not effectively integral."""
 
     def __str__(self):
         return "The after enumerated number of atoms is not an integer."
 
 
 class IncompatibleSymmError(Exception):
-    """
-    Error for incompatible user-defined slab symmetry.
-
-    Raised when the input parameter conflicts with the slab-derived symmetry.
-    """
+    """Raised when requested symmetry conflicts with the slab geometry."""
 
     def __str__(self):
         return (
@@ -172,11 +142,7 @@ class IncompatibleSymmError(Exception):
 
 
 class InvalidInputFormatError(Exception):
-    """
-    Error for invalid user-defined input format.
-
-    Raised when the CLI input cannot be parsed as the expected JSON format.
-    """
+    """Raised when CLI input cannot be parsed as the expected JSON format."""
 
     def __str__(self):
         return (

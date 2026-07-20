@@ -25,36 +25,46 @@ logger = logging.getLogger(__name__)
 
 
 class Slab(Structure):
-    """
-    Represent a periodic surface slab.
+    """Represent and manipulate a periodic surface slab.
 
-    This child class is inherited from the pymatgen.core.structure.Structure.
-    The args defined have the same meanings as in the pymatgen
-    documentation.
+    Parameters
+    ----------
+    lattice : Lattice or array-like of shape (3, 3)
+        Periodic lattice accepted by :class:`pymatgen.core.Structure`.
+    species : sequence
+        Species for the sites, in the same order as ``coords``.
+    coords : sequence of sequence of float
+        Fractional coordinates unless ``coords_are_cartesian`` is true.
+    charge : float, optional
+        Overall structure charge.
+    validate_proximity : bool, default=False
+        Reject sites separated by less than pymatgen's proximity threshold.
+    to_unit_cell : bool, default=False
+        Wrap fractional coordinates into the unit cell during construction.
+    coords_are_cartesian : bool, default=False
+        Interpret ``coords`` as Cartesian coordinates when true.
+    site_properties : dict, optional
+        Per-site property sequences accepted by pymatgen.
+    _direction : int, default=2
+        Lattice-axis index normal to the surface; exposed as ``direction``.
+    _tolerance : float, default=0.03
+        Dimensionless fractional-coordinate tolerance used to group layers;
+        exposed as ``tolerance``.
+    _to_be_enumerated_species : list of str, optional
+        Species whose surface sites will be enumerated; exposed as
+        ``to_be_enumerated_species``.
+    _num_enumerated_layers : dict, optional
+        Number of outer layers to enumerate for each target species; exposed
+        as ``num_enumerated_layers``.
+    _symmetric : bool, optional
+        Whether enumeration operates on both slab surfaces; exposed as
+        ``symmetric``.
 
-    Args:
-        lattice (Union): Either a pymatgen.core.lattice.Lattice or any 2D
-            array.
-        species (Sequence): List of species on each site.
-        coords (Sequence): List of fractional or cartesian coordinates of each
-            species.
-        charge (float): Overall charge of the structure.
-        validate_proximity (bool): Whether to check if the distance between
-            two sites is two close, i.e. less than 0.01 Ang. Defaults to False.
-        to_unit_cell (bool): Whether to wrap fractional coordinates back
-            into the unit cell. Defaults to False.
-        coords_are_cartesian (bool): Whether the coordinates of sites are
-            provided in cartesian coordinates. Defaults to False.
-        site_properties (dict): Properties of each site in the slab model as a
-            dict of sequences. Defaults to None.
-        _direction (int): Lattice direction perpendicular to the surface,
-            i.e. parallel to the c lattice parameter. Defaults to 2.
-        _tolerance (float): If the distance between two sites in c direction is
-            larger than this tolerance value, these two sites will be
-            treated as located on two difference layers.
-        _to_be_enumerated_species (list):
-        _num_enumerated_layers (dict):
-        _symmetric (bool):
+    Notes
+    -----
+    The underscore-prefixed constructor parameters initialize public mutable
+    properties. Other keyword arguments are forwarded to pymatgen's
+    :class:`~pymatgen.core.structure.Structure` constructor.
 
     """
 
@@ -96,7 +106,11 @@ class Slab(Structure):
 
     @property
     def direction(self):
-        """Return the lattice direction perpendicular to the surface."""
+        """int: Lattice-axis index perpendicular to the surface.
+
+        Valid axis indices are 0, 1, and 2. Assigning this property does not
+        validate the value.
+        """
         return self._direction
 
     @direction.setter
@@ -105,7 +119,10 @@ class Slab(Structure):
 
     @property
     def tolerance(self):
-        """Return the layer grouping tolerance."""
+        """float: Fractional-coordinate tolerance used to group layers.
+
+        Assigning this property does not validate the value.
+        """
         return self._tolerance
 
     @tolerance.setter
@@ -114,7 +131,10 @@ class Slab(Structure):
 
     @property
     def to_be_enumerated_species(self):
-        """Return the species selected for enumeration."""
+        """List of str or None: Species selected for enumeration.
+
+        Assigning this property does not validate the value.
+        """
         return self._to_be_enumerated_species
 
     @to_be_enumerated_species.setter
@@ -123,7 +143,10 @@ class Slab(Structure):
 
     @property
     def num_enumerated_layers(self):
-        """Return the number of layers selected for enumeration."""
+        """Dict or None: Number of enumerated layers for each target species.
+
+        Assigning this property does not validate the value.
+        """
         return self._num_enumerated_layers
 
     @num_enumerated_layers.setter
@@ -132,7 +155,10 @@ class Slab(Structure):
 
     @property
     def symmetric(self):
-        """Return whether the slab should remain symmetric."""
+        """Bool or None: Whether both slab surfaces are enumerated.
+
+        Assigning this property does not validate the value.
+        """
         return self._symmetric
 
     @symmetric.setter
@@ -149,14 +175,16 @@ class Slab(Structure):
         difference is smaller than diff, they will be regrouped in the same
         layer.
 
-        Args:
-            layers: Dict which contains different c fractional
-              coordinates as keys and number of atoms as values.
+        Parameters
+        ----------
+        layers : dict[float, int]
+            Fractional heights mapped to atom populations.
 
         Returns
         -------
-            Dict which contains different c fractional
-            coordinates as keys and number of atoms as values.
+        dict[float, int]
+            Layer populations after adjacent heights within ``tolerance`` are
+            merged. The input mapping is not mutated.
 
         """
         res = {}
@@ -181,7 +209,12 @@ class Slab(Structure):
 
         Returns
         -------
-            Slab model with all sites in the unit cell.
+        Slab
+            This slab after its site coordinates have been wrapped.
+
+        Notes
+        -----
+        This method mutates the receiver and returns it for fluent use.
 
         """
         EPS = np.finfo(np.double).eps
@@ -208,8 +241,9 @@ class Slab(Structure):
 
         Returns
         -------
-            lower and upper limits of the central fixed region, and the
-            central fixed structure
+        tuple[float, float, Slab]
+            Lower and upper fractional-coordinate bounds of the fixed region,
+            followed by a new slab containing its fixed sites.
         """
         center_sites = []
         for s in self:
@@ -228,13 +262,15 @@ class Slab(Structure):
         """
         Find species layer populations by fractional coordinate.
 
-        Args:
-            precision: Round c fraction coordinates to a given precision in
-                decimal digits. Defaults to 2.
+        Parameters
+        ----------
+        precision : int, default=2
+            Decimal places used to round fractional layer coordinates.
 
         Returns
         -------
-            {"species": {"c fractional coordinates": number of atoms at here}}
+        dict[str, dict[float, int]]
+            Species mapped to fractional heights and atom populations.
 
         """
         layers = {}
@@ -260,10 +296,10 @@ class Slab(Structure):
 
         Returns
         -------
-            c fractional coordinates of the upper and lower boundaries
-            of the central fixed region. (1, 2)\n
-            {"species": [top (lower surface relaxed region) and bottom (upper
-            surface relaxed region) c fractional coordinates]}
+        tuple[float, float, dict[str, list[float]]]
+            Lower and upper bounds of the fixed region, followed by target
+            layer heights for each enumerated species. Symmetric slabs contain
+            top and bottom heights; asymmetric slabs contain only the top.
 
         """
         # Initialize three dictionaries to store layer information of Li,
@@ -294,13 +330,16 @@ class Slab(Structure):
         """
         Get target species indices in the relaxed surface layers.
 
-        Args:
-            only_top: Whether to only return indices of the target species in
-                the top relaxed surface layer.
+        Parameters
+        ----------
+        only_top : bool, default=False
+            Return only top-surface indices when true.
 
         Returns
         -------
-            {"species": [indices of the target species]}
+        tuple[float, float, dict[str, list[int]]]
+            Fixed-region bounds followed by site indices for each target
+            species.
 
         """
         [lower_limit, upper_limit, target_layers] = self.layer_distinguisher()
@@ -331,13 +370,16 @@ class Slab(Structure):
         """
         Substitute top-surface target species with dummy species.
 
-        Args:
-            dummy_species: A special specie for representing non-traditional
-                elements or species.
+        Parameters
+        ----------
+        dummy_species : list
+            One pymatgen-compatible dummy species per enumerated species.
 
         Returns
         -------
-            Substituted slab model
+        Slab
+            Deep copy with top-surface target sites replaced. The receiver is
+            not mutated.
 
         """
         slab_surface_substitute = copy.deepcopy(self)
@@ -365,15 +407,18 @@ class Slab(Structure):
         structure is straight forward to generate and does not require the
         EnumWithComposition class to involve.
 
-        Args:
-            subs_dict: Species and occupancy dictionaries containing the
-                species mapping in string-string pairs.
-            relaxed_index: The indices of the to-be-enumerated atoms on the
-                surface.
+        Parameters
+        ----------
+        subs_dict : dict
+            Target species mapped to replacement-species occupancies.
+        relaxed_index : dict[str, list[int]]
+            Target species mapped to surface-site indices.
 
         Returns
         -------
-            New slab model with some sites removed.
+        Slab
+            Deep copy with sites removed where the target species has zero
+            occupancy. The receiver is not mutated.
 
         """
         structure = copy.deepcopy(self)
@@ -397,13 +442,26 @@ class Slab(Structure):
         compositions on the surface. Therefore, using the whole slab to
         detect the inversion symmetry does not work.
 
-        Args:
-            symprec: Tolerance for the symmetry detection. Defaults to 1e-4.
+        Parameters
+        ----------
+        symprec : float, default=1e-4
+            Cartesian symmetry tolerance in angstroms.
 
         Returns
         -------
-            Symmetrized slab model with equivalent top and bottom
-            surfaces.
+        Slab
+            New slab with equivalent top and bottom surfaces.
+
+        Raises
+        ------
+        NoInversionSymmetryError
+            If the fixed central region has no inversion symmetry.
+
+        Notes
+        -----
+        The receiver is wrapped in place before the new slab is constructed.
+        On symmetry failure, the central region is written to
+        ``debug-center.vasp`` in the current working directory.
         """
         # Generate the reference slab which is just the central fixed region
         _, _, slab_ref = self.get_center_sites()
@@ -483,7 +541,9 @@ class Slab(Structure):
 
         Returns
         -------
-            maximum and minimum c fractional coordinates of a slab model
+        tuple[float, float]
+            Minimum and maximum fractional coordinates along ``direction``,
+            in that order.
 
         """
         minimum, maximum = 1, 0
@@ -501,10 +561,21 @@ class Slab(Structure):
         If it is, the inversion symmetry center and the inversion operation
         are able to return.
 
-        Args:
-            symprec: Tolerance for symmetry finding. Defaults to 1e-1.
-            return_isc: Whether to return the inversion symmetry center and
-                the inversion operation.
+        Parameters
+        ----------
+        symprec : float, default=1e-1
+            Cartesian symmetry tolerance in angstroms.
+        return_isc : bool, default=False
+            Return inversion-center details when true.
+
+        Returns
+        -------
+        bool or tuple[bool, numpy.ndarray, SymmOp] or None
+            With ``return_isc=False``, whether the slab has Laue symmetry.
+            With ``return_isc=True``, a true flag, fractional inversion-center
+            coordinates, and the pymatgen inversion operation are returned
+            when found. ``None`` is returned if Laue symmetry is reported but
+            no explicit inversion operation is available.
 
         """
         sga = SpacegroupAnalyzer(self, symprec=symprec)
@@ -528,9 +599,17 @@ class Slab(Structure):
         """
         Check if the slab needs rotation to satisfy the cuboid requirement.
 
+        Parameters
+        ----------
+        criteria : float
+            Target lattice length in angstroms for the surface-normal axis.
+
         Returns
         -------
-            Cuboid slab model
+        Slab or None
+            A deep copy, rotated when another lattice axis matches
+            ``criteria``. ``None`` is returned when rotation is needed but no
+            axis matches.
 
         """
         directions = [0, 1, 2]
@@ -565,14 +644,24 @@ class Slab(Structure):
         """
         Calculate the number of sites for the user-defined composition.
 
-        Args:
-            composition_list: Compositions of enumerated species.
-            relaxed_index: {"species": [indices of the target species]}
-            max_cell_size: Maximum number of supercells of the input slab.
+        Parameters
+        ----------
+        composition_list : list[float]
+            Target occupancy fraction for each enumerated species.
+        relaxed_index : dict[str, list[int]]
+            Enumerated species mapped to their relaxed surface-site indices.
+        max_cell_size : int
+            Cell-size multiple used for enumeration.
 
         Returns
         -------
-            Number of sites in the slab model.
+        int
+            Expected number of sites after applying the composition.
+
+        Raises
+        ------
+        NonIntegerError
+            If the calculated site count is not effectively integral.
 
         """
         num_relaxed_atoms = {}
@@ -607,15 +696,23 @@ class Slab(Structure):
         """
         Shift or shift back the inversion symmetry center.
 
-        Args:
-            origin: Inversion symmetry center.
-            shift_isc_back: Whether to shift the inversion symmetry center to
-                the origin.
+        Parameters
+        ----------
+        origin : array-like of shape (3,)
+            Fractional translation applied when ``shift_isc_back`` is true.
+            Otherwise this argument is ignored and the center is detected.
+        shift_isc_back : bool, default=True
+            Add ``origin`` when true; detect and subtract the current inversion
+            center when false.
 
         Returns
         -------
-            Slab model with inversion symmetry center shifted to the origin /
-                back.
+        Slab
+            This slab after shifting and wrapping its coordinates.
+
+        Notes
+        -----
+        This method mutates the receiver and returns it for fluent use.
 
         """
         if shift_isc_back:
@@ -638,13 +735,20 @@ class Slab(Structure):
         This is to make sure that the central region is still located at
         around the same place.
 
-        Args:
-            target_min_c: Desired minimum fractional coordinate along the
-                slab direction defined before.
+        Parameters
+        ----------
+        target_min_c : float
+            Desired minimum fractional coordinate along ``direction``.
 
         Returns
         -------
-            Slight adjusted slab model
+        Slab
+            This slab after translating its sites. Displacements smaller than
+            ``tolerance`` are suppressed.
+
+        Notes
+        -----
+        This method mutates the receiver and returns it for fluent use.
 
         """
         _min_c, _ = self.get_max_min_c_frac()
@@ -661,13 +765,18 @@ class Slab(Structure):
         """
         Add selective dynamics to a refined slab model.
 
-        Args:
-            lower_limit: Lower limit of the central fixed region
-            upper_limit: Upper limit of the central fixed region
+        Parameters
+        ----------
+        lower_limit : float
+            Lower fractional-coordinate bound of the fixed central region.
+        upper_limit : float
+            Upper fractional-coordinate bound of the fixed central region.
 
         Returns
         -------
-            Enumerated slab model with "selective dynamics" labeled.
+        Slab
+            Deep copy with fixed flags inside the central region and relaxed
+            flags outside it. The receiver is not mutated.
 
         """
         direction = self.direction

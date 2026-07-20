@@ -18,29 +18,41 @@ _KJ_PER_MOL_PER_EV = 96.487
 
 
 class SurfaceEnergy:
-    """
-    Surface energy calculator for phase diagram construction.
+    """Calculate the Gibbs free energy of one surface configuration.
 
-    This class calculates the Gibbs free energy of a surface configuration
-    as a function of electrochemical potential and temperature.
-
-    Args:
-        V: Electrochemical potential (voltage).
-        T: Temperature in Kelvin.
-        nLi: Number of lithium atoms.
-        nTM: Number of transition metal atoms.
-        nO: Number of oxygen atoms.
-        dft_energy: DFT-calculated total energy.
-        a: Lattice parameter a.
-        b: Lattice parameter b.
-        gamma: Angle gamma in degrees.
-        reference_energies: Validated, user-provided Li, O2, and bulk LiTMO2
-            reference energies.
+    Parameters
+    ----------
+    V : float or array-like
+        Electrochemical potential in volts.
+    T : float or array-like
+        Absolute temperature in kelvin. Must be positive and broadcastable
+        with ``V``.
+    nLi : float
+        Number of lithium-like atoms in the slab model.
+    nTM : float
+        Number of transition-metal atoms in the slab model.
+    nO : float
+        Number of oxygen-like atoms in the slab model.
+    dft_energy : float
+        DFT total energy of the slab model in eV.
+    a : float
+        Positive first in-plane lattice length in angstroms.
+    b : float
+        Positive second in-plane lattice length in angstroms.
+    gamma : float
+        Angle between ``a`` and ``b`` in degrees, strictly between 0 and 180.
+    reference_energies : ReferenceEnergies
+        Validated Li, O2, and bulk LiTMO2 reference energies.
 
     Raises
     ------
-    ValueError
+    TypeError
         If ``reference_energies`` is not a :class:`ReferenceEnergies` object.
+
+    Notes
+    -----
+    The constructor stores inputs without validating geometric or atom-count
+    domains. :meth:`g_oxygen` validates temperature when energy is evaluated.
     """
 
     def __init__(
@@ -83,7 +95,7 @@ class SurfaceEnergy:
         -------
         numpy.ndarray or numpy.float64
             Oxygen chemical potential in eV per O atom. The result has the
-            same shape as ``T``.
+            same shape as ``T``; scalar input produces a NumPy scalar.
 
         Raises
         ------
@@ -115,14 +127,18 @@ class SurfaceEnergy:
         )
 
     def get_gibbs_free_energy(self):
-        """
-        Calculate surface Gibbs free energy.
+        """Calculate the surface Gibbs free energy.
 
         Returns
         -------
         numpy.ndarray or numpy.float64
             Surface Gibbs free energy in eV per square angstrom. The result
-            follows the broadcast shape of the voltage and temperature input.
+            follows the broadcast shape of ``V`` and ``T``.
+
+        Notes
+        -----
+        The energy is divided by twice the in-plane area, corresponding to the
+        two equivalent surfaces of a symmetric slab model.
         """
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
         G = (

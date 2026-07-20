@@ -17,18 +17,29 @@ from surface_pd.core.slab import Slab
 
 
 class EnumWithComposition:
-    """
-    Enumerate a parent slab model with a defined composition.
+    """Enumerate ordered surface structures at a defined composition.
 
-    Args:
-        subs_dict (dict): Species and occupancy dictionaries containing the
-            species mapping in string-string pairs.
-        min_cell_size (int): The minimum cell size. Must be an int.
-            Defaults to 1.
-        max_cell_size (int): The maximum cell size. Must be an int.
-            Defaults to 1.
-        enum_precision_parameter (float): Finite precision parameter for
-            enumlib. Defaults to 1e-5.
+    Parameters
+    ----------
+    subs_dict : dict
+        Mapping accepted by pymatgen's ``SubstitutionTransformation``. Each
+        key identifies a species in the parent slab and each value maps
+        replacement species to fractional occupancies, for example
+        ``{"X": {"Li": 0.5, "O": 0.5}}``.
+    min_cell_size : int, default=1
+        Minimum multiple of the parent cell passed to enumlib. Must be
+        positive and no larger than ``max_cell_size``.
+    max_cell_size : int, default=1
+        Maximum multiple of the parent cell passed to enumlib. Must be
+        positive and no smaller than ``min_cell_size``.
+    enum_precision_parameter : float, default=1e-5
+        Positive finite-coordinate tolerance passed to enumlib.
+
+    Notes
+    -----
+    Enumeration requires a working enumlib installation discoverable by
+    pymatgen. Validation of substitutions and cell-size bounds is delegated to
+    pymatgen.
     """
 
     def __init__(
@@ -44,18 +55,31 @@ class EnumWithComposition:
         self.enum_precision_parameter = enum_precision_parameter
 
     def apply_enumeration(self, structure: Slab, max_structures: int = 2000):
-        """
-        Apply enumeration to parent slab model.
+        """Enumerate ordered derivatives of a parent slab.
 
-        Args:
-            structure: Parent slab model.
-            max_structures: Number of structures to be returned at most for
-                each composition. Defaults to 2000.
+        Parameters
+        ----------
+        structure : Slab
+            Parent slab to substitute and enumerate. The slab is not mutated.
+        max_structures : int, default=2000
+            Maximum number of ranked structures requested from pymatgen. Must
+            be positive.
 
         Returns
         -------
-            A sequence of all enumerated structures.
+        list of dict
+            Pymatgen ranked-result dictionaries. Each dictionary contains a
+            ``structure`` entry and ranking metadata supplied by
+            ``EnumerateStructureTransformation``.
 
+        Raises
+        ------
+        RuntimeError
+            If pymatgen cannot execute enumlib.
+
+        Notes
+        -----
+        Validation errors raised by pymatgen are propagated unchanged.
         """
         subs = SubstitutionTransformation(self.subs_dict)
         surface_structure_partial = subs.apply_transformation(structure)
