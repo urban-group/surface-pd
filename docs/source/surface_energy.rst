@@ -116,6 +116,21 @@ which was obtained from DFT calculations as described above.
 The remaining terms are the enthalpy and entropy contributions to the
 relative oxygen chemical potential.
 
+In the implementation, :math:`\mu_{\text{O}_2}^{0\text{K}}` is expressed in
+eV per O2 molecule, whereas the thermal correction is calculated in kJ/mol of
+O2. The thermal correction is therefore converted to eV before the terms are
+added:
+
+.. math::
+    \mu_{\text{O}}(T) = \frac{1}{2}\left\{
+    E_{\text{O}_2}^{\text{DFT}} +
+    \frac{\Delta\mu_{\text{O}_2}^{\text{thermal}}(T)}
+    {96.487\ \text{kJ mol}^{-1}\text{eV}^{-1}}
+    \right\}.
+
+The reference temperature is :math:`T_0 = 298.15` K and pressure dependence is
+neglected.
+
 ..
     :math:`\mu_{\text{Li}}`, is
     equal to the sum of the Li ion and electron chemical potentials,
@@ -137,7 +152,7 @@ relative oxygen chemical potential.
     0~\ Kelvin value, :math:`\Delta{}H^{\circ}`, and the standard entropy
     :math:`S^{\circ}` were taken from the NIST-JANAF Thermochemical
     Tables.
-    :math:`\Delta H(T) = C_p(T - T_{\text{0}})` and :math:`\Delta S(T) = C_p\ln{(T -T_{\textup{0}})}`,
+    :math:`\Delta H(T) = C_p(T - T_{\text{0}})` and :math:`\Delta S(T) = C_p\ln{(T/T_{\textup{0}})}`,
     where the heat capacity :math:`C_{p} = 3.5k_B` was taken to be the value for
     an ideal gas of diatomic molecules at :math:`T \geq298`.
 

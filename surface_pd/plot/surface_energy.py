@@ -13,6 +13,13 @@ from surface_pd.plot._reference_energies import (
     _O2_ENERGY_BY_FUNCTIONAL,
 )
 
+_STANDARD_TEMPERATURE_K = 298.15
+_GAS_CONSTANT_KJ_PER_MOL_K = 0.008314463
+_O2_ENTHALPY_INCREMENT_KJ_PER_MOL = 8.683
+_O2_STANDARD_ENTROPY_KJ_PER_MOL_K = 205.147e-3
+_O2_HEAT_CAPACITY_KJ_PER_MOL_K = 3.5 * _GAS_CONSTANT_KJ_PER_MOL_K
+_KJ_PER_MOL_PER_EV = 96.487
+
 
 class SurfaceEnergy:
     """
@@ -68,27 +75,46 @@ class SurfaceEnergy:
 
     def g_oxygen(self):
         """
-        Calculate the temperature-dependent oxygen chemical potential.
+        Return the temperature-dependent oxygen chemical potential.
 
-        Equation to calculate the temperature dependent oxygen chemical
-        potential.
+        The DFT reference is combined with ideal-gas enthalpy and entropy
+        corrections at standard pressure. Molar thermal corrections are
+        converted from kJ/mol to eV before being added to the DFT energy.
 
         Returns
         -------
-            Oxygen chemical potential.
+        numpy.ndarray or numpy.float64
+            Oxygen chemical potential in eV per O atom. The result has the
+            same shape as ``T``.
+
+        Raises
+        ------
+        ValueError
+            If any absolute temperature is zero or negative.
+
+        Notes
+        -----
+        Pressure dependence is neglected. The reference temperature is
+        298.15 K, and the standard-state O2 entropy and 0-to-298.15 K
+        enthalpy increment are taken from NIST-JANAF thermochemical data.
         """
         E_O2 = _O2_ENERGY_BY_FUNCTIONAL[self.functional]
-        T0 = 298  # K
-        kB = 0.008314463  # kJ/(mol K)
-        H0 = 8.683  # kJ/mol
-        S0 = 205.147 * 1e-3  # kJ/(mol K)
-        Cp = 3.5 * kB  # kJ/(mol K)
-        delta_H = Cp * (self.T - T0)  # kJ/mol
-        delta_S = Cp * np.log(self.T / T0)  # kJ/(mol K)
-        delta_mu = (H0 + delta_H) - self.T * (S0 + delta_S)  # kJ/mol
-        # print(delta_mu/96.487)
-        g_O2 = (E_O2 + delta_mu) / 96.487  # eV/O2
-        return g_O2 / 2
+        temperature = np.asarray(self.T)
+        if np.any(temperature <= 0):
+            raise ValueError("Temperature must be positive in Kelvin.")
+
+        delta_H = _O2_HEAT_CAPACITY_KJ_PER_MOL_K * (
+            temperature - _STANDARD_TEMPERATURE_K
+        )
+        delta_S = _O2_HEAT_CAPACITY_KJ_PER_MOL_K * np.log(
+            temperature / _STANDARD_TEMPERATURE_K
+        )
+        delta_mu_kj_per_mol = (
+            _O2_ENTHALPY_INCREMENT_KJ_PER_MOL + delta_H
+        ) - temperature * (_O2_STANDARD_ENTROPY_KJ_PER_MOL_K + delta_S)
+        return 0.5 * (
+            E_O2 + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
+        )
 
     def get_gibbs_free_energy(self):
         """
