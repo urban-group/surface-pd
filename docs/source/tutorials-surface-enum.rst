@@ -78,7 +78,7 @@ looks like: ::
                 "same or different species": [composition1, composition2, ...]
             }
         },
-        "num_layers_enumed":{ # Number of layers that will be enumerated; key: str, value: dict
+        "num_enumerated_layers":{ # Number of layers that will be enumerated; key: str, value: dict
             "target species 1 in the model": num of layers 1, # key: str, value: int
             "target species 2 in the model": num of layers 2
         },
@@ -100,7 +100,7 @@ JSON file. ::
                 "O": [0.5, 0.25]
             }
         },
-        "num_layers_enumed":{
+        "num_enumerated_layers":{
             "Li": 1,
             "O": 1
         },
@@ -112,7 +112,7 @@ JSON file. ::
 - The second key is "replacements". Here you should define the species that you want to enumerate as well as the composition of this species after enumeration. For example, "Li": {"Li": [1.0, 0.75]} stands for that all Li atoms will be replaced by 100% and 75% Li atoms. In other words, 0% and 25% Li vacancies will be generated on the surface.
 - If you also want to do substitution along with the enumeration, you can have "Li": {"Na": [1.0, 0.75]}. In this case, All **Li** atoms will be replaced by 100% and 75% **Na** atoms, respectively.
 - If multiple species are defined and going to be enumerated, the pairwise cross product of compositions will be generated. For example here, the overall species and occupancy dictionaries should look like: {{"Li": 1.0, "O": 0.5}, {"Li": 1.0, "O": 0.25}, {"Li": 0.75, "O": 0.5}, {"Li": 0.75, "O": 0.25}}.
-- The third key is "num_layers_enumed". You can define the number of layers that will be enumerated. For example, {"Li": 1, "O": 1} means that only the first "Li" and "O" layers will be enumerated. In the above figures which show the example (104) and (001) surface slab models of |LiCoO2|, they have 10 and 15 layers, respectively. The |LiCoO2| (104) surface always has Li, Co, and O in layers within stoichiometric ratio. By contrary, the |LiCoO2| (001) surface always has distinct pure Li, Co, and O layers.
+- The third key is "num_enumerated_layers". You can define the number of layers that will be enumerated. For example, {"Li": 1, "O": 1} means that only the first "Li" and "O" layers will be enumerated. In the above figures which show the example (104) and (001) surface slab models of |LiCoO2|, they have 10 and 15 layers, respectively. The |LiCoO2| (104) surface always has Li, Co, and O in layers within stoichiometric ratio. By contrary, the |LiCoO2| (001) surface always has distinct pure Li, Co, and O layers.
 - The fourth key is "symmetric". This will control whether the enumerated slab models will be symmetrized.
 - The fifth key is "max_cell_size". This is used to define the maximum number of supercells of the input slab model.
 

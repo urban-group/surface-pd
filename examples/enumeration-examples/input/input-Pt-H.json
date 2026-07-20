@@ -3,11 +3,10 @@
     "replacements": {
         "H": {"H": [0.375]}
     },
-    "num_layers_enumed":{
+    "num_enumerated_layers":{
         "H": 1
     },
     "symmetric": false,
     "max_cell_size": 8
 }
-
 

@@ -4,7 +4,7 @@
         "Li": {"Li": [1.0]},
         "O": {"O": [1.0]}
     },
-    "num_layers_enumed":{
+    "num_enumerated_layers":{
         "Li": 1,
         "O": 1
     },

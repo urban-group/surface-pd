@@ -19,7 +19,7 @@ from pymatgen.core.surface import get_slab_regions
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from surface_pd.error import NoInversionSymmetryError
-from surface_pd.util import check_int
+from surface_pd.util.util import check_int
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class Slab(Structure):
             larger than this tolerance value, these two sites will be
             treated as located on two difference layers.
         _to_be_enumerated_species (list):
-        _num_layers_enumed (dict):
+        _num_enumerated_layers (dict):
         _symmetric (bool):
 
     """
@@ -73,7 +73,7 @@ class Slab(Structure):
         _direction: int = 2,
         _tolerance: float = 0.03,
         _to_be_enumerated_species: list = None,
-        _num_layers_enumed: dict = None,
+        _num_enumerated_layers: dict = None,
         _symmetric: bool = None,
         **kwargs,
     ):
@@ -91,7 +91,7 @@ class Slab(Structure):
         self._direction = _direction
         self._tolerance = _tolerance
         self._to_be_enumerated_species = _to_be_enumerated_species
-        self._num_layers_enumed = _num_layers_enumed
+        self._num_enumerated_layers = _num_enumerated_layers
         self._symmetric = _symmetric
 
     @property
@@ -122,13 +122,13 @@ class Slab(Structure):
         self._to_be_enumerated_species = a
 
     @property
-    def num_layers_enumed(self):
+    def num_enumerated_layers(self):
         """Return the number of layers selected for enumeration."""
-        return self._num_layers_enumed
+        return self._num_enumerated_layers
 
-    @num_layers_enumed.setter
-    def num_layers_enumed(self, a: dict):
-        self._num_layers_enumed = a
+    @num_enumerated_layers.setter
+    def num_enumerated_layers(self, a: dict):
+        self._num_enumerated_layers = a
 
     @property
     def symmetric(self):
@@ -277,12 +277,12 @@ class Slab(Structure):
             all_c_frac = list(layers[species])
             if self.symmetric:
                 target_layers[species] = [
-                    all_c_frac[self.num_layers_enumed[species] - 1],
-                    all_c_frac[-self.num_layers_enumed[species]],
+                    all_c_frac[self.num_enumerated_layers[species] - 1],
+                    all_c_frac[-self.num_enumerated_layers[species]],
                 ]
             else:
                 target_layers[species] = [
-                    all_c_frac[self.num_layers_enumed[species] - 1]
+                    all_c_frac[self.num_enumerated_layers[species] - 1]
                 ]
 
         # Collect the central layers based on the "selective_dynamics"
@@ -355,7 +355,7 @@ class Slab(Structure):
 
         return slab_surface_substitute
 
-    def supplemental_structures_gene(
+    def generate_supplemental_structures(
         self, subs_dict: dict, relaxed_index: dict
     ):
         """

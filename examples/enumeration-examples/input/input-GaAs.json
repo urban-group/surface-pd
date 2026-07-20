@@ -4,7 +4,7 @@
         "Ga": {"Li": [0.75]},
         "As": {"O": [0.75]}
     },
-    "num_layers_enumed":{
+    "num_enumerated_layers":{
         "Ga": 2,
         "As": 2
     },

@@ -1,9 +1,5 @@
-========
-analysis
-========
+Internal analysis helpers
+=========================
 
-``slab_analysis`` functions
-***************************
-
-.. autofunction:: analysis.structure_filter
-.. autofunction:: analysis.selective_dynamics_completion
+The analysis helpers support the enumeration implementation. They are not part
+of the supported public Python API.

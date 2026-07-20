@@ -222,4 +222,4 @@ See Also
 * :doc:`surface_energy` - Surface energy calculation details
 * :doc:`theory` - Theoretical background
 * ``surface-enumeration`` - Generate input structures
-* ``discharge-pd-gene`` - Convert charge to discharge data
+* ``generate-discharge-pd`` - Convert charge to discharge data

@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_ENTRY_POINTS = {
     "surface-enumeration": "surface_pd.cli.surface_enumeration:main",
     "surface-pd-plot": "surface_pd.cli.surface_pd_plot:main",
-    "discharge-pd-gene": "surface_pd.cli.discharge_pd_gene:main",
+    "generate-discharge-pd": "surface_pd.cli.discharge_pd_gene:main",
 }
 
 

@@ -20,21 +20,12 @@ error
 .. autoclass:: error.NonSlabError
     :members:
     
-.. autoclass:: error.PolarSurfaceError
-    :members:
-    
-.. autoclass:: error.NonPolarSurfaceError
-    :members:
-    
 .. autoclass:: error.TooLargeSlabError
     :members:
 
 .. autoclass:: error.InvalidCompositionError
     :members:
     
-.. autoclass:: error.InvalidPhasesAlignError
-    :members:
-
 .. autoclass:: error.NonIntegerError
     :members:
 

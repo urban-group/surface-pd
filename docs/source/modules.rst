@@ -6,6 +6,10 @@ Modules
 .. toctree::
     core
     error
-    analysis
     plot
+
+.. toctree::
+    :hidden:
+
+    analysis
     util

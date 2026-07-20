@@ -4,12 +4,11 @@
         "Li": {"Li": [1.0]},
         "O": {"O": [0.75]}
     },
-    "num_layers_enumed":{
+    "num_enumerated_layers":{
         "Li": 1,
         "O": 2
     },
     "symmetric": true,
     "max_cell_size": 2
 }
-
 

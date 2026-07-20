@@ -3,7 +3,7 @@
 import pytest
 
 from surface_pd.error import NonIntegerError, TooLargeSlabError
-from surface_pd.util import (
+from surface_pd.util.util import (
     all_int,
     check_int,
     csv2dict,

@@ -24,20 +24,9 @@ plot
 util
     Utility functions for various operations.
 
-Example
--------
-Basic usage for surface enumeration::
-
-    from surface_pd.core import Slab, EnumWithComposition
-
-    # Load your slab structure
-    slab = Slab.from_file("slab.vasp")
-
-    # Define enumeration parameters
-    enum = EnumWithComposition(subs_dict, max_cell_size=2)
-    structures = enum.apply_enumeration(slab)
-
-For more examples, see the documentation at https://surface-pd.readthedocs.io
+The supported domain APIs are available from :mod:`surface_pd.core`,
+:mod:`surface_pd.plot`, and :mod:`surface_pd.error`. See the documentation at
+https://surface-pd.readthedocs.io for complete examples.
 
 Authors
 -------
@@ -46,4 +35,4 @@ Alexander Urban (a.urban@columbia.edu)
 """
 
 __version__ = "1.0.0"
-__all__ = ["analysis", "core", "error", "plot", "util"]
+__all__ = ["__version__"]

@@ -39,7 +39,9 @@ from surface_pd.analysis.slab_analysis import (
     selective_dynamics_completion,
     structure_filter,
 )
-from surface_pd.core import EnumWithComposition, PostCheck, PreCheck, Slab
+from surface_pd.core import EnumWithComposition, Slab
+from surface_pd.core.post_check import PostCheck
+from surface_pd.core.pre_check import PreCheck
 from surface_pd.error import (
     IncompatibleSymmError,
     InvalidCompositionError,
@@ -49,7 +51,7 @@ from surface_pd.error import (
     NonSlabError,
     SlabOrientationError,
 )
-from surface_pd.util import (
+from surface_pd.util.util import (
     all_int,
     get_values_nested_dict,
     have_zero,
@@ -61,7 +63,7 @@ def automate_surface(
     target_slab_path: str,
     species: list,
     replace: list,
-    num_layers_enumed: dict,
+    num_enumerated_layers: dict,
     max_cell_size: int,
     symmetric: bool,
     to_vasp: bool = False,
@@ -70,9 +72,9 @@ def automate_surface(
     Enumerate a parent slab over target species and compositions.
 
     TODO:
-        1. Check the meaning of num_layers_enumed. Is this really the number of
-        layers enumed or number of layers relaxed? Can the number of layers
-        enumed be different than the number of layers relaxed?
+        1. Check the meaning of num_enumerated_layers. Is this really the
+        number of layers enumed or number of layers relaxed? Can the number
+        of layers enumed be different than the number of layers relaxed?
         2. symmetric parameter: If turned off, is the only top surface
         enumerated?
         4. Check enumlib code surface enumeration and see how difficult it
@@ -84,7 +86,7 @@ def automate_surface(
             mapping in string-string pairs. E.g. {'Li': {'Li': 0.5}}
             (This dict means that only half of the original Li
             atoms in the slab model will be kept), stored in the list.
-        num_layers_enumed: Dictionaries where species and number of relaxed
+        num_enumerated_layers: Dictionaries where species and number of relaxed
             layers as keys and values, respectively. E.g. {'Li': 2, 'O': 1},
             which represents 2 and 1 layers of Li and O will be relaxed
             during the DFT geometry optimization.
@@ -111,7 +113,7 @@ def automate_surface(
     # symmetry, direction of the slab, and the proximity tolerance for
     # adjacent atoms
     input_structure.to_be_enumerated_species = species
-    input_structure.num_layers_enumed = num_layers_enumed
+    input_structure.num_enumerated_layers = num_enumerated_layers
     input_structure.symmetric = symmetric
     direction = input_structure.direction
     tolerance = input_structure.tolerance
@@ -172,7 +174,7 @@ def automate_surface(
 
         composition_list = list(get_values_nested_dict(subs_dict))
         if all_int(composition_list):
-            structure = input_structure.supplemental_structures_gene(
+            structure = input_structure.generate_supplemental_structures(
                 subs_dict, relaxed_index
             )
             supplemental_structures = [structure]
@@ -180,7 +182,7 @@ def automate_surface(
         else:
             if have_zero(composition_list):
                 slab_substituted = (
-                    slab_substituted.supplemental_structures_gene(
+                    slab_substituted.generate_supplemental_structures(
                         subs_dict, relaxed_index
                     )
                 )
@@ -383,7 +385,7 @@ def run(json_file_path, to_vasp):
 
     # Generate all composition combo
     to_be_enumerated_species = list(data["replacements"])
-    num_layers_enumed = data["num_layers_enumed"]
+    num_enumerated_layers = data["num_enumerated_layers"]
     composition_list = list(get_values_nested_dict(data["replacements"]))
     composition_list = [sorted(x, reverse=True) for x in composition_list]
 
@@ -404,7 +406,7 @@ def run(json_file_path, to_vasp):
         target_slab_path=data["target_slab_path"],
         species=to_be_enumerated_species,
         replace=composition_combo,
-        num_layers_enumed=num_layers_enumed,
+        num_enumerated_layers=num_enumerated_layers,
         max_cell_size=data["max_cell_size"],
         symmetric=data["symmetric"],
         to_vasp=to_vasp,
@@ -442,7 +444,7 @@ def main(argv: list[str] | None = None) -> None:
             "Path to JSON configuration file containing:\n"
             "  - target_slab_path: VASP structure file\n"
             "  - replacements: species compositions to enumerate\n"
-            "  - num_layers_enumed: layers to modify per species\n"
+            "  - num_enumerated_layers: layers to modify per species\n"
             "  - max_cell_size: maximum supercell expansion\n"
             "  - symmetric: maintain top-bottom symmetry"
         ),

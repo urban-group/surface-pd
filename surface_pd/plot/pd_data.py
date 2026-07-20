@@ -10,18 +10,10 @@ import logging
 import numpy as np
 import pandas as pd
 
+from surface_pd.plot._reference_energies import _BULK_ENERGY_BY_FUNCTIONAL
 from surface_pd.plot.surface_energy import SurfaceEnergy
 
 logger = logging.getLogger(__name__)
-
-# Constants for bulk energies by functional
-E_O2_by_funtional = {"PBE": -9.86, "SCAN": -10.45}
-E_bulk_by_funtional = {
-    "Ni": {"PBE": -5.55, "SCAN": -5.77},
-    "Co": {"PBE": -7.11, "SCAN": -7.39},
-    "Mn": {"PBE": -9.00, "SCAN": -9.20},
-}
-E_Li_by_funtional = {"PBE": -1.90, "SCAN": -2.00}
 
 
 class PdData:
@@ -147,7 +139,9 @@ class PdData:
             gamma = checked_phases[0]["gamma"]
         # Calculate the slab surface area
         A = float(np.sin(gamma * np.pi / 180) * a * b)
-        E_bulk = E_bulk_by_funtional[self.tm_species()][self.functional]
+        E_bulk = _BULK_ENERGY_BY_FUNCTIONAL[self.tm_species()][
+            self.functional
+        ]
         E_shift = (1 / (2 * A)) * (E[0] - E[1] + num_bulk * E_bulk)
         if not all(E):
             E_shift = 0

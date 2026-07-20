@@ -122,24 +122,6 @@ class PostCheck:
 
         return 0, self.structure
 
-    def slab_size_check(
-        self,
-        total_num_sites: int,
-        enumerated_num_sites: int,
-        criteria: float,
-    ):
-        """
-        Repair refined slab geometry after symmetry refinement.
-
-        This compatibility wrapper preserves the historical ``PostCheck`` API.
-        New code should call :meth:`repair_refined_slab_geometry` directly.
-        """
-        return self.repair_refined_slab_geometry(
-            total_num_sites=total_num_sites,
-            enumerated_num_sites=enumerated_num_sites,
-            criteria=criteria,
-        )
-
     def post_check(
         self,
         species,
@@ -255,7 +237,9 @@ class PostCheck:
         refined_structure.to_be_enumerated_species = (
             self.structure.to_be_enumerated_species
         )
-        refined_structure.num_layers_enumed = self.structure.num_layers_enumed
+        refined_structure.num_enumerated_layers = (
+            self.structure.num_enumerated_layers
+        )
         refined_structure.symmetric = self.structure.symmetric
 
         if (

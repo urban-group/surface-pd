@@ -6,7 +6,7 @@ geometric criteria and complete selective dynamics properties for DFT
 calculations.
 """
 
-from surface_pd.core import Slab
+from surface_pd.core.slab import Slab
 
 
 def structure_filter(input_slabs, direction, criteria):

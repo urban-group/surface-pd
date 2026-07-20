@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONSOLE_SCRIPTS = (
     "surface-enumeration",
     "surface-pd-plot",
-    "discharge-pd-gene",
+    "generate-discharge-pd",
 )
 PACKAGE_FILES = (
     "surface_pd/VERSION",
@@ -32,6 +32,7 @@ PACKAGE_FILES = (
     "surface_pd/error/__init__.py",
     "surface_pd/error/error.py",
     "surface_pd/plot/__init__.py",
+    "surface_pd/plot/_reference_energies.py",
     "surface_pd/plot/pd_data.py",
     "surface_pd/plot/plot.py",
     "surface_pd/plot/surface_energy.py",

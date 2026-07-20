@@ -7,21 +7,6 @@ and temperature.
 """
 
 from .pd_data import PdData
-from .plot import (
-    convert_numbers,
-    find_stable_phases,
-    get_compositions,
-    get_labels,
-    get_ticks_and_levels,
-)
 from .surface_energy import SurfaceEnergy
 
-__all__ = [
-    "PdData",
-    "SurfaceEnergy",
-    "convert_numbers",
-    "find_stable_phases",
-    "get_compositions",
-    "get_labels",
-    "get_ticks_and_levels",
-]
+__all__ = ["PdData", "SurfaceEnergy"]

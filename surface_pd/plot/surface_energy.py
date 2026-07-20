@@ -7,14 +7,11 @@ voltage-dependent surface Gibbs free energies from DFT data.
 
 import numpy as np
 
-# Constants for bulk energies by functional
-E_O2_by_funtional = {"PBE": -9.86, "SCAN": -10.45}
-E_bulk_by_funtional = {
-    "Ni": {"PBE": -5.55, "SCAN": -5.77},
-    "Co": {"PBE": -7.11, "SCAN": -7.39},
-    "Mn": {"PBE": -9.00, "SCAN": -9.20},
-}
-E_Li_by_funtional = {"PBE": -1.90, "SCAN": -2.00}
+from surface_pd.plot._reference_energies import (
+    _BULK_ENERGY_BY_FUNCTIONAL,
+    _LI_ENERGY_BY_FUNCTIONAL,
+    _O2_ENERGY_BY_FUNCTIONAL,
+)
 
 
 class SurfaceEnergy:
@@ -80,7 +77,7 @@ class SurfaceEnergy:
         -------
             Oxygen chemical potential.
         """
-        E_O2 = E_O2_by_funtional[self.functional]
+        E_O2 = _O2_ENERGY_BY_FUNCTIONAL[self.functional]
         T0 = 298  # K
         kB = 0.008314463  # kJ/(mol K)
         H0 = 8.683  # kJ/mol
@@ -101,8 +98,8 @@ class SurfaceEnergy:
         -------
             Surface Gibbs free energy.
         """
-        E_bulk = E_bulk_by_funtional[self.TM_species][self.functional]
-        E_Li = E_Li_by_funtional[self.functional]
+        E_bulk = _BULK_ENERGY_BY_FUNCTIONAL[self.TM_species][self.functional]
+        E_Li = _LI_ENERGY_BY_FUNCTIONAL[self.functional]
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
         G = (
             self.dft_energy

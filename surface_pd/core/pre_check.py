@@ -7,7 +7,7 @@ from monty.dev import requires
 from pymatgen.core.surface import get_slab_regions
 
 from surface_pd.core.slab import Slab
-from surface_pd.util import check_int
+from surface_pd.util.util import check_int
 
 logger = logging.getLogger(__name__)
 
