@@ -44,6 +44,11 @@ jobs:
           python -m sphinx -W --keep-going -b html
           docs/source docs/_build/html
 
+      - name: Test documentation examples
+        run: >-
+          python -m sphinx -W --keep-going -b doctest
+          docs/source docs/_build/doctest
+
   package:
     name: Build wheel
     runs-on: ubuntu-latest

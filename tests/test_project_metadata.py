@@ -176,10 +176,35 @@ def test_ci_workflow_runs_verification_commands():
         "python -m sphinx -W --keep-going -b html "
         "docs/source docs/_build/html"
     ) in normalized_workflow
+    assert (
+        "python -m sphinx -W --keep-going -b doctest "
+        "docs/source docs/_build/doctest"
+    ) in normalized_workflow
     assert "python -m pip wheel --no-deps --wheel-dir dist ." in (
         workflow_text
     )
     assert "actions/upload-artifact" in workflow_text
+
+
+def test_sphinx_executes_two_principal_workflow_examples():
+    """Tutorials and CI should retain two named executable examples."""
+    tutorials_path = PROJECT_ROOT / "docs" / "source" / "tutorials.rst"
+    tutorials = tutorials_path.read_text()
+    examples_path = PROJECT_ROOT / "docs" / "source" / "python_examples.rst"
+
+    assert "python_examples" in tutorials
+    assert examples_path.is_file()
+    examples = examples_path.read_text()
+    testcode_groups = re.findall(
+        r"^\.\. testcode:: ([\w-]+)$", examples, re.M
+    )
+    testoutput_groups = re.findall(
+        r"^\.\. testoutput:: ([\w-]+)$", examples, re.M
+    )
+    expected_groups = ["enumeration", "phase-diagram"]
+
+    assert testcode_groups == expected_groups
+    assert testoutput_groups == expected_groups
 
 
 def test_python_metadata_matches_supported_versions():
