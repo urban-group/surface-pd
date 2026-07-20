@@ -8,9 +8,7 @@ voltage-dependent surface Gibbs free energies from DFT data.
 import numpy as np
 
 from surface_pd.plot._reference_energies import (
-    _BULK_ENERGY_BY_FUNCTIONAL,
-    _LI_ENERGY_BY_FUNCTIONAL,
-    _O2_ENERGY_BY_FUNCTIONAL,
+    _get_reference_energies,
 )
 
 _STANDARD_TEMPERATURE_K = 298.15
@@ -39,7 +37,15 @@ class SurfaceEnergy:
         b: Lattice parameter b.
         gamma: Angle gamma in degrees.
         TM_species: Transition metal species symbol.
-        functional: DFT functional used (e.g., "PBE" or "SCAN").
+        functional: Complete DFT protocol label: ``"PBE+U"``,
+            ``"SCAN+rVV10+U"``, or ``"r2SCAN+rVV10+U"``. The selected
+            transition metal must have a confirmed bulk reference for it.
+
+    Raises
+    ------
+    ValueError
+        If the functional or transition-metal/functional combination has no
+        confirmed reference-energy set.
     """
 
     def __init__(
@@ -67,11 +73,9 @@ class SurfaceEnergy:
         self.gamma = gamma
         self.TM_species = TM_species
         self.functional = functional
-
-    @property
-    def e_li(self):
-        """Return the reference lithium energy."""
-        return -2.3
+        self._li_energy, self._o2_energy, self._bulk_energy = (
+            _get_reference_energies(TM_species, functional)
+        )
 
     def g_oxygen(self):
         """
@@ -98,7 +102,6 @@ class SurfaceEnergy:
         298.15 K, and the standard-state O2 entropy and 0-to-298.15 K
         enthalpy increment are taken from NIST-JANAF thermochemical data.
         """
-        E_O2 = _O2_ENERGY_BY_FUNCTIONAL[self.functional]
         temperature = np.asarray(self.T)
         if np.any(temperature <= 0):
             raise ValueError("Temperature must be positive in Kelvin.")
@@ -113,7 +116,7 @@ class SurfaceEnergy:
             _O2_ENTHALPY_INCREMENT_KJ_PER_MOL + delta_H
         ) - temperature * (_O2_STANDARD_ENTROPY_KJ_PER_MOL_K + delta_S)
         return 0.5 * (
-            E_O2 + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
+            self._o2_energy + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
         )
 
     def get_gibbs_free_energy(self):
@@ -124,13 +127,11 @@ class SurfaceEnergy:
         -------
             Surface Gibbs free energy.
         """
-        E_bulk = _BULK_ENERGY_BY_FUNCTIONAL[self.TM_species][self.functional]
-        E_Li = _LI_ENERGY_BY_FUNCTIONAL[self.functional]
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
         G = (
             self.dft_energy
-            + (self.nTM - self.nLi) * (E_Li - self.V)
+            + (self.nTM - self.nLi) * (self._li_energy - self.V)
             + (2 * self.nTM - self.nO) * self.g_oxygen()
-            - self.nTM * E_bulk
+            - self.nTM * self._bulk_energy
         ) / (2 * A)
         return G

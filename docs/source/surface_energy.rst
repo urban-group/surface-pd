@@ -83,6 +83,33 @@ and :math:`G_\text{bulk}` can be obtained from DFT calculations,
 representing the energies of the slab
 model and the bulk structure (one |LiTMO2| formula unit).
 
+Reference energies
+==================
+
+The implementation uses the reference energies provided by Xinhao Li for the
+calculations underlying the reference publications. All values are DFT total
+energies in eV. Li is normalized per atom, O2 per molecule, and bulk LiTMO2 per
+formula unit.
+
+=================  =============  ==================  ====================
+Reference          PBE+U          SCAN+rVV10+U        r2SCAN+rVV10+U
+=================  =============  ==================  ====================
+BCC Li             -1.89965       -2.33333            -2.32338
+isolated O2         -8.50018       -12.00701           -11.54833
+LiNiO2              -19.92283375   -36.8133525         unavailable
+LiCoO2              -22.69242      -37.2001966667      -32.5698933333
+LiMnO2              -26.319605     unavailable         -36.4717
+=================  =============  ==================  ====================
+
+The PBE+U O2 value includes the original +1.36 eV correction to the raw
+-9.86018 eV isolated-molecule energy. The historic LiMnO2
+``SCAN+rVV10+U`` table entry was zero and is treated as a placeholder, not a
+physical reference. LiNiO2 ``r2SCAN+rVV10+U`` was not supplied. Calculations
+using either unavailable combination fail explicitly.
+
+The full protocol label is required. ``PBE`` and ``SCAN`` are not aliases for
+the corresponding ``+U`` and dispersion-inclusive calculations.
+
 ..
     For the fully lithiated |LiTMO2| bulk composition, the number of Li
     and TM atoms is identical, and we identify :math:`n_{\text{Li}}^{\text{bulk}}

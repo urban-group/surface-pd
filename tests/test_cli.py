@@ -72,3 +72,39 @@ def test_cli_modules_show_help(module_name):
 
     assert result.returncode == 0
     assert "usage:" in result.stdout
+
+
+def test_surface_plot_cli_lists_complete_functional_protocols():
+    """CLI help should expose exact labels rather than ambiguous aliases."""
+    result = subprocess.run(
+        [sys.executable, "-m", "surface_pd.cli.surface_pd_plot", "--help"],
+        cwd=PROJECT_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert "PBE+U" in result.stdout
+    assert "SCAN+rVV10+U" in result.stdout
+    assert "r2SCAN+rVV10+U" in result.stdout
+
+
+def test_surface_plot_cli_rejects_ambiguous_functional_alias():
+    """An incomplete method label should fail during argument parsing."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "surface_pd.cli.surface_pd_plot",
+            "input.dat",
+            "--functional",
+            "SCAN",
+        ],
+        cwd=PROJECT_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "invalid choice: 'SCAN'" in result.stderr

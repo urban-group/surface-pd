@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from surface_pd.plot._reference_energies import _SUPPORTED_FUNCTIONALS
 from surface_pd.plot.pd_data import PdData
 from surface_pd.plot.plot import (
     convert_numbers,
@@ -323,8 +324,8 @@ def main(argv: list[str] | None = None) -> None:
         "--functional",
         "-f",
         help="Functional used to perform the calculations,"
-        "\n, i.e. PBE+U, SCAN+rVV10+U, and r2SCAN+rVV10+U",
-        type=str,
+        " i.e. PBE+U, SCAN+rVV10+U, or r2SCAN+rVV10+U",
+        choices=_SUPPORTED_FUNCTIONALS,
         default="PBE+U",
     )
 

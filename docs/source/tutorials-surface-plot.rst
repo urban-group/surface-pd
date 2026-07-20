@@ -54,7 +54,8 @@ Required Arguments
 * ``DATA_FILE`` - Path to surface phase diagram data file
 * ``-L, --lithium-like-species`` - Name of lithium-like species column
 * ``-O, --oxygen-like-species`` - Name of oxygen-like species column
-* ``-f, --functional`` - DFT functional used (PBE or SCAN)
+* ``-f, --functional`` - Complete DFT protocol label (``PBE+U``,
+  ``SCAN+rVV10+U``, or ``r2SCAN+rVV10+U``)
 
 Optional Arguments
 ------------------
@@ -78,7 +79,7 @@ Generate an interactive 3D voltage-temperature phase diagram:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN
+        -L Li -O O -f SCAN+rVV10+U
 
 This will display an interactive matplotlib window showing stable phases
 across voltage and temperature space.
@@ -92,7 +93,7 @@ Generate a phase diagram colored by lithium content:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN --color-by-Li-content
+        -L Li -O O -f SCAN+rVV10+U --color-by-Li-content
 
 Color by Oxygen Content
 -----------------------
@@ -103,7 +104,7 @@ Generate a phase diagram colored by oxygen content:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN --color-by-O-content
+        -L Li -O O -f SCAN+rVV10+U --color-by-O-content
 
 Custom Temperature Range
 ------------------------
@@ -114,7 +115,7 @@ Specify custom temperature boundaries:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN \
+        -L Li -O O -f SCAN+rVV10+U \
         --low-T 200 \
         --high-T 400
 
@@ -127,7 +128,7 @@ Save the generated plot instead of displaying it:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN -s
+        -L Li -O O -f SCAN+rVV10+U -s
 
 Understanding the Output
 ========================
@@ -149,13 +150,17 @@ depends on:
 Supported DFT Functionals
 ==========================
 
-The script includes reference energies for:
+The script includes confirmed reference-energy sets for these complete
+computational protocols:
 
-* **PBE** - Perdew-Burke-Ernzerhof GGA functional
-* **SCAN** - Strongly Constrained and Appropriately Normed meta-GGA
+* ``PBE+U`` for Ni, Co, and Mn systems
+* ``SCAN+rVV10+U`` for Ni and Co systems
+* ``r2SCAN+rVV10+U`` for Co and Mn systems
 
-These reference energies are used to calculate chemical potentials for
-Li, O₂, and transition metals.
+The labels include the Hubbard-U and dispersion treatment because the
+reference energies are protocol-specific. Shorthand names such as ``PBE`` or
+``SCAN`` are intentionally rejected. The energies and their normalization are
+documented in :doc:`surface_energy`.
 
 Troubleshooting
 ===============
@@ -173,15 +178,17 @@ Both are supported for backward compatibility.
 Functional Not Recognized
 --------------------------
 
-If you get ``KeyError: 'PBE+U'``, use the base functional name without "+U":
+If a functional is rejected, use one of the complete labels listed above and
+make sure that a confirmed LiTMO2 bulk reference exists for the transition
+metal. For example:
 
 .. code-block:: bash
 
-    # Incorrect
-    -f PBE+U
+    -f SCAN+rVV10+U
 
-    # Correct
-    -f PBE
+``SCAN+rVV10+U`` is not available for Mn, and ``r2SCAN+rVV10+U`` is not
+available for Ni. These incomplete historic combinations are rejected rather
+than assigned placeholder energies.
 
 Missing Required Arguments
 ---------------------------
@@ -191,7 +198,7 @@ Always specify the lithium-like and oxygen-like species:
 .. code-block:: bash
 
     # Required
-    -L Li -O O -f SCAN
+    -L Li -O O -f SCAN+rVV10+U
 
 Advanced Topics
 ===============
@@ -205,10 +212,10 @@ files separately and overlay the results:
 .. code-block:: bash
 
     # Generate charge phase diagram
-    surface-pd-plot charge-data.dat -L Li -O O -f SCAN
+    surface-pd-plot charge-data.dat -L Li -O O -f SCAN+rVV10+U
 
     # Generate discharge phase diagram
-    surface-pd-plot discharge-data.dat -L Li -O O -f SCAN --discharge
+    surface-pd-plot discharge-data.dat -L Li -O O -f SCAN+rVV10+U --discharge
 
 Custom Chemical Potentials
 ---------------------------

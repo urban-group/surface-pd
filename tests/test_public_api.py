@@ -6,7 +6,7 @@ import surface_pd
 from surface_pd import analysis, core, error, plot, util
 from surface_pd.core.post_check import PostCheck
 from surface_pd.core.slab import Slab
-from surface_pd.plot import pd_data, surface_energy
+from surface_pd.plot import _reference_energies, pd_data, surface_energy
 
 
 def test_package_root_remains_lightweight():
@@ -74,6 +74,9 @@ def test_energy_references_are_private_and_shared():
     assert not hasattr(surface_energy, "E_O2_by_funtional")
     assert not hasattr(surface_energy, "E_bulk_by_funtional")
     assert not hasattr(surface_energy, "E_Li_by_funtional")
-    assert pd_data._BULK_ENERGY_BY_FUNCTIONAL is (
-        surface_energy._BULK_ENERGY_BY_FUNCTIONAL
+    assert pd_data._get_bulk_energy is (
+        _reference_energies._get_bulk_energy
+    )
+    assert surface_energy._get_reference_energies is (
+        _reference_energies._get_reference_energies
     )

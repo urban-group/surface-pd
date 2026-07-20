@@ -40,10 +40,10 @@ The script `surface-pd-plot.py` generates surface phase diagrams for electrode s
 **Example:**
 
 ```bash
-surface-pd-plot.py examples/plotting-examples/Li-surface_pd_data-symm-all.dat \
+surface-pd-plot.py examples/plotting-examples/SCAN-Li-surface.dat \
     --lithium-like-species Li \
     --oxygen-like-species O \
-    --functional PBE
+    --functional SCAN+rVV10+U
 ```
 
 ## Getting Help
