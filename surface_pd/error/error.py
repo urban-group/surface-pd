@@ -146,22 +146,6 @@ class InvalidCompositionError(Exception):
         )
 
 
-class InvalidPhasesAlignError(Exception):
-    """
-    Error for invalid phases used to calculate alignment energy.
-
-    Alignment phases must be comparable on the basis of the same surface
-    area.
-    """
-
-    def __str__(self):
-        return (
-            "Please double check the reference phases used here. The "
-            "alignment energy should be \n calculated on the basis of "
-            "same amount of surface area (same supercell size)."
-        )
-
-
 class NonIntegerError(Exception):
     """
     Error for non-integer atom counts after enumeration.

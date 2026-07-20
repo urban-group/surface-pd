@@ -40,6 +40,54 @@ rcparams = {
 }
 
 
+def _prepare_surface_pd_data(
+    data_files,
+    lithium_like_species,
+    oxygen_like_species,
+    V,
+    T,
+):
+    """Load and calculate one or two datasets without rendering a plot."""
+    if len(data_files) not in (1, 2):
+        raise ValueError("Exactly one or two phase-data files are required.")
+
+    phase_datasets = []
+    for path in data_files:
+        dataframe, references = _read_phase_diagram_file(path)
+        phase_datasets.append(
+            PdData(
+                dataframe=dataframe,
+                lithium_like_species=lithium_like_species,
+                oxygen_like_species=oxygen_like_species,
+                reference_energies=references,
+            ).standardize_pd_data()
+        )
+
+    if len(phase_datasets) == 2:
+        _require_matching_reference_energies(
+            phase_datasets[0].reference_energies,
+            phase_datasets[1].reference_energies,
+        )
+        shift_energy = phase_datasets[0].calculate_shift_energy(
+            phase_datasets[1]
+        )
+    else:
+        shift_energy = 0.0
+
+    energy_groups = []
+    for index, phase_data in enumerate(phase_datasets):
+        energies = phase_data.get_surface_energy(V=V, T=T)
+        if index == 1:
+            energies = energies + shift_energy
+        energy_groups.append(energies)
+    energies = np.concatenate(energy_groups, axis=0)
+    dataframe = pd.concat(
+        [phase_data.dataframe for phase_data in phase_datasets],
+        ignore_index=True,
+    )
+    return dataframe, energies, len(phase_datasets)
+
+
 def surface_pd_plot(
     data_files,
     lithium_like_species,
@@ -57,75 +105,16 @@ def surface_pd_plot(
     T = np.linspace(low_T, high_T, 500)
     V_mesh, T_mesh = np.meshgrid(V, T)
 
-    # Get the number of files
-    num_files = len(data_files)
-
-    if num_files != 1:
-        checked_phases = []
-        df = []
-        reference_energies = None
-        for data in data_files:
-            temp_df, file_references = _read_phase_diagram_file(data)
-            if reference_energies is None:
-                reference_energies = file_references
-            else:
-                _require_matching_reference_energies(
-                    reference_energies,
-                    file_references,
-                )
-
-            # Initialize the PdData class and do standardization
-            phase_data = PdData(
-                dataframe=temp_df,
-                lithium_like_species=lithium_like_species,
-                oxygen_like_species=oxygen_like_species,
-                reference_energies=file_references,
-            )
-
-            # Standardize the surface pd data (with the same number of TM
-            # species)
-            temp_df = phase_data.standardize_pd_data().dataframe
-
-            # Get the phases that will be used to calculate the shift energy
-            checked_phases.append(phase_data.get_check_phases())
-            df.append(temp_df)
-
-        # Combine all dataframes
-        df = pd.concat(df)
-
-        # Get surface energy
-        phase_data = PdData(
-            dataframe=df,
-            lithium_like_species=lithium_like_species,
-            oxygen_like_species=oxygen_like_species,
-            reference_energies=reference_energies,
-        )
-
-        # Calculate the shift energy for the polar surface only
-        shift_energy = phase_data.get_the_shift_energy(
-            checked_phases=checked_phases
-        )
-
-        temp_G = phase_data.get_surface_energy(V=V_mesh, T=T_mesh)
-
-        shifted_G = temp_G[int(len(temp_G) / num_files) :] + shift_energy
-        G = np.append(temp_G[0 : int(len(temp_G) / num_files)], shifted_G)
-    else:
-        # Read data file
-        df, reference_energies = _read_phase_diagram_file(data_files[0])
-        phase_data = PdData(
-            dataframe=df,
-            lithium_like_species=lithium_like_species,
-            oxygen_like_species=oxygen_like_species,
-            reference_energies=reference_energies,
-        )
-        phase_data.standardize_pd_data()
-
-        # Get surface energy
-        G = phase_data.get_surface_energy(V=V_mesh, T=T_mesh)
+    df, G, num_files = _prepare_surface_pd_data(
+        data_files,
+        lithium_like_species,
+        oxygen_like_species,
+        V_mesh,
+        T_mesh,
+    )
 
     # Split an array into multiple sub-arrays
-    stable_phases_index = find_stable_phases(G, df)
+    stable_phases_index = find_stable_phases(G.ravel(), df)
 
     # Get unique tick labels
     ticks = np.unique([stable_phases_index])
@@ -346,6 +335,8 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     args = parser.parse_args(argv)
+    if len(args.surface_pd_data) not in (1, 2):
+        parser.error("exactly one or two DATA_FILE arguments are required")
 
     surface_pd_plot(
         args.surface_pd_data,

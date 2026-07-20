@@ -198,18 +198,24 @@ Always specify the lithium-like and oxygen-like species:
 Advanced Topics
 ===============
 
-Multiple Data Files
--------------------
+One or Two Data Files
+---------------------
 
-To compare charge and discharge behavior, you can process multiple data
-files separately and overlay the results:
+The plotting command accepts exactly one or two files. Supply two files for
+complementary facets whose selected alignment phases differ by whole LiTMO2
+formula units and whose relaxed surface-cell areas agree within 0.5%. Their
+complete reference-energy metadata and transition-metal species must match.
+The second dataset is shifted onto the first dataset's energy convention.
 
 .. code-block:: bash
 
-    # Generate charge phase diagram
-    surface-pd-plot charge-data.dat -L Li -O O
+    surface-pd-plot facet-a.dat facet-b.dat -L Li -O O
 
-    # Generate discharge phase diagram
+Charge and discharge datasets are plotted in separate invocations:
+
+.. code-block:: bash
+
+    surface-pd-plot charge-data.dat -L Li -O O
     surface-pd-plot discharge-data.dat -L Li -O O --discharge
 
 Custom Reference Energies
