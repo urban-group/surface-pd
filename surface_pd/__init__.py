@@ -34,5 +34,6 @@ Xinhao Li (xinhao.li@columbia.edu)
 Alexander Urban (a.urban@columbia.edu)
 """
 
-__version__ = "1.0.0"
+from ._version import __version__
+
 __all__ = ["__version__"]

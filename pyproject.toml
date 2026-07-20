@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "surface-pd"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Generation of surface phase diagrams"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
@@ -18,7 +18,7 @@ maintainers = [
 ]
 keywords = ["materials science", "phase diagrams", "surface reconstruction", "DFT"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -66,8 +66,8 @@ generate-discharge-pd = "surface_pd.cli.discharge_pd_gene:main"
 [tool.setuptools.packages.find]
 include = ["surface_pd*"]
 
-[tool.setuptools.package-data]
-surface_pd = ["VERSION"]
+[tool.setuptools.dynamic]
+version = {attr = "surface_pd._version.__version__"}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

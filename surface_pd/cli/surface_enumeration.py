@@ -23,8 +23,6 @@ https://doi.org/10.1103/PhysRevB.80.014120.
 __author__ = "Xinhao Li"
 __email__ = "xinhao.li@columbia.edu"
 __date__ = "2023-08-23"
-__version__ = "0.1.0"
-
 import argparse
 import copy
 import json
@@ -35,6 +33,7 @@ from pymatgen.core.periodic_table import DummySpecies
 from pymatgen.core.surface import get_slab_regions
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
+from surface_pd import __version__
 from surface_pd.analysis.slab_analysis import (
     selective_dynamics_completion,
     structure_filter,

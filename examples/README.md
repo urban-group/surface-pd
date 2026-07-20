@@ -61,7 +61,7 @@ If you use these examples or the surface-pd package in your research, please cit
   author = {Li, Xinhao and Urban, Alexander},
   title = {surface-pd: Surface Phase Diagram Generator},
   url = {https://github.com/urban-group/surface-pd},
-  version = {1.0.0},
+  version = {0.1.0},
   year = {2025}
 }
 ```

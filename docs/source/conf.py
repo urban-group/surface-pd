@@ -13,6 +13,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import runpy
 import sys
 
 sys.path.insert(0, os.path.abspath("../../surface_pd"))
@@ -26,8 +27,11 @@ project = "surface-pd"
 copyright = "2022, Xinhao Li"
 author = "Xinhao Li"
 
-# The full version, including alpha/beta/rc tags
-release = "1.0.0"
+# The full version, read from the package's authoritative source file.
+version_data = runpy.run_path(
+    os.path.abspath("../../surface_pd/_version.py")
+)
+release = version_data["__version__"]
 
 
 # -- General configuration ---------------------------------------------------

@@ -117,3 +117,40 @@ def test_python_metadata_matches_supported_versions():
     assert metadata["project"]["requires-python"] == REQUIRES_PYTHON
     for version in SUPPORTED_PYTHON_VERSIONS:
         assert f"Programming Language :: Python :: {version}" in classifiers
+
+
+def test_release_metadata_describes_pre_one_beta():
+    """Release metadata should match the documented pre-1.0 policy."""
+    import surface_pd
+
+    metadata = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
+    project = metadata["project"]
+
+    assert "version" not in project
+    assert "version" in project["dynamic"]
+    assert metadata["tool"]["setuptools"]["dynamic"]["version"] == {
+        "attr": "surface_pd._version.__version__"
+    }
+    assert surface_pd.__version__ == "0.1.0"
+    assert "Development Status :: 4 - Beta" in project["classifiers"]
+    assert "Development Status :: 5 - Production/Stable" not in (
+        project["classifiers"]
+    )
+
+
+def test_release_policy_and_sphinx_use_authoritative_version():
+    """Policy and docs configuration should not duplicate release literals."""
+    policy = (PROJECT_ROOT / "docs" / "source" / "release_policy.rst")
+    sphinx_config = (PROJECT_ROOT / "docs" / "source" / "conf.py").read_text()
+
+    assert policy.is_file()
+    assert "pre-1.0 releases may introduce breaking api changes" in (
+        policy.read_text().lower()
+    )
+    assert 'release = "1.0.0"' not in sphinx_config
+    assert "surface_pd/_version.py" in sphinx_config
+
+
+def test_version_file_is_not_duplicated():
+    """The package should not ship a second manually maintained version."""
+    assert not (PROJECT_ROOT / "surface_pd" / "VERSION").exists()

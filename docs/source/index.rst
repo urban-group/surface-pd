@@ -24,6 +24,7 @@ If you have any questions or issues, please contact:
 
    introduction
    installation
+   release_policy
    theory
    tutorials
    modules

@@ -16,7 +16,7 @@ CONSOLE_SCRIPTS = (
     "generate-discharge-pd",
 )
 PACKAGE_FILES = (
-    "surface_pd/VERSION",
+    "surface_pd/_version.py",
     "surface_pd/__init__.py",
     "surface_pd/analysis/__init__.py",
     "surface_pd/analysis/slab_analysis.py",
@@ -115,6 +115,11 @@ def test_wheel_contains_package_submodules(built_wheel):
     )
 
 
+def test_wheel_uses_authoritative_package_version(built_wheel):
+    """The wheel filename should contain the authoritative release version."""
+    assert built_wheel.name.startswith("surface_pd-0.1.0-")
+
+
 def test_wheel_entry_points_match_console_scripts(built_wheel):
     """Wheel entry-point metadata should expose every console script."""
     with ZipFile(built_wheel) as wheel:
@@ -141,6 +146,26 @@ def test_installed_wheel_imports_package_modules(installed_wheel_environment):
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_installed_wheel_reports_authoritative_version(
+    installed_wheel_environment,
+):
+    """Installed runtime metadata should match the built wheel version."""
+    python, _ = installed_wheel_environment
+    result = subprocess.run(
+        [
+            str(python),
+            "-c",
+            "import surface_pd; print(surface_pd.__version__)",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "0.1.0"
 
 
 @pytest.mark.parametrize("script_name", CONSOLE_SCRIPTS)
