@@ -6,7 +6,8 @@ import surface_pd
 from surface_pd import analysis, core, error, plot, util
 from surface_pd.core.post_check import PostCheck
 from surface_pd.core.slab import Slab
-from surface_pd.plot import _reference_energies, pd_data, surface_energy
+from surface_pd.plot import pd_data, surface_energy
+from surface_pd.plot.reference_energies import ReferenceEnergies
 
 
 def test_package_root_remains_lightweight():
@@ -17,7 +18,7 @@ def test_package_root_remains_lightweight():
 def test_subpackage_exports_define_the_supported_api():
     """Only domain-facing classes and raised errors are public exports."""
     assert core.__all__ == ["Slab", "EnumWithComposition"]
-    assert plot.__all__ == ["PdData", "SurfaceEnergy"]
+    assert plot.__all__ == ["PdData", "ReferenceEnergies", "SurfaceEnergy"]
     assert analysis.__all__ == []
     assert util.__all__ == []
     assert error.__all__ == [
@@ -70,13 +71,10 @@ def test_removed_post_check_compatibility_wrapper_is_not_available():
 
 
 def test_energy_references_are_private_and_shared():
-    """Functional energy references should have one private source of truth."""
+    """Reference energies should be public values, not built-in tables."""
     assert not hasattr(surface_energy, "E_O2_by_funtional")
     assert not hasattr(surface_energy, "E_bulk_by_funtional")
     assert not hasattr(surface_energy, "E_Li_by_funtional")
-    assert pd_data._get_bulk_energy is (
-        _reference_energies._get_bulk_energy
-    )
-    assert surface_energy._get_reference_energies is (
-        _reference_energies._get_reference_energies
-    )
+    assert plot.ReferenceEnergies is ReferenceEnergies
+    assert pd_data.ReferenceEnergies is ReferenceEnergies
+    assert surface_energy.ReferenceEnergies is ReferenceEnergies

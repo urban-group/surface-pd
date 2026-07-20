@@ -7,6 +7,7 @@ and temperature.
 """
 
 from .pd_data import PdData
+from .reference_energies import ReferenceEnergies
 from .surface_energy import SurfaceEnergy
 
-__all__ = ["PdData", "SurfaceEnergy"]
+__all__ = ["PdData", "ReferenceEnergies", "SurfaceEnergy"]

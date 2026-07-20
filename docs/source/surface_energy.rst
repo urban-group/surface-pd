@@ -86,10 +86,14 @@ model and the bulk structure (one |LiTMO2| formula unit).
 Reference energies
 ==================
 
-The implementation uses the reference energies provided by Xinhao Li for the
-calculations underlying the reference publications. All values are DFT total
-energies in eV. Li is normalized per atom, O2 per molecule, and bulk LiTMO2 per
-formula unit.
+Reference energies are user-provided scientific inputs. The package does not
+select them from a functional name or contain a supported-method list. Each
+phase-diagram file declares the Li energy in eV per atom, the raw O2 energy and
+explicit correction in eV per molecule, and the bulk LiTMO2 energy in eV per
+formula unit. The method description is retained as free-text provenance but
+is not interpreted by the code.
+
+For example, the committed Ni data used in the reference publications records:
 
 =================  =============  ==================  ====================
 Reference          PBE+U          SCAN+rVV10+U        r2SCAN+rVV10+U
@@ -101,14 +105,18 @@ LiCoO2              -22.69242      -37.2001966667      -32.5698933333
 LiMnO2              -26.319605     unavailable         -36.4717
 =================  =============  ==================  ====================
 
-The PBE+U O2 value includes the original +1.36 eV correction to the raw
+These are example-data values, not package defaults. The PBE+U O2 value
+includes the original +1.36 eV correction to the raw
 -9.86018 eV isolated-molecule energy. The historic LiMnO2
 ``SCAN+rVV10+U`` table entry was zero and is treated as a placeholder, not a
-physical reference. LiNiO2 ``r2SCAN+rVV10+U`` was not supplied. Calculations
-using either unavailable combination fail explicitly.
+physical reference. LiNiO2 ``r2SCAN+rVV10+U`` was not supplied. Users must
+supply references appropriate to their own calculation settings rather than
+relying on these historic values.
 
-The full protocol label is required. ``PBE`` and ``SCAN`` are not aliases for
-the corresponding ``+U`` and dispersion-inclusive calculations.
+Programmatic callers use :class:`surface_pd.plot.ReferenceEnergies`. Its
+corrected O2 property is the sum of the separately retained raw energy and
+correction. Input files use the equivalent metadata keys documented in
+:doc:`tutorials-surface-plot`.
 
 ..
     For the fully lithiated |LiTMO2| bulk composition, the number of Li

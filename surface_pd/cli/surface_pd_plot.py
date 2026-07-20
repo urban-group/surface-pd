@@ -12,7 +12,10 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from surface_pd.plot._reference_energies import _SUPPORTED_FUNCTIONALS
+from surface_pd.plot._phase_data_io import (
+    _read_phase_diagram_file,
+    _require_matching_reference_energies,
+)
 from surface_pd.plot.pd_data import PdData
 from surface_pd.plot.plot import (
     convert_numbers,
@@ -45,7 +48,6 @@ def surface_pd_plot(
     high_T,
     color_Li=False,
     color_O=False,
-    functional="PBE+U",
     discharge=False,
     save=False,
 ):
@@ -61,15 +63,23 @@ def surface_pd_plot(
     if num_files != 1:
         checked_phases = []
         df = []
+        reference_energies = None
         for data in data_files:
-            temp_df = pd.read_table(data, sep=r"\s+", index_col=0)
+            temp_df, file_references = _read_phase_diagram_file(data)
+            if reference_energies is None:
+                reference_energies = file_references
+            else:
+                _require_matching_reference_energies(
+                    reference_energies,
+                    file_references,
+                )
 
             # Initialize the PdData class and do standardization
             phase_data = PdData(
                 dataframe=temp_df,
                 lithium_like_species=lithium_like_species,
                 oxygen_like_species=oxygen_like_species,
-                functional=functional,
+                reference_energies=file_references,
             )
 
             # Standardize the surface pd data (with the same number of TM
@@ -88,7 +98,7 @@ def surface_pd_plot(
             dataframe=df,
             lithium_like_species=lithium_like_species,
             oxygen_like_species=oxygen_like_species,
-            functional=functional,
+            reference_energies=reference_energies,
         )
 
         # Calculate the shift energy for the polar surface only
@@ -102,12 +112,12 @@ def surface_pd_plot(
         G = np.append(temp_G[0 : int(len(temp_G) / num_files)], shifted_G)
     else:
         # Read data file
-        df = pd.read_table(data_files[0], sep=r"\s+", index_col=0)
+        df, reference_energies = _read_phase_diagram_file(data_files[0])
         phase_data = PdData(
             dataframe=df,
             lithium_like_species=lithium_like_species,
             oxygen_like_species=oxygen_like_species,
-            functional=functional,
+            reference_energies=reference_energies,
         )
         phase_data.standardize_pd_data()
 
@@ -269,8 +279,9 @@ def main(argv: list[str] | None = None) -> None:
         type=str,
         help=(
             "Path(s) to surface phase diagram data file(s). "
-            "Format: space-separated columns with Li, O, TM counts "
-            "and DFT energies. Multiple files for different facets."
+            "Each file must begin with reference-energy metadata followed "
+            "by space-separated columns with Li, O, TM counts and DFT "
+            "energies. Multiple files are used for different facets."
         ),
     )
 
@@ -321,15 +332,6 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     parser.add_argument(
-        "--functional",
-        "-f",
-        help="Functional used to perform the calculations,"
-        " i.e. PBE+U, SCAN+rVV10+U, or r2SCAN+rVV10+U",
-        choices=_SUPPORTED_FUNCTIONALS,
-        default="PBE+U",
-    )
-
-    parser.add_argument(
         "--discharge",
         "-d",
         help="If the surface pd represents charge or discharge",
@@ -353,7 +355,6 @@ def main(argv: list[str] | None = None) -> None:
         args.high_T,
         args.color_by_Li_content,
         args.color_by_O_content,
-        args.functional,
         args.discharge,
         args.save,
     )

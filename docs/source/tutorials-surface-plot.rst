@@ -46,7 +46,7 @@ Command Line Interface
 
 .. code-block:: bash
 
-    surface-pd-plot DATA_FILE -L LITHIUM_SPECIES -O OXYGEN_SPECIES -f FUNCTIONAL
+    surface-pd-plot DATA_FILE -L LITHIUM_SPECIES -O OXYGEN_SPECIES
 
 Required Arguments
 ------------------
@@ -54,8 +54,6 @@ Required Arguments
 * ``DATA_FILE`` - Path to surface phase diagram data file
 * ``-L, --lithium-like-species`` - Name of lithium-like species column
 * ``-O, --oxygen-like-species`` - Name of oxygen-like species column
-* ``-f, --functional`` - Complete DFT protocol label (``PBE+U``,
-  ``SCAN+rVV10+U``, or ``r2SCAN+rVV10+U``)
 
 Optional Arguments
 ------------------
@@ -79,7 +77,7 @@ Generate an interactive 3D voltage-temperature phase diagram:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN+rVV10+U
+        -L Li -O O
 
 This will display an interactive matplotlib window showing stable phases
 across voltage and temperature space.
@@ -93,7 +91,7 @@ Generate a phase diagram colored by lithium content:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN+rVV10+U --color-by-Li-content
+        -L Li -O O --color-by-Li-content
 
 Color by Oxygen Content
 -----------------------
@@ -104,7 +102,7 @@ Generate a phase diagram colored by oxygen content:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN+rVV10+U --color-by-O-content
+        -L Li -O O --color-by-O-content
 
 Custom Temperature Range
 ------------------------
@@ -115,7 +113,7 @@ Specify custom temperature boundaries:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN+rVV10+U \
+        -L Li -O O \
         --low-T 200 \
         --high-T 400
 
@@ -128,7 +126,7 @@ Save the generated plot instead of displaying it:
 
     surface-pd-plot \
         ./examples/plotting-examples/SCAN-Li-surface.dat \
-        -L Li -O O -f SCAN+rVV10+U -s
+        -L Li -O O -s
 
 Understanding the Output
 ========================
@@ -147,20 +145,25 @@ depends on:
 * Chemical potentials (voltage-dependent)
 * Temperature-dependent entropic contributions
 
-Supported DFT Functionals
-==========================
+Reference-Energy Metadata
+=========================
 
-The script includes confirmed reference-energy sets for these complete
-computational protocols:
+The package does not select scientific reference energies from a DFT method
+name. Each input file must begin with a complete metadata block before the
+tabular header:
 
-* ``PBE+U`` for Ni, Co, and Mn systems
-* ``SCAN+rVV10+U`` for Ni and Co systems
-* ``r2SCAN+rVV10+U`` for Co and Mn systems
+.. code-block:: text
 
-The labels include the Hubbard-U and dispersion treatment because the
-reference energies are protocol-specific. Shorthand names such as ``PBE`` or
-``SCAN`` are intentionally rejected. The energies and their normalization are
-documented in :doc:`surface_energy`.
+    # method = SCAN+rVV10+U; U_Ni=? eV
+    # reference_li_ev_per_atom = -2.33333
+    # reference_o2_raw_ev_per_molecule = -12.00701
+    # reference_o2_correction_ev_per_molecule = 0.0
+    # reference_bulk_litmo2_ev_per_formula_unit = -36.8133525
+
+The method is free-text provenance and is never interpreted as a lookup key.
+Record relevant settings such as Hubbard U values there; use ``?`` rather than
+guessing an unknown value. All four numerical fields are required and must be
+finite. The O2 correction must be explicit, including when it is zero.
 
 Troubleshooting
 ===============
@@ -175,20 +178,12 @@ If you encounter ``KeyError: 'dft_energy'``, ensure your data file has either:
 
 Both are supported for backward compatibility.
 
-Functional Not Recognized
---------------------------
+Reference Metadata Errors
+-------------------------
 
-If a functional is rejected, use one of the complete labels listed above and
-make sure that a confirmed LiTMO2 bulk reference exists for the transition
-metal. For example:
-
-.. code-block:: bash
-
-    -f SCAN+rVV10+U
-
-``SCAN+rVV10+U`` is not available for Mn, and ``r2SCAN+rVV10+U`` is not
-available for Ni. These incomplete historic combinations are rejected rather
-than assigned placeholder energies.
+Missing, duplicated, unknown, nonnumeric, or non-finite metadata is rejected
+before surface energies are calculated. When two files are supplied, their
+complete method text and numerical reference values must match exactly.
 
 Missing Required Arguments
 ---------------------------
@@ -198,7 +193,7 @@ Always specify the lithium-like and oxygen-like species:
 .. code-block:: bash
 
     # Required
-    -L Li -O O -f SCAN+rVV10+U
+    -L Li -O O
 
 Advanced Topics
 ===============
@@ -212,16 +207,17 @@ files separately and overlay the results:
 .. code-block:: bash
 
     # Generate charge phase diagram
-    surface-pd-plot charge-data.dat -L Li -O O -f SCAN+rVV10+U
+    surface-pd-plot charge-data.dat -L Li -O O
 
     # Generate discharge phase diagram
-    surface-pd-plot discharge-data.dat -L Li -O O -f SCAN+rVV10+U --discharge
+    surface-pd-plot discharge-data.dat -L Li -O O --discharge
 
-Custom Chemical Potentials
----------------------------
+Custom Reference Energies
+-------------------------
 
-For systems with different elements, you may need to add reference energies
-to the source code in ``surface_pd/plot/pd_data.py``.
+Supply references calculated with the same computational settings as the slab
+energies. No package source change or method allowlist is involved. Python API
+users provide the same values through :class:`surface_pd.plot.ReferenceEnergies`.
 
 See Also
 ========

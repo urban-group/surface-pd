@@ -10,7 +10,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from surface_pd.plot._reference_energies import _get_bulk_energy
+from surface_pd.plot.reference_energies import ReferenceEnergies
 from surface_pd.plot.surface_energy import SurfaceEnergy
 
 logger = logging.getLogger(__name__)
@@ -21,10 +21,18 @@ class PdData:
     Phase diagram data container and processor.
 
     Args:
-        dataframe:
-        lithium_like_species:
-        oxygen_like_species:
-        functional:
+        dataframe: Phase rows containing atom counts, DFT energies, and
+            in-plane lattice parameters. Processing methods mutate this
+            dataframe.
+        lithium_like_species: Column containing lithium-like species counts.
+        oxygen_like_species: Column containing oxygen-like species counts.
+        reference_energies: Validated user-provided Li, O2, and bulk LiTMO2
+            reference energies used for every phase row.
+
+    Raises
+    ------
+    TypeError
+        If ``reference_energies`` is not a :class:`ReferenceEnergies` object.
 
     """
 
@@ -33,12 +41,16 @@ class PdData:
         dataframe: pd.DataFrame,
         lithium_like_species: str,
         oxygen_like_species: str,
-        functional: str,
+        reference_energies: ReferenceEnergies,
     ):
         self.dataframe = dataframe
         self.lithium_like_species = lithium_like_species
         self.oxygen_like_species = oxygen_like_species
-        self.functional = functional
+        if not isinstance(reference_energies, ReferenceEnergies):
+            raise TypeError(
+                "reference_energies must be a ReferenceEnergies object"
+            )
+        self.reference_energies = reference_energies
 
     def tm_species(self):
         """
@@ -120,11 +132,11 @@ class PdData:
         used to eliminate the energy difference between these models.
 
         Args:
-            checked_phases:
+            checked_phases: Reference phase rows to align.
 
         Returns
         -------
-            shift energy
+            Shift energy in eV per square angstrom.
         """
         num_Li, num_O, E = [], [], []
         for phase in checked_phases:
@@ -139,7 +151,7 @@ class PdData:
             gamma = checked_phases[0]["gamma"]
         # Calculate the slab surface area
         A = float(np.sin(gamma * np.pi / 180) * a * b)
-        E_bulk = _get_bulk_energy(self.tm_species(), self.functional)
+        E_bulk = self.reference_energies.bulk_litmo2_ev_per_formula_unit
         E_shift = (1 / (2 * A)) * (E[0] - E[1] + num_bulk * E_bulk)
         if not all(E):
             E_shift = 0
@@ -180,8 +192,7 @@ class PdData:
                     a=self.dataframe.loc[i, "a"],
                     b=self.dataframe.loc[i, "b"],
                     gamma=self.dataframe.loc[i, "gamma"],
-                    TM_species=self.tm_species(),
-                    functional=self.functional,
+                    reference_energies=self.reference_energies,
                 ).get_gibbs_free_energy(),
             )
         return E

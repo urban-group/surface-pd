@@ -3,10 +3,27 @@
 import numpy as np
 import pytest
 
-from surface_pd.plot import SurfaceEnergy
+from surface_pd.plot import ReferenceEnergies, SurfaceEnergy
 
 
-def _surface_energy(temperature, functional="PBE+U", tm_species="Ni"):
+def _references(
+    *,
+    li=-1.89965,
+    o2_raw=-9.86018,
+    o2_correction=1.36,
+    bulk=-19.92283375,
+):
+    """Return an explicit reference set for surface-energy tests."""
+    return ReferenceEnergies(
+        method="test method; U_Ni=? eV",
+        li_ev_per_atom=li,
+        o2_raw_ev_per_molecule=o2_raw,
+        o2_correction_ev_per_molecule=o2_correction,
+        bulk_litmo2_ev_per_formula_unit=bulk,
+    )
+
+
+def _surface_energy(temperature, references=None):
     """Return a minimal calculator for oxygen-potential tests."""
     return SurfaceEnergy(
         V=0.0,
@@ -18,26 +35,34 @@ def _surface_energy(temperature, functional="PBE+U", tm_species="Ni"):
         a=1.0,
         b=1.0,
         gamma=90.0,
-        TM_species=tm_species,
-        functional=functional,
+        reference_energies=references or _references(),
     )
 
 
 @pytest.mark.parametrize(
-    ("functional", "temperature", "expected_ev_per_oxygen"),
+    ("references", "temperature", "expected_ev_per_oxygen"),
     [
-        ("PBE+U", 298.15, -4.522051912226518),
-        ("SCAN+rVV10+U", 298.15, -6.275466912226517),
-        ("PBE+U", 1000.0, -5.344828641479072),
+        (_references(), 298.15, -4.522051912226518),
+        (
+            _references(
+                li=-2.33333,
+                o2_raw=-12.00701,
+                o2_correction=0.0,
+                bulk=-36.8133525,
+            ),
+            298.15,
+            -6.275466912226517,
+        ),
+        (_references(), 1000.0, -5.344828641479072),
     ],
 )
 def test_oxygen_chemical_potential_uses_consistent_units(
-    functional,
+    references,
     temperature,
     expected_ev_per_oxygen,
 ):
     """Only the molar thermal correction should be converted to eV."""
-    result = _surface_energy(temperature, functional).g_oxygen()
+    result = _surface_energy(temperature, references).g_oxygen()
 
     assert result == pytest.approx(expected_ev_per_oxygen)
 
@@ -75,8 +100,7 @@ def test_surface_energy_uses_confirmed_reference_set():
         a=2.0,
         b=3.0,
         gamma=90.0,
-        TM_species="Co",
-        functional="PBE+U",
+        reference_energies=_references(bulk=-22.69242),
     )
 
     expected = (
@@ -88,12 +112,7 @@ def test_surface_energy_uses_confirmed_reference_set():
     assert calculator.get_gibbs_free_energy() == pytest.approx(expected)
 
 
-def test_surface_energy_rejects_unsupported_reference_combination():
-    """Construction should fail before an unsupported calculation begins."""
-    with pytest.raises(ValueError, match="No LiMnO2 reference energy"):
-        _surface_energy(298.15, "SCAN+rVV10+U", tm_species="Mn")
-
-
-def test_surface_energy_has_no_duplicate_lithium_reference():
-    """Lithium energy should have one functional-dependent source of truth."""
-    assert not hasattr(_surface_energy(298.15), "e_li")
+def test_surface_energy_requires_reference_value_object():
+    """Arbitrary method labels or mappings must not replace validated data."""
+    with pytest.raises(TypeError, match="reference_energies"):
+        _surface_energy(298.15, references="PBE+U")

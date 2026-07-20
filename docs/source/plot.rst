@@ -8,6 +8,12 @@ plot
 .. autoclass:: plot.PdData
     :members:
 
+``ReferenceEnergies`` class
+***************************
+
+.. autoclass:: plot.ReferenceEnergies
+    :members:
+
 ``SurfaceEnergy`` class
 ***********************
 

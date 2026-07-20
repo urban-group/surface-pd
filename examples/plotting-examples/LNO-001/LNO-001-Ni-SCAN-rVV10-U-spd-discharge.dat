@@ -1,3 +1,8 @@
+# method = SCAN+rVV10+U; U_Ni=? eV
+# reference_li_ev_per_atom = -2.33333
+# reference_o2_raw_ev_per_molecule = -12.00701
+# reference_o2_correction_ev_per_molecule = 0.0
+# reference_bulk_litmo2_ev_per_formula_unit = -36.8133525
 	index	structure	Li	Ni	O	E	a	b	gamma
 0	0	full-O-full-Li	12.0	16.0	32.0	0.0	5.517	5.098	89.994
 1	1	full-O-Li_2and11-Oct	10.0	16.0	32.0	0.0	5.517	5.098	89.994

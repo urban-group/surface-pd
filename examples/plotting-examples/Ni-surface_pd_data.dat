@@ -1,3 +1,8 @@
+# method = PBE+U; U_Ni=? eV
+# reference_li_ev_per_atom = -1.89965
+# reference_o2_raw_ev_per_molecule = -9.86018
+# reference_o2_correction_ev_per_molecule = 1.36
+# reference_bulk_litmo2_ev_per_formula_unit = -19.92283375
 structure                                Li      Ni      O       E               a       b       gamma  
 full-O-full-Li                          12      16      32      -293.47597     5.57     5.15     89.99     
 full-O-Li_2and11-Oct                    10      16      32      -280.91123     5.57     5.15     89.99     

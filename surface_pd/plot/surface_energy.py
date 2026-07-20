@@ -7,9 +7,7 @@ voltage-dependent surface Gibbs free energies from DFT data.
 
 import numpy as np
 
-from surface_pd.plot._reference_energies import (
-    _get_reference_energies,
-)
+from surface_pd.plot.reference_energies import ReferenceEnergies
 
 _STANDARD_TEMPERATURE_K = 298.15
 _GAS_CONSTANT_KJ_PER_MOL_K = 0.008314463
@@ -36,16 +34,13 @@ class SurfaceEnergy:
         a: Lattice parameter a.
         b: Lattice parameter b.
         gamma: Angle gamma in degrees.
-        TM_species: Transition metal species symbol.
-        functional: Complete DFT protocol label: ``"PBE+U"``,
-            ``"SCAN+rVV10+U"``, or ``"r2SCAN+rVV10+U"``. The selected
-            transition metal must have a confirmed bulk reference for it.
+        reference_energies: Validated, user-provided Li, O2, and bulk LiTMO2
+            reference energies.
 
     Raises
     ------
     ValueError
-        If the functional or transition-metal/functional combination has no
-        confirmed reference-energy set.
+        If ``reference_energies`` is not a :class:`ReferenceEnergies` object.
     """
 
     def __init__(
@@ -59,8 +54,7 @@ class SurfaceEnergy:
         a,
         b,
         gamma,
-        TM_species,
-        functional,
+        reference_energies,
     ):
         self.V = V
         self.T = T
@@ -71,11 +65,11 @@ class SurfaceEnergy:
         self.a = a
         self.b = b
         self.gamma = gamma
-        self.TM_species = TM_species
-        self.functional = functional
-        self._li_energy, self._o2_energy, self._bulk_energy = (
-            _get_reference_energies(TM_species, functional)
-        )
+        if not isinstance(reference_energies, ReferenceEnergies):
+            raise TypeError(
+                "reference_energies must be a ReferenceEnergies object"
+            )
+        self.reference_energies = reference_energies
 
     def g_oxygen(self):
         """
@@ -116,7 +110,8 @@ class SurfaceEnergy:
             _O2_ENTHALPY_INCREMENT_KJ_PER_MOL + delta_H
         ) - temperature * (_O2_STANDARD_ENTROPY_KJ_PER_MOL_K + delta_S)
         return 0.5 * (
-            self._o2_energy + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
+            self.reference_energies.o2_ev_per_molecule
+            + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
         )
 
     def get_gibbs_free_energy(self):
@@ -125,13 +120,17 @@ class SurfaceEnergy:
 
         Returns
         -------
-            Surface Gibbs free energy.
+        numpy.ndarray or numpy.float64
+            Surface Gibbs free energy in eV per square angstrom. The result
+            follows the broadcast shape of the voltage and temperature input.
         """
         A = np.sin(self.gamma * np.pi / 180) * self.a * self.b
         G = (
             self.dft_energy
-            + (self.nTM - self.nLi) * (self._li_energy - self.V)
+            + (self.nTM - self.nLi)
+            * (self.reference_energies.li_ev_per_atom - self.V)
             + (2 * self.nTM - self.nO) * self.g_oxygen()
-            - self.nTM * self._bulk_energy
+            - self.nTM
+            * self.reference_energies.bulk_litmo2_ev_per_formula_unit
         ) / (2 * A)
         return G

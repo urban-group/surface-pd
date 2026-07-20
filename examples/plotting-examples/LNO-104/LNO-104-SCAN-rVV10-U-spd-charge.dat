@@ -1,3 +1,8 @@
+# method = SCAN+rVV10+U; U_Ni=? eV
+# reference_li_ev_per_atom = -2.33333
+# reference_o2_raw_ev_per_molecule = -12.00701
+# reference_o2_correction_ev_per_molecule = 0.0
+# reference_bulk_litmo2_ev_per_formula_unit = -36.8133525
 structure                                Li      Ni      O       E               a       b       gamma  
 Li18Ni18O36_1                           18      18      36      -659.35286     5.5      5.67     90.0      
 Li16Ni18O36_1                           16      18      36      -646.48013     2.75     11.34    90.0      

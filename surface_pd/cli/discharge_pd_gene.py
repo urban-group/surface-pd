@@ -10,6 +10,11 @@ import argparse
 
 import pandas as pd
 
+from surface_pd.plot._phase_data_io import (
+    _read_phase_diagram_file,
+    _require_matching_reference_energies,
+    _write_phase_diagram_file,
+)
 from surface_pd.plot.pd_data import PdData
 
 
@@ -27,12 +32,12 @@ def add_composition2df(
     oxygen_like_species: str = None,
 ):
     """Add lithium and oxygen composition columns to phase data."""
-    df1 = pd.read_csv(data1, sep=r"\s+", index_col=0)
+    df1, references1 = _read_phase_diagram_file(data1)
     df1_c = PdData(
         df1,
         lithium_like_species=lithium_like_species,
         oxygen_like_species=oxygen_like_species,
-        functional=None,
+        reference_energies=references1,
     )
     df1_c.standardize_pd_data()
     df1 = df1_c.dataframe
@@ -41,12 +46,13 @@ def add_composition2df(
         df2_li = 0
         df2_o = 0
     else:
-        df2 = pd.read_csv(data2, sep=r"\s+", index_col=0)
+        df2, references2 = _read_phase_diagram_file(data2)
+        _require_matching_reference_energies(references1, references2)
         df2_c = PdData(
             df2,
             lithium_like_species=lithium_like_species,
             oxygen_like_species=oxygen_like_species,
-            functional=None,
+            reference_energies=references2,
         )
         df2_c.standardize_pd_data()
         df2 = df2_c.dataframe
@@ -66,11 +72,11 @@ def add_composition2df(
     df1["o_composition"] = (df1["O"] - df1["O"].min() + df2_o) / overall_o
 
     if data2 is None:
-        return df1
+        return df1, references1
     else:
         df2["li_composition"] = (df2["Li"] - df2["Li"].min()) / overall_li
         df2["o_composition"] = (df2["O"] - df2["O"].min()) / overall_o
-        return df1, df2
+        return df1, references1, df2, references2
 
 
 def create_discharge_pd(
@@ -82,13 +88,13 @@ def create_discharge_pd(
 ):
     """Create discharge phase data from one or two charge phase datasets."""
     if len(data_files) == 1:
-        df1 = add_composition2df(
+        df1, references1 = add_composition2df(
             data_files[0],
             lithium_like_species=lithium_like_species,
             oxygen_like_species=oxygen_like_species,
         )
     else:
-        df1, df2 = add_composition2df(
+        df1, references1, df2, references2 = add_composition2df(
             data_files[0],
             data_files[1],
             lithium_like_species=lithium_like_species,
@@ -97,17 +103,21 @@ def create_discharge_pd(
 
     for i in df1.index:
         if df1["o_composition"][i] > charge_pd_end_composition:
-            df1["E"][i] = 0
+            df1.loc[i, "dft_energy"] = 0
     df1.drop(["li_composition", "o_composition"], axis=1, inplace=True)
     if save:
-        df1.to_csv("discharge-data1.csv", sep="\t")
+        _write_phase_diagram_file(
+            "discharge-data1.dat", df1, references1
+        )
     if len(data_files) > 1:
         for i in df2.index:
             if df2["o_composition"][i] > charge_pd_end_composition:
-                df2["E"][i] = 0
+                df2.loc[i, "dft_energy"] = 0
         df2.drop(["li_composition", "o_composition"], axis=1, inplace=True)
         if save:
-            df2.to_csv("discharge-data2.csv", sep="\t")
+            _write_phase_diagram_file(
+                "discharge-data2.dat", df2, references2
+            )
 
 
 def main(argv: list[str] | None = None) -> None:
