@@ -133,7 +133,7 @@ For example, you can go to ``surface-pd``
 and try to do a full enumeration on the (104) surface slab model of
 |LiCoO2|. ::
 
-    $ surface-enumeration example/enumeration-examples/input/input-LCO.json
+    $ surface-enumeration examples/enumeration-examples/input/input-LCO.json
 
 For this slab model, the most top O atoms (8 atoms after creating the
 supercell) will be enumerated. The first and second top surface Li atoms (8
@@ -173,6 +173,6 @@ If everything goes well, you should see the following: ::
 
 If the ``--generate-poscar`` optional argument is defined, you should be
 able to see the saved enumerated slab models locally. The slab models are
-stored in **VESTA** format and should be able visualize via
+stored in VASP POSCAR format and can be visualized with tools such as
 `VESTA <https://jp-minerals.org/vesta/en/>`__.
 

@@ -2,10 +2,20 @@
 How to cite
 ===========
 
-If you have used **InterPhon**, please cite the following article:
+If you use **surface-pd**, please cite the software repository:
 
-`In Won Yeu, Gyuseung Han, Kun Hee Ye, Cheol Seong Hwang, and Jung-Hae Choi,
-"InterPhon: Ab initio Interface Phonon Calculations within a 3D Electronic Structure Framework",
-Computer Physics Communications 268, 108089 (2021). <https://doi.org/10.1016/j.cpc.2021.108089>`_
+.. code-block:: bibtex
+
+    @software{surface_pd,
+      author = {Li, Xinhao and Urban, Alexander},
+      title = {surface-pd: Surface Phase Diagram Generator},
+      url = {https://github.com/urban-group/surface-pd},
+      version = {0.1.0},
+      year = {2024}
+    }
+
+In text: Li, X., & Urban, A. (2024). *surface-pd: Surface Phase Diagram
+Generator* (Version 0.1.0) [Computer software].
+https://github.com/urban-group/surface-pd
 
 Thank you for your interest.

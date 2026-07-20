@@ -74,9 +74,11 @@ Or please contact: Xinhao Li (<xinhao.li@columbia.edu>) and Alex Urban (<a.urban
 
 <a name="installation"></a>
 # Installation
-surface-pd is a Python 3 package and the stable version can be installed via pip.
+surface-pd is currently a beta, pre-1.0 Python package. Install the current
+version directly from the public Git repository:
+
 ```
-$ pip install surface-pd
+$ pip install git+https://github.com/urban-group/surface-pd.git
 ```
 
 <a name="using-surface-pd"></a>

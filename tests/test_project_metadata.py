@@ -1,5 +1,6 @@
 """Tests for project packaging and dependency metadata."""
 
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -12,6 +13,12 @@ STALE_DOC_COMMANDS = (
     "surface-pd-plot.py",
     "discharge_pd_gene.py",
     "./scripts/surface-pd-plot.py",
+)
+SOFTWARE_CITATION_YEAR = "2024"
+USER_DOCUMENTATION = (
+    PROJECT_ROOT / "README.md",
+    PROJECT_ROOT / "examples" / "README.md",
+    *(PROJECT_ROOT / "docs" / "source").glob("*.rst"),
 )
 
 
@@ -73,10 +80,7 @@ def test_readthedocs_installs_existing_docs_requirements():
 def test_documented_installation_commands_match_metadata():
     """Documentation should use current Python and console-script metadata."""
     metadata = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
-    docs_text = "\n".join(
-        path.read_text()
-        for path in (PROJECT_ROOT / "docs" / "source").glob("*.rst")
-    )
+    docs_text = "\n".join(path.read_text() for path in USER_DOCUMENTATION)
 
     assert metadata["project"]["requires-python"] == REQUIRES_PYTHON
     assert "Python >= 3.11, < 3.15" in docs_text
@@ -85,6 +89,63 @@ def test_documented_installation_commands_match_metadata():
     for stale_command in STALE_DOC_COMMANDS:
         assert stale_command not in docs_text
     assert "pip install ***" not in docs_text
+
+
+def test_documented_example_paths_exist():
+    """Committed enumeration configurations should resolve their inputs."""
+    input_directory = (
+        PROJECT_ROOT / "examples" / "enumeration-examples" / "input"
+    )
+
+    for input_path in input_directory.glob("*.json"):
+        configuration = json.loads(input_path.read_text())
+        target = PROJECT_ROOT / configuration["target_slab_path"]
+        assert target.is_file(), f"{input_path}: {target}"
+
+    documentation = "\n".join(path.read_text() for path in USER_DOCUMENTATION)
+    assert "example/" not in documentation
+
+
+def test_user_documentation_has_one_surface_pd_citation():
+    """All citation locations should agree on canonical software metadata."""
+    import surface_pd
+
+    citation_paths = (
+        PROJECT_ROOT / "README.md",
+        PROJECT_ROOT / "examples" / "README.md",
+        PROJECT_ROOT / "docs" / "source" / "how_to_cite.rst",
+    )
+    required_text = (
+        "Li, Xinhao and Urban, Alexander",
+        "surface-pd: Surface Phase Diagram Generator",
+        f"version = {{{surface_pd.__version__}}}",
+        f"year = {{{SOFTWARE_CITATION_YEAR}}}",
+        "https://github.com/urban-group/surface-pd",
+    )
+
+    for path in citation_paths:
+        citation = path.read_text()
+        for text in required_text:
+            assert text in citation, f"{path}: {text}"
+        assert "InterPhon" not in citation
+
+
+def test_readme_installation_matches_beta_repository_release():
+    """Installation prose should not claim an unavailable stable release."""
+    readme = (PROJECT_ROOT / "README.md").read_text()
+    installation = (
+        PROJECT_ROOT / "docs" / "source" / "installation.rst"
+    ).read_text()
+
+    assert "stable version" not in readme
+    assert "$ pip install surface-pd" not in readme
+    assert "pip install git+https://github.com/urban-group/surface-pd.git" in (
+        readme
+    )
+    assert "git clone https://github.com/urban-group/surface-pd.git" in (
+        installation
+    )
+    assert "git@github.com:urban-group/surface-pd.git" not in installation
 
 
 def test_package_exports_resolve_to_defined_names():

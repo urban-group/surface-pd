@@ -35,7 +35,7 @@ GitHub <https://github.com/urban-group/surface-pd>`_ by git
 clone
 and installed locally::
 
-    $ git clone git@github.com:urban-group/surface-pd.git
+    $ git clone https://github.com/urban-group/surface-pd.git
     $ cd surface-pd
     $ pip install .
 
@@ -51,16 +51,16 @@ Additional requirements
     source code in your terminal. ::
 
         $ git clone  --branch v2.0.4 --recursive https://github.com/msg-byu/enumlib.git
-        $ cd enumlib/symlib/src && make F90=gfortran
-        $ cd enumlib/src && make F90=gfortran
-        $ cd enumlib/src && F90=gfortran make enum.x
-        $ cd enumlib/src && F90=gfortran make makestr.x
+        $ make -C enumlib/symlib/src F90=gfortran
+        $ make -C enumlib/src F90=gfortran
+        $ make -C enumlib/src F90=gfortran enum.x
+        $ make -C enumlib/src F90=gfortran makestr.x
 
 
-    After the compilation, you should add these two executable files (``enum.x`` and ``makestr.x``) to your
-    global path . ::
+    After compilation, copy both executables into a directory on ``PATH``. For
+    example, if ``~/.local/bin`` is already on ``PATH``: ::
 
-        $ cp enumlib/src/*.x "your_global_path"
+        $ cp enumlib/src/enum.x enumlib/src/makestr.x ~/.local/bin/
 
     To check whether the enumeration utilities are available: ::
 
