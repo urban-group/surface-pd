@@ -5,17 +5,17 @@ plot
 ``PdData`` class
 ****************
 
-.. autoclass:: plot.PdData
+.. autoclass:: surface_pd.plot.PdData
     :members:
 
 ``ReferenceEnergies`` class
 ***************************
 
-.. autoclass:: plot.ReferenceEnergies
+.. autoclass:: surface_pd.plot.ReferenceEnergies
     :members:
 
 ``SurfaceEnergy`` class
 ***********************
 
-.. autoclass:: plot.SurfaceEnergy
+.. autoclass:: surface_pd.plot.SurfaceEnergy
     :members:

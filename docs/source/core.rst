@@ -5,11 +5,11 @@ core
 ``EnumWithComposition`` class
 *****************************
 
-.. autoclass:: core.EnumWithComposition
+.. autoclass:: surface_pd.core.EnumWithComposition
     :members:
 
 ``Slab`` class
 **************
 
-.. autoclass:: core.Slab
+.. autoclass:: surface_pd.core.Slab
     :members:

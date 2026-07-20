@@ -6,20 +6,7 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import os
-import runpy
-import sys
-
-sys.path.insert(0, os.path.abspath("../../surface_pd"))
-
-# Use autodoc_mock_imports for better compatibility
-autodoc_mock_imports = ["numpy", "matplotlib", "pandas", "pymatgen", "monty"]
+from surface_pd import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -27,11 +14,8 @@ project = "surface-pd"
 copyright = "2022, Xinhao Li"
 author = "Xinhao Li"
 
-# The full version, read from the package's authoritative source file.
-version_data = runpy.run_path(
-    os.path.abspath("../../surface_pd/_version.py")
-)
-release = version_data["__version__"]
+# The full version, imported from the installed package.
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

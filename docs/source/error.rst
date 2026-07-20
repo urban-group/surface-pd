@@ -2,33 +2,36 @@
 error
 =====
 
-.. autoclass:: error.NoInversionSymmetryError
+.. autoclass:: surface_pd.error.NoInversionSymmetryError
     :members:
     
-.. autoclass:: error.SlabOrientationError
+.. autoclass:: surface_pd.error.SlabOrientationError
     :members:
     
-.. autoclass:: error.NonCentralInversionSymmetryError
+.. autoclass:: surface_pd.error.NonCentralInversionSymmetryError
     :members:
 
-.. autoclass:: error.PrimitiveStructureFinderError
+.. autoclass:: surface_pd.error.PrimitiveStructureFinderError
     :members:
     
-.. autoclass:: error.NonDefinedSelectiveDynamicsError
+.. autoclass:: surface_pd.error.NonDefinedSelectiveDynamicsError
     :members:
     
-.. autoclass:: error.NonSlabError
+.. autoclass:: surface_pd.error.NonSlabError
     :members:
     
-.. autoclass:: error.TooLargeSlabError
+.. autoclass:: surface_pd.error.TooLargeSlabError
     :members:
 
-.. autoclass:: error.InvalidCompositionError
+.. autoclass:: surface_pd.error.InvalidCompositionError
     :members:
     
-.. autoclass:: error.NonIntegerError
+.. autoclass:: surface_pd.error.NonIntegerError
     :members:
 
-.. autoclass:: error.IncompatibleSymmError
+.. autoclass:: surface_pd.error.IncompatibleSymmError
+    :members:
+
+.. autoclass:: surface_pd.error.InvalidInputFormatError
     :members:
 

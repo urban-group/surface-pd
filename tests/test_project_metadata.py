@@ -1,5 +1,6 @@
 """Tests for project packaging and dependency metadata."""
 
+import re
 import tomllib
 from pathlib import Path
 
@@ -12,6 +13,15 @@ STALE_DOC_COMMANDS = (
     "discharge_pd_gene.py",
     "./scripts/surface-pd-plot.py",
 )
+
+
+def _documented_autoclass_targets():
+    """Return every fully qualified class target in the API reference."""
+    targets = set()
+    for filename in ("core.rst", "plot.rst", "error.rst"):
+        text = (PROJECT_ROOT / "docs" / "source" / filename).read_text()
+        targets.update(re.findall(r"^\.\. autoclass:: (\S+)$", text, re.M))
+    return targets
 
 
 def _dependency_names(dependencies):
@@ -92,6 +102,7 @@ def test_ci_workflow_runs_verification_commands():
     """The CI workflow should mirror the documented local checks."""
     workflow = PROJECT_ROOT / ".github" / "workflows" / "ci.yml"
     workflow_text = workflow.read_text()
+    normalized_workflow = " ".join(workflow_text.split())
 
     matrix_versions = ", ".join(f'"{version}"' for version in (
         SUPPORTED_PYTHON_VERSIONS
@@ -100,9 +111,10 @@ def test_ci_workflow_runs_verification_commands():
     assert 'python -m pip install -e ".[dev]"' in workflow_text
     assert "ruff check ." in workflow_text
     assert "python -m pytest" in workflow_text
-    assert "python -m sphinx -b html docs/source docs/_build/html" in (
-        workflow_text
-    )
+    assert (
+        "python -m sphinx -W --keep-going -b html "
+        "docs/source docs/_build/html"
+    ) in normalized_workflow
     assert "python -m pip wheel --no-deps --wheel-dir dist ." in (
         workflow_text
     )
@@ -148,7 +160,29 @@ def test_release_policy_and_sphinx_use_authoritative_version():
         policy.read_text().lower()
     )
     assert 'release = "1.0.0"' not in sphinx_config
-    assert "surface_pd/_version.py" in sphinx_config
+    assert "from surface_pd import __version__" in sphinx_config
+
+
+def test_sphinx_documents_exact_canonical_public_api():
+    """Autodoc should cover supported classes through installed paths."""
+    from surface_pd import core, error, plot
+
+    expected = {
+        *(f"surface_pd.core.{name}" for name in core.__all__),
+        *(f"surface_pd.plot.{name}" for name in plot.__all__),
+        *(f"surface_pd.error.{name}" for name in error.__all__),
+    }
+
+    assert _documented_autoclass_targets() == expected
+
+
+def test_sphinx_imports_installed_package_without_dependency_mocks():
+    """Autodoc should exercise real package imports and dependencies."""
+    sphinx_config = (PROJECT_ROOT / "docs" / "source" / "conf.py").read_text()
+
+    assert "autodoc_mock_imports" not in sphinx_config
+    assert "sys.path" not in sphinx_config
+    assert 'os.path.abspath("../../surface_pd")' not in sphinx_config
 
 
 def test_version_file_is_not_duplicated():
