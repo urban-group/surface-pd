@@ -28,7 +28,7 @@ PACKAGE_FILES = (
     "surface_pd/core/enum.py",
     "surface_pd/core/post_check.py",
     "surface_pd/core/pre_check.py",
-    "surface_pd/core/slab.py",
+    "surface_pd/core/enumeration_slab.py",
     "surface_pd/error/__init__.py",
     "surface_pd/error/error.py",
     "surface_pd/plot/__init__.py",

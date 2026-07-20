@@ -8,8 +8,8 @@ core
 .. autoclass:: surface_pd.core.EnumWithComposition
     :members:
 
-``Slab`` class
-**************
+``EnumerationSlab`` class
+*************************
 
-.. autoclass:: surface_pd.core.Slab
+.. autoclass:: surface_pd.core.EnumerationSlab
     :members:

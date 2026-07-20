@@ -6,7 +6,7 @@ geometric criteria and complete selective dynamics properties for DFT
 calculations.
 """
 
-from surface_pd.core.slab import Slab
+from surface_pd.core.enumeration_slab import EnumerationSlab
 
 
 def structure_filter(input_slabs, direction, criteria):
@@ -36,7 +36,7 @@ def structure_filter(input_slabs, direction, criteria):
         # Strict criteria -- keeps slabs with c lattice
         # as parent slab models
         if any((x - 0.0001) <= criteria <= (x + 0.0001) for x in lattice):
-            slab["structure"] = Slab.from_sites(
+            slab["structure"] = EnumerationSlab.from_sites(
                 slab["structure"]
             ).check_rotate(criteria)
             filtered_structures.append(slab["structure"])
@@ -44,7 +44,7 @@ def structure_filter(input_slabs, direction, criteria):
 
 
 def selective_dynamics_completion(
-    structure: Slab,
+    structure: EnumerationSlab,
     direction: int,
     dummy_species: list,
     center_bottom: float,
@@ -64,7 +64,7 @@ def selective_dynamics_completion(
 
     Returns
     -------
-        Slab model with all sites have selective dynamics.
+        Enumeration slab with selective dynamics on all sites.
     """
     # print(structure)
     # print(dummy_species)

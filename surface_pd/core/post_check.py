@@ -12,7 +12,7 @@ import logging
 import numpy as np
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-from surface_pd.core.slab import Slab
+from surface_pd.core.enumeration_slab import EnumerationSlab
 from surface_pd.error import (
     IncompatibleSymmError,
     NoInversionSymmetryError,
@@ -28,7 +28,7 @@ class PostCheck:
 
     def __init__(
         self,
-        structure: Slab,
+        structure: EnumerationSlab,
         tolerance: float = 0.03,
         direction: int = 2,
         symprec: float = 1e-2,
@@ -227,7 +227,7 @@ class PostCheck:
         -------
             Refined primitive structure.
         """
-        refined_structure = Slab.from_sites(
+        refined_structure = EnumerationSlab.from_sites(
             SpacegroupAnalyzer(
                 self.structure, symprec=symprec
             ).get_refined_structure()

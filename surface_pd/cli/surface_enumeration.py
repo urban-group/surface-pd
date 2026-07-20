@@ -38,7 +38,7 @@ from surface_pd.analysis.slab_analysis import (
     selective_dynamics_completion,
     structure_filter,
 )
-from surface_pd.core import EnumWithComposition, Slab
+from surface_pd.core import EnumerationSlab, EnumWithComposition
 from surface_pd.core.post_check import PostCheck
 from surface_pd.core.pre_check import PreCheck
 from surface_pd.error import (
@@ -102,7 +102,7 @@ def automate_surface(
 
     """
     # Load parent slab model
-    input_structure = Slab.from_file(target_slab_path)
+    input_structure = EnumerationSlab.from_file(target_slab_path)
 
     # Wrap out of the boundary fractional coordinates back into the unit cell.
     input_structure.wrap_pbc()
@@ -219,7 +219,9 @@ def automate_surface(
                     filtered_structure.replace_species(
                         {dummy_species[i]: species[i]}
                     )
-                filtered_structure = Slab.from_sites(filtered_structure)
+                filtered_structure = EnumerationSlab.from_sites(
+                    filtered_structure
+                )
                 if symmetric:
                     enumerated_structures.append(
                         filtered_structure.symmetrize_top_base()
@@ -269,7 +271,9 @@ def automate_surface(
                     )
                     num_sites = refined_structure.num_sites
 
-                refined_structure = Slab.from_sites(refined_structure)
+                refined_structure = EnumerationSlab.from_sites(
+                    refined_structure
+                )
                 noncontiguous = len(get_slab_regions(refined_structure)) == 2
                 # print(input_structure.layers_finder())
 

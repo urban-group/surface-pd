@@ -6,7 +6,7 @@ from shutil import which
 from monty.dev import requires
 from pymatgen.core.surface import get_slab_regions
 
-from surface_pd.core.slab import Slab
+from surface_pd.core.enumeration_slab import EnumerationSlab
 from surface_pd.util.util import check_int
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class PreCheck:
 
     """
 
-    def __init__(self, structure: Slab):
+    def __init__(self, structure: EnumerationSlab):
         self.structure = structure
 
     enum_cmd = which('enum.x')
@@ -83,7 +83,7 @@ class PreCheck:
                 fairly strict).
 
         """
-        return Slab.from_sites(self.structure).is_symmetry(
+        return EnumerationSlab.from_sites(self.structure).is_symmetry(
             symprec=symprec, return_isc=False
         )
 

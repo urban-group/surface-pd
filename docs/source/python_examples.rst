@@ -16,15 +16,15 @@ enumeration transformation:
 
     from pymatgen.core import Lattice
 
-    from surface_pd.core import EnumWithComposition, Slab
+    from surface_pd.core import EnumerationSlab, EnumWithComposition
 
-    slab = Slab(
+    slab = EnumerationSlab(
         Lattice.tetragonal(3.0, 15.0),
         ["Li", "Li"],
         [[0.0, 0.0, 0.2], [0.0, 0.0, 0.8]],
-        _to_be_enumerated_species=["Li"],
-        _num_enumerated_layers={"Li": 1},
-        _symmetric=True,
+        to_be_enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 1},
+        symmetric=True,
     )
     populations = slab.layers_finder()["Li"]
     print(sorted(populations.values()))

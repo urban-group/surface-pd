@@ -6,8 +6,8 @@ enumerating slab models for surface phase diagram generation.
 
 Modules
 -------
-slab
-    Slab class for representing and manipulating surface slab structures.
+enumeration_slab
+    EnumerationSlab class for surface enumeration structures.
 enum
     Enumeration classes for systematic surface composition generation.
 pre_check
@@ -17,6 +17,6 @@ post_check
 """
 
 from .enum import EnumWithComposition
-from .slab import Slab
+from .enumeration_slab import EnumerationSlab
 
-__all__ = ["Slab", "EnumWithComposition"]
+__all__ = ["EnumerationSlab", "EnumWithComposition"]

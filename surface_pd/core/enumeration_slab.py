@@ -1,15 +1,15 @@
-"""
-Slab model class for surface structure representation and manipulation.
+"""Enumeration slab representation and manipulation.
 
-This module provides the Slab class, which extends pymatgen's Structure class
-with specialized functionality for handling surface slab models, including
-layer identification, symmetry operations, and enumeration support.
+This module extends pymatgen's ``Structure`` with layer identification,
+symmetry operations, and surface-enumeration configuration.
 """
 
 import collections
 import copy
 import logging
-from collections.abc import Sequence
+import math
+from collections.abc import Mapping, Sequence
+from numbers import Integral, Real
 
 import numpy as np
 from pymatgen.core import Composition, DummySpecies, Element, Species
@@ -24,7 +24,7 @@ from surface_pd.util.util import check_int
 logger = logging.getLogger(__name__)
 
 
-class Slab(Structure):
+class EnumerationSlab(Structure):
     """Represent and manipulate a periodic surface slab.
 
     Parameters
@@ -45,26 +45,26 @@ class Slab(Structure):
         Interpret ``coords`` as Cartesian coordinates when true.
     site_properties : dict, optional
         Per-site property sequences accepted by pymatgen.
-    _direction : int, default=2
-        Lattice-axis index normal to the surface; exposed as ``direction``.
-    _tolerance : float, default=0.03
-        Dimensionless fractional-coordinate tolerance used to group layers;
-        exposed as ``tolerance``.
-    _to_be_enumerated_species : list of str, optional
-        Species whose surface sites will be enumerated; exposed as
-        ``to_be_enumerated_species``.
-    _num_enumerated_layers : dict, optional
-        Number of outer layers to enumerate for each target species; exposed
-        as ``num_enumerated_layers``.
-    _symmetric : bool, optional
-        Whether enumeration operates on both slab surfaces; exposed as
-        ``symmetric``.
+    labels : sequence of str or None, optional
+        Optional label for each site, accepted by pymatgen.
+    properties : dict, optional
+        Structure-level properties accepted by pymatgen.
+    direction : int, default=2
+        Lattice-axis index normal to the surface. Must be 0, 1, or 2.
+    tolerance : float, default=0.03
+        Positive finite fractional-coordinate tolerance used to group layers.
+    to_be_enumerated_species : sequence of str, optional
+        Unique, nonempty species names whose surface sites will be enumerated.
+    num_enumerated_layers : mapping of str to int, optional
+        Positive number of outer layers to enumerate for each target species.
+    symmetric : bool, optional
+        Whether enumeration operates on both slab surfaces. ``None`` denotes
+        an unconfigured slab.
 
     Notes
     -----
-    The underscore-prefixed constructor parameters initialize public mutable
-    properties. Other keyword arguments are forwarded to pymatgen's
-    :class:`~pymatgen.core.structure.Structure` constructor.
+    Surface-pd configuration parameters are keyword-only. They initialize
+    validated public properties while their values are stored privately.
 
     """
 
@@ -80,12 +80,14 @@ class Slab(Structure):
         to_unit_cell: bool = False,
         coords_are_cartesian: bool = False,
         site_properties: dict = None,
-        _direction: int = 2,
-        _tolerance: float = 0.03,
-        _to_be_enumerated_species: list = None,
-        _num_enumerated_layers: dict = None,
-        _symmetric: bool = None,
-        **kwargs,
+        labels: Sequence[str | None] | None = None,
+        properties: dict | None = None,
+        *,
+        direction: int = 2,
+        tolerance: float = 0.03,
+        to_be_enumerated_species: Sequence[str] | None = None,
+        num_enumerated_layers: Mapping[str, int] | None = None,
+        symmetric: bool | None = None,
     ):
         super().__init__(
             lattice,
@@ -96,74 +98,119 @@ class Slab(Structure):
             to_unit_cell,
             coords_are_cartesian,
             site_properties,
-            **kwargs,
+            labels,
+            properties,
         )
-        self._direction = _direction
-        self._tolerance = _tolerance
-        self._to_be_enumerated_species = _to_be_enumerated_species
-        self._num_enumerated_layers = _num_enumerated_layers
-        self._symmetric = _symmetric
+        self.direction = direction
+        self.tolerance = tolerance
+        self.to_be_enumerated_species = to_be_enumerated_species
+        self.num_enumerated_layers = num_enumerated_layers
+        self.symmetric = symmetric
 
     @property
     def direction(self):
         """int: Lattice-axis index perpendicular to the surface.
 
-        Valid axis indices are 0, 1, and 2. Assigning this property does not
-        validate the value.
+        Valid axis indices are 0, 1, and 2.
         """
         return self._direction
 
     @direction.setter
-    def direction(self, a: int):
-        self._direction = a
+    def direction(self, value: int):
+        if isinstance(value, bool) or not isinstance(value, Integral):
+            raise TypeError("direction must be an integer")
+        if value not in (0, 1, 2):
+            raise ValueError("direction must be 0, 1, or 2")
+        self._direction = int(value)
 
     @property
     def tolerance(self):
         """float: Fractional-coordinate tolerance used to group layers.
 
-        Assigning this property does not validate the value.
+        The value must be positive and finite.
         """
         return self._tolerance
 
     @tolerance.setter
-    def tolerance(self, a: float):
-        self._tolerance = a
+    def tolerance(self, value: float):
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, Real)
+            or not math.isfinite(value)
+        ):
+            raise TypeError("tolerance must be a finite real number")
+        if value <= 0:
+            raise ValueError("tolerance must be positive")
+        self._tolerance = float(value)
 
     @property
     def to_be_enumerated_species(self):
         """List of str or None: Species selected for enumeration.
 
-        Assigning this property does not validate the value.
+        Values must be unique, nonempty strings. Assigned sequences are copied.
         """
         return self._to_be_enumerated_species
 
     @to_be_enumerated_species.setter
-    def to_be_enumerated_species(self, a: list):
-        self._to_be_enumerated_species = a
+    def to_be_enumerated_species(self, value: Sequence[str] | None):
+        if value is None:
+            self._to_be_enumerated_species = None
+            return
+        if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+            raise TypeError("to_be_enumerated_species must be a sequence")
+        species = list(value)
+        if not species:
+            raise ValueError("to_be_enumerated_species must not be empty")
+        if any(
+            not isinstance(item, str) or not item.strip() for item in species
+        ):
+            raise ValueError("enumerated species must be nonempty strings")
+        if len(set(species)) != len(species):
+            raise ValueError("enumerated species must be unique")
+        self._to_be_enumerated_species = species
 
     @property
     def num_enumerated_layers(self):
         """Dict or None: Number of enumerated layers for each target species.
 
-        Assigning this property does not validate the value.
+        Keys must be nonempty strings and values positive integers. Assigned
+        mappings are copied.
         """
         return self._num_enumerated_layers
 
     @num_enumerated_layers.setter
-    def num_enumerated_layers(self, a: dict):
-        self._num_enumerated_layers = a
+    def num_enumerated_layers(self, value: Mapping[str, int] | None):
+        if value is None:
+            self._num_enumerated_layers = None
+            return
+        if not isinstance(value, Mapping):
+            raise TypeError("num_enumerated_layers must be a mapping")
+        if not value:
+            raise ValueError("num_enumerated_layers must not be empty")
+        layers = {}
+        for species, count in value.items():
+            if not isinstance(species, str) or not species.strip():
+                raise ValueError("layer species must be nonempty strings")
+            if isinstance(count, bool) or not isinstance(count, Integral):
+                raise TypeError("enumerated layer counts must be integers")
+            if count <= 0:
+                raise ValueError("enumerated layer counts must be positive")
+            layers[species] = int(count)
+        self._num_enumerated_layers = layers
 
     @property
     def symmetric(self):
         """Bool or None: Whether both slab surfaces are enumerated.
 
-        Assigning this property does not validate the value.
+        The value must be a boolean or ``None``.
         """
         return self._symmetric
 
     @symmetric.setter
-    def symmetric(self, a: bool):
-        self._symmetric = a
+    def symmetric(self, value: bool | None):
+        if value is not None and not isinstance(value, bool):
+            raise TypeError("symmetric must be a boolean or None")
+        self._symmetric = value
 
     def group_atoms_by_layer(self, layers: dict):
         """
@@ -209,7 +256,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             This slab after its site coordinates have been wrapped.
 
         Notes
@@ -241,7 +288,7 @@ class Slab(Structure):
 
         Returns
         -------
-        tuple[float, float, Slab]
+        tuple[float, float, EnumerationSlab]
             Lower and upper fractional-coordinate bounds of the fixed region,
             followed by a new slab containing its fixed sites.
         """
@@ -253,7 +300,7 @@ class Slab(Structure):
                 center_sites.append(copy.deepcopy(s))
 
         # Get the central slab boundaries
-        center = Slab.from_sites(center_sites)
+        center = EnumerationSlab.from_sites(center_sites)
         center_region = get_slab_regions(center)
         lower_limit, upper_limit = center_region[0]
         return lower_limit, upper_limit, center
@@ -377,7 +424,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             Deep copy with top-surface target sites replaced. The receiver is
             not mutated.
 
@@ -416,7 +463,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             Deep copy with sites removed where the target species has zero
             occupancy. The receiver is not mutated.
 
@@ -449,7 +496,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             New slab with equivalent top and bottom surfaces.
 
         Raises
@@ -529,7 +576,7 @@ class Slab(Structure):
             # Add symmetrized top sites into the new slab as the bottom sites
             sites.append(s2)
 
-        symmetrized_slab_top = Slab.from_sites(sites)
+        symmetrized_slab_top = EnumerationSlab.from_sites(sites)
         symmetrized_slab_top = symmetrized_slab_top.wrap_pbc()
         symmetrized_slab_top = symmetrized_slab_top.get_sorted_structure()
 
@@ -606,7 +653,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab or None
+        EnumerationSlab or None
             A deep copy, rotated when another lattice axis matches
             ``criteria``. ``None`` is returned when rotation is needed but no
             axis matches.
@@ -707,7 +754,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             This slab after shifting and wrapping its coordinates.
 
         Notes
@@ -742,7 +789,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             This slab after translating its sites. Displacements smaller than
             ``tolerance`` are suppressed.
 
@@ -774,7 +821,7 @@ class Slab(Structure):
 
         Returns
         -------
-        Slab
+        EnumerationSlab
             Deep copy with fixed flags inside the central region and relaxed
             flags outside it. The receiver is not mutated.
 

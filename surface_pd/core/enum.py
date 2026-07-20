@@ -13,7 +13,7 @@ from pymatgen.transformations.standard_transformations import (
     SubstitutionTransformation,
 )
 
-from surface_pd.core.slab import Slab
+from surface_pd.core.enumeration_slab import EnumerationSlab
 
 
 class EnumWithComposition:
@@ -54,12 +54,14 @@ class EnumWithComposition:
         self.max_cell_size = max_cell_size
         self.enum_precision_parameter = enum_precision_parameter
 
-    def apply_enumeration(self, structure: Slab, max_structures: int = 2000):
+    def apply_enumeration(
+        self, structure: EnumerationSlab, max_structures: int = 2000
+    ):
         """Enumerate ordered derivatives of a parent slab.
 
         Parameters
         ----------
-        structure : Slab
+        structure : EnumerationSlab
             Parent slab to substitute and enumerate. The slab is not mutated.
         max_structures : int, default=2000
             Maximum number of ranked structures requested from pymatgen. Must
