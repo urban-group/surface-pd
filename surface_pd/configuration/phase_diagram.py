@@ -9,12 +9,15 @@ from typing import Any
 import numpy as np
 
 from surface_pd.thermodynamics import (
+    AlignedPhaseDataset,
     ConstantChemicalPotential,
+    DatasetAlignment,
     DiagramAxis,
     DirectChemicalPotential,
     FixedPressureOxygenChemicalPotential,
     GrandPotentialModel,
     IntercalationChemicalPotential,
+    PhaseDataset,
     PhaseDiagramSpecification,
     ReferencePhase,
 )
@@ -25,6 +28,8 @@ from surface_pd.thermodynamics._validation import (
     validate_provenance,
     validate_variable_name,
 )
+
+from ._table_loading import load_phase_dataset
 
 _SCHEMA_VERSION = 1
 _MODEL_NAMES = {
@@ -402,6 +407,20 @@ class PhaseDiagramConfiguration:
                 "surface_multiplicity source",
                 integer=True,
             )
+            mapped_columns = [
+                columns["phase_id"],
+                columns["dft_energy_ev"],
+                *composition.values(),
+            ]
+            for source_name in (
+                "surface_area_angstrom2",
+                "surface_multiplicity",
+            ):
+                source = columns[source_name]
+                if isinstance(source, str):
+                    mapped_columns.append(source)
+            if len(mapped_columns) != len(set(mapped_columns)):
+                raise ValueError("mapped source columns must be unique")
         return dataset_ids
 
     @staticmethod
@@ -447,6 +466,14 @@ class PhaseDiagramConfiguration:
                 raise ValueError(
                     "alignment contains an unknown bulk_reference_id"
                 )
+        roots = {
+            alignment["root_dataset_id"]
+            for alignment in _require_sequence(value, "alignments")
+        }
+        if roots & targets:
+            raise ValueError(
+                "an alignment root cannot also be an alignment target"
+            )
 
     @staticmethod
     def _validate_rendering(value: object, components: set[str]) -> None:
@@ -522,6 +549,69 @@ class PhaseDiagramConfiguration:
     def to_dict(self) -> dict[str, Any]:
         """Return a deep mutable copy of the canonical JSON data."""
         return deepcopy(self._data)
+
+    def load_datasets(
+        self,
+    ) -> tuple[PhaseDataset | AlignedPhaseDataset, ...]:
+        """Load configured phase tables and apply direct alignments.
+
+        Returns
+        -------
+        tuple of PhaseDataset or AlignedPhaseDataset
+            Immutable datasets in configuration order. Declared alignment
+            targets are returned as non-mutating aligned views.
+
+        Raises
+        ------
+        ValueError
+            If a relative table path has no source JSON directory, a table is
+            malformed, mapped data are invalid, or alignment is incompatible.
+        """
+        datasets = {}
+        for definition in self._data["datasets"]:
+            path = Path(validate_provenance(definition["path"], "path"))
+            if not path.is_absolute():
+                if self._source_path is None:
+                    raise ValueError(
+                        "relative dataset paths require a source JSON path"
+                    )
+                path = self._source_path.parent / path
+            dataset = load_phase_dataset(
+                definition,
+                path=path,
+                components=self._components,
+                calculation_method=self._calculation_method,
+            )
+            datasets[dataset.dataset_id] = dataset
+
+        references = {
+            reference.reference_id: reference
+            for reference in self._model.reference_phases
+        }
+        aligned = {}
+        for definition in self._data["alignments"]:
+            root_id = validate_identifier(
+                definition["root_dataset_id"], "root_dataset_id"
+            )
+            target_id = validate_identifier(
+                definition["target_dataset_id"], "target_dataset_id"
+            )
+            bulk_reference_id = validate_identifier(
+                definition["bulk_reference_id"], "bulk_reference_id"
+            )
+            alignment = DatasetAlignment(
+                datasets[root_id],
+                datasets[target_id],
+                definition["reference_anchor_phase_id"],
+                definition["target_anchor_phase_id"],
+                references[bulk_reference_id],
+            )
+            aligned[target_id] = alignment.create_aligned_dataset()
+
+        return tuple(
+            aligned.get(dataset_id, dataset)
+            for dataset_id, dataset in datasets.items()
+        )
 
     @classmethod
     def read_json(cls, path: str | Path) -> "PhaseDiagramConfiguration":

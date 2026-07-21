@@ -83,5 +83,89 @@ relative to the configuration file. ``to_dict`` returns a deep mutable copy;
 changing it cannot modify the validated configuration. ``write_json`` emits
 the canonical version-1 representation with stable indentation.
 
+Explicit phase-table loading
+============================
+
+``load_datasets`` reads each table named by ``datasets`` and returns immutable
+datasets in the same order. An absolute table path is used directly. A relative
+path is resolved against the directory containing the source JSON file, which
+makes a configuration and its tables relocatable as one directory tree.
+In-memory configurations therefore require absolute table paths.
+
+Version-1 phase tables are deliberately simple whitespace-delimited text. The
+first nonempty line is a unique column header and every later nonempty line is
+one phase with the same number of fields. Quoted fields containing whitespace
+and comment lines are not supported. In particular, legacy leading-comment
+reference metadata is not read: the JSON file is the single source of
+thermodynamic configuration and provenance.
+
+For example, the table
+
+.. code-block:: text
+
+    name  n_Li  n_Ni  n_O  energy_ev  area_a2  surfaces  note
+    p0    1     1     2    -40.0      12.5     2         pristine
+    p1    0     1     2    -36.0      12.5     2         delithiated
+
+can be mapped with
+
+.. code-block:: json
+
+    {
+      "dataset_id": "facet_001",
+      "path": "tables/facet-001.dat",
+      "columns": {
+        "phase_id": "name",
+        "composition": {
+          "Li": "n_Li",
+          "Ni": "n_Ni",
+          "O": "n_O"
+        },
+        "dft_energy_ev": "energy_ev",
+        "surface_area_angstrom2": "area_a2",
+        "surface_multiplicity": "surfaces"
+      }
+    }
+
+The unmapped ``note`` column is ignored. It has no thermodynamic meaning.
+Area and multiplicity may instead be constants shared by every row:
+
+.. code-block:: json
+
+    {
+      "surface_area_angstrom2": {"constant": 12.5},
+      "surface_multiplicity": {"constant": 2}
+    }
+
+Counts must be nonnegative integers, total DFT energies must be finite in eV,
+areas must be positive in square angstroms, and surface multiplicities must be
+positive integers. Mapped source columns must be distinct. Phase identifiers
+must be unique within each dataset; their stable global identities are
+``dataset_id:phase_id``.
+
+Configured alignment
+====================
+
+An alignment names an ordinary root dataset, a target dataset, one anchor in
+each dataset, and a bulk reference from ``reference_phases``:
+
+.. code-block:: json
+
+    {
+      "root_dataset_id": "facet_001",
+      "target_dataset_id": "facet_104",
+      "reference_anchor_phase_id": "p0",
+      "target_anchor_phase_id": "q0",
+      "bulk_reference_id": "bulk-LiNiO2"
+    }
+
+Loading replaces the declared target with a non-mutating
+:class:`~surface_pd.thermodynamics.AlignedPhaseDataset` view. The raw phase
+energies remain available unchanged through ``source_dataset``, while the view
+retains the anchors, bulk reference, signed bulk-unit count, and calculated
+energy offset. The alignment equation and compatibility conditions are given
+in :ref:`dataset-alignment`. Alignments must be direct to an ordinary root;
+chains and cycles are rejected.
+
 .. autoclass:: surface_pd.configuration.PhaseDiagramConfiguration
     :members:

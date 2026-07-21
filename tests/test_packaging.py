@@ -25,6 +25,7 @@ PACKAGE_FILES = (
     "surface_pd/cli/surface_enumeration.py",
     "surface_pd/cli/surface_pd_plot.py",
     "surface_pd/configuration/__init__.py",
+    "surface_pd/configuration/_table_loading.py",
     "surface_pd/configuration/phase_diagram.py",
     "surface_pd/core/__init__.py",
     "surface_pd/core/enum.py",

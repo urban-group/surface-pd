@@ -243,6 +243,8 @@ evaluation layer.
 .. autoclass:: surface_pd.thermodynamics.GrandPotentialResult
     :members:
 
+.. _dataset-alignment:
+
 Explicit dataset alignment
 ==========================
 
