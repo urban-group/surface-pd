@@ -30,6 +30,8 @@ PUBLIC_CLASSES = (
     thermodynamics.Phase,
     thermodynamics.PhaseDataset,
     thermodynamics.ReferencePhase,
+    thermodynamics.GrandPotentialModel,
+    thermodynamics.GrandPotentialResult,
 )
 
 
@@ -79,6 +81,8 @@ def test_subpackage_exports_define_the_supported_api():
         "DirectChemicalPotential",
         "FixedPressureOxygenChemicalPotential",
         "IntercalationChemicalPotential",
+        "GrandPotentialModel",
+        "GrandPotentialResult",
         "Phase",
         "PhaseDataset",
         "ReferencePhase",

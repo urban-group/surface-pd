@@ -162,3 +162,83 @@ legacy package's corrected numerical results.
 
 .. autoclass:: surface_pd.thermodynamics.FixedPressureOxygenChemicalPotential
     :members:
+
+Constrained grand-potential model
+=================================
+
+``GrandPotentialModel`` combines independent chemical-potential laws with
+bulk reference equalities. The user chooses which components are independent;
+all remaining components are dependent. The model never chooses this partition
+automatically.
+
+Let :math:`C` be the reference-composition matrix, with one row per
+``ReferencePhase`` and columns in the model's declared component order. After
+partitioning its columns into dependent and independent blocks, every reference
+equality can be written as
+
+.. math::
+
+    C_D\boldsymbol{\mu}_D + C_I\boldsymbol{\mu}_I
+    = \mathbf{g}_\mathrm{ref}.
+
+The dependent potentials are therefore obtained from the exact linear solve
+
+.. math::
+
+    C_D\boldsymbol{\mu}_D
+    = \mathbf{g}_\mathrm{ref} - C_I\boldsymbol{\mu}_I.
+
+The initial implementation deliberately requires :math:`C_D` to be square and
+full-rank. Underdetermined, overdetermined, and singular systems are rejected;
+there is no implicit choice of reservoirs and no least-squares approximation.
+All reference phases in one model must use identical calculation-method
+provenance. A dataset evaluated with those references must use the same method.
+
+For example, an ``AB2`` reference gives
+
+.. math::
+
+    \mu_A + 2\mu_B = G_\mathrm{AB2}.
+
+If :math:`\mu_A` is supplied independently, the model solves the directly
+auditable expression
+
+.. math::
+
+    \mu_B = \frac{G_\mathrm{AB2} - \mu_A}{2}.
+
+.. autoclass:: surface_pd.thermodynamics.GrandPotentialModel
+    :members:
+
+Grand-potential results
+=======================
+
+For each phase :math:`s`, the model first calculates the total excess grand
+potential of the supplied atomistic cell,
+
+.. math::
+
+    \Omega_s = E_s - \sum_i n_{s,i}\mu_i.
+
+It then reports both supported normalizations:
+
+.. math::
+
+    \Omega_s^\mathrm{cell} = \frac{\Omega_s}{m_s},
+    \qquad
+    \gamma_s = \frac{\Omega_s}{m_s A_s}.
+
+Here :math:`m_s` is the number of equivalent surfaces represented by the
+atomistic cell and :math:`A_s` is the area of one surface unit cell. Thus
+``grand_potential_ev_per_surface_cell`` is useful for adsorption and other
+surface-cell processes, while
+``surface_grand_potential_ev_per_angstrom2`` is the quantity used to compare
+surface stability.
+
+Each result tensor has shape ``(number_of_phases, *state_shape)``. Phase order
+matches the dataset, and all arrays are read-only. The result retains every
+phase; stable-phase selection and tie handling belong to the later diagram
+evaluation layer.
+
+.. autoclass:: surface_pd.thermodynamics.GrandPotentialResult
+    :members:
