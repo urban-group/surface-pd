@@ -88,6 +88,51 @@ def test_readthedocs_fails_on_sphinx_warnings():
     assert re.search(r"^  fail_on_warning: true$", rtd_config, re.M)
 
 
+def test_readme_exposes_latest_readthedocs_build_status():
+    """The README should expose and link the hosted latest-build status."""
+    readme = (PROJECT_ROOT / "README.md").read_text()
+
+    assert (
+        "https://readthedocs.org/projects/surface-pd/badge/?version=latest"
+        in readme
+    )
+    assert (
+        "https://surface-pd.readthedocs.io/en/latest/?badge=latest"
+        in readme
+    )
+
+
+def test_readthedocs_maintainer_runbook_covers_recovery():
+    """Maintainers should have a complete RTD verification runbook."""
+    runbook_path = PROJECT_ROOT / ".github" / "READTHEDOCS.md"
+
+    assert runbook_path.is_file()
+    runbook = runbook_path.read_text()
+    for required_text in (
+        "urban-group/surface-pd",
+        "Admin → Integrations",
+        "Recent Activity",
+        "Build version",
+        "latest",
+        "GitHub Actions",
+        "Read the Docs",
+        "API token",
+    ):
+        assert required_text in runbook
+
+
+def test_repository_has_no_custom_readthedocs_deployment_trigger():
+    """RTD publication should rely only on its standard Git integration."""
+    workflow_text = "\n".join(
+        path.read_text()
+        for path in (PROJECT_ROOT / ".github" / "workflows").glob("*.y*ml")
+    )
+
+    assert "READTHEDOCS_TOKEN" not in workflow_text
+    assert "api/v2/webhook" not in workflow_text
+    assert "api/v3/projects" not in workflow_text
+
+
 def test_documented_installation_commands_match_metadata():
     """Documentation should use current Python and console-script metadata."""
     metadata = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())

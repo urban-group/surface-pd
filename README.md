@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/surface-pd/badge/?version=latest)](https://surface-pd.readthedocs.io/en/latest/?badge=latest)
+
 # Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
