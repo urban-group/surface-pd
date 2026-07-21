@@ -27,6 +27,7 @@ def _documented_autodoc_targets():
     """Return every fully qualified class or function API target."""
     targets = set()
     for filename in (
+        "configuration.rst",
         "core.rst",
         "plot.rst",
         "thermodynamics.rst",
@@ -338,9 +339,13 @@ def test_release_policy_and_sphinx_use_authoritative_version():
 
 def test_sphinx_documents_exact_canonical_public_api():
     """Autodoc should cover the API through installed package paths."""
-    from surface_pd import core, error, plot, thermodynamics
+    from surface_pd import configuration, core, error, plot, thermodynamics
 
     expected = {
+        *(
+            f"surface_pd.configuration.{name}"
+            for name in configuration.__all__
+        ),
         *(f"surface_pd.core.{name}" for name in core.__all__),
         *(f"surface_pd.plot.{name}" for name in plot.__all__),
         *(

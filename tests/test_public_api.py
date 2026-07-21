@@ -10,7 +10,15 @@ from pymatgen.core.structure import Structure
 from pymatgen.core.surface import Slab as PymatgenSlab
 
 import surface_pd
-from surface_pd import analysis, core, error, plot, thermodynamics, util
+from surface_pd import (
+    analysis,
+    configuration,
+    core,
+    error,
+    plot,
+    thermodynamics,
+    util,
+)
 from surface_pd.core.enumeration_slab import EnumerationSlab
 from surface_pd.core.post_check import PostCheck
 from surface_pd.plot import pd_data, surface_energy
@@ -23,6 +31,7 @@ PUBLIC_CLASSES = (
     plot.ReferenceEnergies,
     plot.SurfaceEnergy,
     plot.CompositionColoring,
+    configuration.PhaseDiagramConfiguration,
     thermodynamics.ThermodynamicState,
     thermodynamics.ConstantChemicalPotential,
     thermodynamics.DirectChemicalPotential,
@@ -87,6 +96,7 @@ def test_subpackage_exports_define_the_supported_api():
         "SurfaceEnergy",
         "plot_phase_diagram",
     ]
+    assert configuration.__all__ == ["PhaseDiagramConfiguration"]
     assert thermodynamics.__all__ == [
         "AlignedPhaseDataset",
         "ChemicalPotentialModel",

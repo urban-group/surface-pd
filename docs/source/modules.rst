@@ -4,6 +4,7 @@ Modules
 =======
 
 .. toctree::
+    configuration
     core
     error
     plot

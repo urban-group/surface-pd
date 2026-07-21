@@ -66,6 +66,9 @@ generate-discharge-pd = "surface_pd.cli.discharge_pd_gene:main"
 [tool.setuptools.packages.find]
 include = ["surface_pd*"]
 
+[tool.setuptools.package-data]
+surface_pd = ["schemas/*.json"]
+
 [tool.setuptools.dynamic]
 version = {attr = "surface_pd._version.__version__"}
 

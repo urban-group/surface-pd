@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://surface-pd.org/schemas/phase-diagram-config-v1.schema.json",
+  "title": "surface-pd phase-diagram configuration version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "calculation_method",
+    "components",
+    "independent_chemical_potentials",
+    "reference_phases",
+    "diagram",
+    "datasets",
+    "alignments",
+    "rendering"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "calculation_method": {"$ref": "#/$defs/nonemptyString"},
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "independent_chemical_potentials": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/chemicalPotentialModel"}
+    },
+    "reference_phases": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/referencePhase"}
+    },
+    "diagram": {"$ref": "#/$defs/diagram"},
+    "datasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/dataset"}
+    },
+    "alignments": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/alignment"}
+    },
+    "rendering": {"$ref": "#/$defs/rendering"}
+  },
+  "$defs": {
+    "nonemptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\r\\n]*\\S[^\\r\\n]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "identifierText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^:\\r\\n]*\\S[^:\\r\\n]*$"
+    },
+    "finiteNumber": {"type": "number"},
+    "positiveInteger": {"type": "integer", "minimum": 1},
+    "composition": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "constantModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "value_ev_per_component"],
+      "properties": {
+        "model": {"const": "constant"},
+        "value_ev_per_component": {"$ref": "#/$defs/finiteNumber"}
+      }
+    },
+    "directModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "state_variable",
+        "reference_energy_ev_per_component"
+      ],
+      "properties": {
+        "model": {"const": "direct"},
+        "state_variable": {"$ref": "#/$defs/identifier"},
+        "reference_energy_ev_per_component": {
+          "$ref": "#/$defs/finiteNumber"
+        }
+      }
+    },
+    "intercalationModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "reference_energy_ev_per_component",
+        "electrons_per_component",
+        "voltage_reference"
+      ],
+      "properties": {
+        "model": {"const": "intercalation_voltage"},
+        "reference_energy_ev_per_component": {
+          "$ref": "#/$defs/finiteNumber"
+        },
+        "electrons_per_component": {"$ref": "#/$defs/positiveInteger"},
+        "voltage_reference": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "oxygenModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "raw_o2_energy_ev_per_molecule",
+        "correction_ev_per_molecule"
+      ],
+      "properties": {
+        "model": {"const": "fixed_pressure_oxygen"},
+        "raw_o2_energy_ev_per_molecule": {
+          "$ref": "#/$defs/finiteNumber"
+        },
+        "correction_ev_per_molecule": {"$ref": "#/$defs/finiteNumber"}
+      }
+    },
+    "chemicalPotentialModel": {
+      "oneOf": [
+        {"$ref": "#/$defs/constantModel"},
+        {"$ref": "#/$defs/directModel"},
+        {"$ref": "#/$defs/intercalationModel"},
+        {"$ref": "#/$defs/oxygenModel"}
+      ]
+    },
+    "referencePhase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference_id",
+        "composition",
+        "energy_ev_per_formula_unit"
+      ],
+      "properties": {
+        "reference_id": {"$ref": "#/$defs/identifierText"},
+        "composition": {"$ref": "#/$defs/composition"},
+        "energy_ev_per_formula_unit": {"$ref": "#/$defs/finiteNumber"}
+      }
+    },
+    "linearCoordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "start", "stop", "number"],
+      "properties": {
+        "kind": {"const": "linear"},
+        "start": {"$ref": "#/$defs/finiteNumber"},
+        "stop": {"$ref": "#/$defs/finiteNumber"},
+        "number": {"type": "integer", "minimum": 2}
+      }
+    },
+    "explicitCoordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "values"],
+      "properties": {
+        "kind": {"const": "values"},
+        "values": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/finiteNumber"}
+        }
+      }
+    },
+    "axis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state_variable", "coordinates", "label", "unit"],
+      "properties": {
+        "state_variable": {"$ref": "#/$defs/identifier"},
+        "coordinates": {
+          "oneOf": [
+            {"$ref": "#/$defs/linearCoordinates"},
+            {"$ref": "#/$defs/explicitCoordinates"}
+          ]
+        },
+        "label": {"$ref": "#/$defs/nonemptyString"},
+        "unit": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "diagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x_axis", "y_axis", "fixed_conditions"],
+      "properties": {
+        "x_axis": {"$ref": "#/$defs/axis"},
+        "y_axis": {"$ref": "#/$defs/axis"},
+        "fixed_conditions": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/finiteNumber"}
+        }
+      }
+    },
+    "constantSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["constant"],
+      "properties": {"constant": {"$ref": "#/$defs/finiteNumber"}}
+    },
+    "columnSource": {
+      "oneOf": [
+        {"$ref": "#/$defs/nonemptyString"},
+        {"$ref": "#/$defs/constantSource"}
+      ]
+    },
+    "positiveIntegerSource": {
+      "oneOf": [
+        {"$ref": "#/$defs/nonemptyString"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["constant"],
+          "properties": {
+            "constant": {"$ref": "#/$defs/positiveInteger"}
+          }
+        }
+      ]
+    },
+    "columns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase_id",
+        "composition",
+        "dft_energy_ev",
+        "surface_area_angstrom2",
+        "surface_multiplicity"
+      ],
+      "properties": {
+        "phase_id": {"$ref": "#/$defs/nonemptyString"},
+        "composition": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/nonemptyString"}
+        },
+        "dft_energy_ev": {"$ref": "#/$defs/nonemptyString"},
+        "surface_area_angstrom2": {"$ref": "#/$defs/columnSource"},
+        "surface_multiplicity": {
+          "$ref": "#/$defs/positiveIntegerSource"
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "path", "columns"],
+      "properties": {
+        "dataset_id": {"$ref": "#/$defs/identifierText"},
+        "path": {"$ref": "#/$defs/nonemptyString"},
+        "columns": {"$ref": "#/$defs/columns"}
+      }
+    },
+    "alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root_dataset_id",
+        "target_dataset_id",
+        "reference_anchor_phase_id",
+        "target_anchor_phase_id",
+        "bulk_reference_id"
+      ],
+      "properties": {
+        "root_dataset_id": {"$ref": "#/$defs/identifierText"},
+        "target_dataset_id": {"$ref": "#/$defs/identifierText"},
+        "reference_anchor_phase_id": {
+          "$ref": "#/$defs/identifierText"
+        },
+        "target_anchor_phase_id": {"$ref": "#/$defs/identifierText"},
+        "bulk_reference_id": {"$ref": "#/$defs/identifierText"}
+      }
+    },
+    "identityColoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {"mode": {"const": "phase_identity"}}
+    },
+    "atomicFractionColoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "component", "label", "unit"],
+      "properties": {
+        "mode": {"const": "atomic_fraction"},
+        "component": {"$ref": "#/$defs/identifier"},
+        "label": {"$ref": "#/$defs/nonemptyString"},
+        "unit": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "ratioColoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "component",
+        "reference_component",
+        "label",
+        "unit"
+      ],
+      "properties": {
+        "mode": {"const": "component_ratio"},
+        "component": {"$ref": "#/$defs/identifier"},
+        "reference_component": {"$ref": "#/$defs/identifier"},
+        "label": {"$ref": "#/$defs/nonemptyString"},
+        "unit": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "rendering": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coloring",
+        "colormap",
+        "invert_x_axis",
+        "invert_y_axis"
+      ],
+      "properties": {
+        "coloring": {
+          "oneOf": [
+            {"$ref": "#/$defs/identityColoring"},
+            {"$ref": "#/$defs/atomicFractionColoring"},
+            {"$ref": "#/$defs/ratioColoring"}
+          ]
+        },
+        "colormap": {"$ref": "#/$defs/nonemptyString"},
+        "invert_x_axis": {"type": "boolean"},
+        "invert_y_axis": {"type": "boolean"}
+      }
+    }
+  }
+}
