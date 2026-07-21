@@ -39,21 +39,20 @@ surface-enumeration examples/enumeration-examples/input/input-Li.json
 
 ### 2. Phase Diagram Plotting
 
-The `surface-pd-plot` command generates surface phase diagrams for electrode
-surfaces with the approach detailed in [Li et al., *ACS Appl. Energy Mater.*
-**5**, 2022, 5730–5741](https://doi.org/10.1021/acsaem.2c00012).
+The `surface-pd-plot` command evaluates one versioned generalized configuration:
 
 **Example:**
 
 ```bash
-surface-pd-plot examples/plotting-examples/SCAN-Li-surface.dat \
-    --lithium-like-species Li \
-    --oxygen-like-species O
+surface-pd-plot CONFIG.json --output diagram.pdf
 ```
 
-Each plotting data file starts with the Li, O2, and bulk LiTMO2 reference
-energies required for that dataset. Method details are retained as provenance;
-unknown settings are marked explicitly, for example ``U_Ni=? eV``.
+The existing files under `plotting-examples/` use the former Li/O-specific
+format. They are retained temporarily as numerical regression inputs and are
+not accepted directly by the generalized command. Issue 42 tracks reproduction
+of their validated results, migration to version-1 JSON plus explicitly mapped
+tables, and removal of the legacy files and implementation before the initial
+release.
 
 ## Getting Help
 

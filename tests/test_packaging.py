@@ -1,5 +1,6 @@
 """Tests for built-wheel and installed-package behavior."""
 
+import json
 import os
 import subprocess
 import sys
@@ -172,6 +173,82 @@ def test_installed_wheel_reports_authoritative_version(
 
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "0.1.0"
+
+
+def test_installed_surface_plot_command_creates_an_image(
+    installed_wheel_environment,
+    tmp_path,
+):
+    """The installed plotting entry point should run the generalized path."""
+    _, scripts_dir = installed_wheel_environment
+    table = tmp_path / "phases.dat"
+    table.write_text("name nA nB energy\np0 1 1 -3\np1 2 1 -4\n")
+    data = {
+        "schema_version": 1,
+        "calculation_method": "packaging test method",
+        "components": ["A", "B"],
+        "independent_chemical_potentials": {
+            component: {
+                "model": "direct",
+                "state_variable": f"mu_{component}",
+                "reference_energy_ev_per_component": 0.0,
+            }
+            for component in ("A", "B")
+        },
+        "reference_phases": [],
+        "diagram": {
+            axis: {
+                "state_variable": variable,
+                "coordinates": {"kind": "values", "values": [-1.0, 0.0]},
+                "label": label,
+                "unit": "eV",
+            }
+            for axis, variable, label in (
+                ("x_axis", "mu_A", "A chemical potential"),
+                ("y_axis", "mu_B", "B chemical potential"),
+            )
+        },
+        "datasets": [
+            {
+                "dataset_id": "surface",
+                "path": table.name,
+                "columns": {
+                    "phase_id": "name",
+                    "composition": {"A": "nA", "B": "nB"},
+                    "dft_energy_ev": "energy",
+                    "surface_area_angstrom2": {"constant": 10.0},
+                    "surface_multiplicity": {"constant": 2},
+                },
+            }
+        ],
+        "alignments": [],
+        "rendering": {
+            "coloring": {"mode": "phase_identity"},
+            "colormap": "tab20",
+            "invert_x_axis": False,
+            "invert_y_axis": False,
+        },
+    }
+    data["diagram"]["fixed_conditions"] = {}
+    configuration = tmp_path / "config.json"
+    configuration.write_text(json.dumps(data))
+    output = tmp_path / "diagram.png"
+
+    result = subprocess.run(
+        [
+            str(scripts_dir / "surface-pd-plot"),
+            str(configuration),
+            "--output",
+            str(output),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output.is_file()
+    assert output.stat().st_size > 0
 
 
 @pytest.mark.parametrize("script_name", CONSOLE_SCRIPTS)

@@ -1,354 +1,95 @@
 #!/usr/bin/env python3
 
-"""Construct surface phase diagrams from energy data."""
-
-__author__ = "Xinhao Li"
-__email__ = "xl2778@columbia.edu"
-__date__ = "2022-08-05"
+"""Plot a generalized phase diagram from versioned JSON configuration."""
 
 import argparse
+from pathlib import Path
 
-import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.colorbar import Colorbar
+from matplotlib.figure import Figure
 
-from surface_pd.plot._phase_data_io import (
-    _read_phase_diagram_file,
-    _require_matching_reference_energies,
-)
-from surface_pd.plot.pd_data import PdData
-from surface_pd.plot.plot import (
-    convert_numbers,
-    find_stable_phases,
-    get_labels,
-    get_ticks_and_levels,
-)
-
-rcparams = {
-    "font.size": 20,
-    "legend.frameon": False,
-    "xtick.top": True,
-    "xtick.direction": "in",
-    "xtick.minor.visible": True,
-    "xtick.major.size": 16,
-    "xtick.minor.size": 8,
-    "ytick.right": True,
-    "ytick.direction": "in",
-    "ytick.minor.visible": True,
-    "ytick.major.size": 16,
-    "ytick.minor.size": 8,
-}
+from surface_pd.configuration import PhaseDiagramConfiguration
+from surface_pd.plot import plot_phase_diagram
+from surface_pd.thermodynamics import PhaseDiagramResult
 
 
-def _prepare_surface_pd_data(
-    data_files,
-    lithium_like_species,
-    oxygen_like_species,
-    V,
-    T,
-):
-    """Load and calculate one or two datasets without rendering a plot."""
-    if len(data_files) not in (1, 2):
-        raise ValueError("Exactly one or two phase-data files are required.")
-
-    phase_datasets = []
-    for path in data_files:
-        dataframe, references = _read_phase_diagram_file(path)
-        phase_datasets.append(
-            PdData(
-                dataframe=dataframe,
-                lithium_like_species=lithium_like_species,
-                oxygen_like_species=oxygen_like_species,
-                reference_energies=references,
-            ).standardize_pd_data()
+def _prepare_phase_diagram(
+    configuration: PhaseDiagramConfiguration,
+) -> tuple[PhaseDiagramResult, Figure, Axes, Colorbar]:
+    """Evaluate and render without displaying or saving the figure."""
+    if not isinstance(configuration, PhaseDiagramConfiguration):
+        raise TypeError(
+            "configuration must be a PhaseDiagramConfiguration"
         )
-
-    if len(phase_datasets) == 2:
-        _require_matching_reference_energies(
-            phase_datasets[0].reference_energies,
-            phase_datasets[1].reference_energies,
-        )
-        shift_energy = phase_datasets[0].calculate_shift_energy(
-            phase_datasets[1]
-        )
-    else:
-        shift_energy = 0.0
-
-    energy_groups = []
-    for index, phase_data in enumerate(phase_datasets):
-        energies = phase_data.get_surface_energy(V=V, T=T)
-        if index == 1:
-            energies = energies + shift_energy
-        energy_groups.append(energies)
-    energies = np.concatenate(energy_groups, axis=0)
-    dataframe = pd.concat(
-        [phase_data.dataframe for phase_data in phase_datasets],
-        ignore_index=True,
+    datasets = configuration.load_datasets()
+    result = configuration.diagram_specification.evaluate(
+        configuration.model,
+        datasets,
     )
-    return dataframe, energies, len(phase_datasets)
-
-
-def surface_pd_plot(
-    data_files,
-    lithium_like_species,
-    oxygen_like_species,
-    low_T,
-    high_T,
-    color_Li=False,
-    color_O=False,
-    discharge=False,
-    save=False,
-):
-    """Plot a surface phase diagram from one or more data files."""
-    # Create x and y axes
-    V = np.linspace(0.0, 5.0, 500)
-    T = np.linspace(low_T, high_T, 500)
-    V_mesh, T_mesh = np.meshgrid(V, T)
-
-    df, G, num_files = _prepare_surface_pd_data(
-        data_files,
-        lithium_like_species,
-        oxygen_like_species,
-        V_mesh,
-        T_mesh,
+    figure, axes, colorbar = plot_phase_diagram(
+        result,
+        coloring=configuration.create_coloring(),
+        cmap=configuration.colormap,
+        invert_x_axis=configuration.invert_x_axis,
+        invert_y_axis=configuration.invert_y_axis,
     )
+    return result, figure, axes, colorbar
 
-    # Split an array into multiple sub-arrays
-    stable_phases_index = find_stable_phases(G.ravel(), df)
 
-    # Get unique tick labels
-    ticks = np.unique([stable_phases_index])
-
-    # Convert unique phases into a continuous phase number
-    converted_stable_phases_index = convert_numbers(stable_phases_index, ticks)
-
-    # Colorbar related parameters
-    ticky, global_levels = get_ticks_and_levels(converted_stable_phases_index)
-
-    # Reshape the array
-    stable_phases_reshaped_global = np.reshape(
-        converted_stable_phases_index, (T.size, V.size)
+def _parser() -> argparse.ArgumentParser:
+    """Return the generalized plotting argument parser."""
+    parser = argparse.ArgumentParser(
+        description=(
+            "Evaluate and plot a generalized two-dimensional phase diagram "
+            "from versioned JSON configuration."
+        )
     )
-
-    if color_Li:
-        if len(data_files) != 1:
-            boundary = int(len(df) / len(data_files))
-            for i in range(len(stable_phases_index)):
-                if stable_phases_index[i] < boundary:
-                    stable_phases_index[i] %= 5
-                else:
-                    stable_phases_index[i] = stable_phases_index[i] % 5 + 25
-        else:
-            stable_phases_index = stable_phases_index % 5
-
-        ticks = np.unique([stable_phases_index])
-
-        converted_stable_phases_index = convert_numbers(
-            stable_phases_index, ticks
-        )
-        stable_phases_reshaped = np.reshape(
-            converted_stable_phases_index, (T.size, V.size)
-        )
-
-        # temp_plot used
-        ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(
-            dataframe=df,
-            num_groups=num_files,
-            species=[lithium_like_species],
-            ticks=ticks,
-        )
-        cmap = "Greens_r"
-        fig = plt.figure(figsize=(9.5, 6))
-
-    elif color_O:
-        # if len(data_files) != 1:
-        #     boundary = int(len(df) / len(data_files))
-        #     for i in range(len(stable_phases_index)):
-        #         if stable_phases_index[i] < boundary:
-        #             stable_phases_index[i] = stable_phases_index[i] // 5 * 5
-        #         else:
-        #             stable_phases_index[i] = (stable_phases_index[i] // 5 *
-        #                                       5 + 25)
-        # else:
-        #     stable_phases_index = stable_phases_index % 5
-
-        stable_phases_index = stable_phases_index // 5 * 5
-        # print(np.unique(stable_phases_index))
-        stable_phases_index = [
-            x - 5 if x == 25 else x for x in stable_phases_index
-        ]
-
-        ticks = np.unique([stable_phases_index])
-        # print(ticks)
-        converted_stable_phases_index = convert_numbers(
-            stable_phases_index, ticks
-        )
-
-        stable_phases_reshaped = np.reshape(
-            converted_stable_phases_index, (T.size, V.size)
-        )
-
-        # temp_plot used
-        ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(
-            dataframe=df,
-            num_groups=num_files,
-            species=[oxygen_like_species],
-            ticks=ticks,
-        )
-        cmap = "Reds_r"
-        fig = plt.figure(figsize=(9.5, 6))
-    else:
-        stable_phases_reshaped = stable_phases_reshaped_global
-        # temp_plot used
-        ticky, levels = get_ticks_and_levels(converted_stable_phases_index)
-        labels = get_labels(
-            dataframe=df,
-            num_groups=num_files,
-            species=[lithium_like_species, oxygen_like_species],
-            ticks=ticks,
-        )
-        cmap = "tab20c"
-        fig = plt.figure(figsize=(10.5, 6))
-
-    plt.rcParams.update(rcparams)
-    ax = fig.add_subplot(111)
-    # ax = plt.axes(projection='3d')
-    ax.contour(
-        V,
-        T,
-        stable_phases_reshaped_global,
-        levels=global_levels,
-        colors="black",
-        linewidths=2,
+    parser.add_argument(
+        "configuration",
+        metavar="CONFIG",
+        type=Path,
+        help="path to a versioned phase-diagram JSON configuration",
     )
-    PD = ax.contourf(V, T, stable_phases_reshaped, levels=levels, cmap=cmap)
-    ax.set_xlabel("Potential vs. Li/Li$^+$ (V)", fontsize=20)
-    ax.set_ylabel("Temperature (K)", fontsize=20)
-    if discharge:
-        ax.invert_xaxis()
-    colorbar = fig.colorbar(PD, ticks=ticky, pad=0.05)
-    colorbar.ax.set_yticklabels(labels)
-    colorbar.ax.tick_params(size=0)
-    colorbar.ax.minorticks_off()
-    plt.tight_layout()
-    if save:
-        if discharge:
-            plt.savefig("discharge-surface-pd.pdf", dpi=500)
-        else:
-            plt.savefig("charge-surface-pd.pdf", dpi=500)
-    plt.show()
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help=(
+            "save the figure to this path; the filename extension selects "
+            "the output format"
+        ),
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="display the figure interactively",
+    )
+    return parser
 
 
 def main(argv: list[str] | None = None) -> None:
-    """Run the surface phase diagram plotting command-line interface."""
-    parser = argparse.ArgumentParser(
-        description=(
-            "Create surface phase diagrams from DFT energy data.\n\n"
-            "This tool visualizes which surface compositions are "
-            "thermodynamically stable as a function of voltage and "
-            "temperature.\n\n"
-            "Example usage:\n"
-            "  %(prog)s data.dat -L Li -O O\n"
-            "  %(prog)s data.dat -L Li -O O --color-by-Li-content\n"
-            "  %(prog)s file1.dat file2.dat -L Li -O O --save"
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            f"Author: {__author__} ({__email__})\n"
-            f"Date: {__date__}"
-        ),
-    )
-
-    parser.add_argument(
-        "surface_pd_data",
-        metavar="DATA_FILE",
-        nargs="+",
-        type=str,
-        help=(
-            "Path(s) to surface phase diagram data file(s). "
-            "Each file must begin with reference-energy metadata followed "
-            "by space-separated columns with Li, O, TM counts and DFT "
-            "energies. Multiple files are used for different facets."
-        ),
-    )
-
-    parser.add_argument(
-        "--lithium-like-species",
-        "-L",
-        help="Define the lithium like species",
-        type=str,
-        default="Li",
-    )
-
-    parser.add_argument(
-        "--oxygen-like-species",
-        "-O",
-        help="Define the oxygen like species",
-        type=str,
-        default="O",
-    )
-
-    parser.add_argument(
-        "--low-T",
-        "-lt",
-        help="Low temperature boundary",
-        type=float,
-        default=1,
-    )
-
-    parser.add_argument(
-        "--high-T",
-        "-ht",
-        help="High temperature boundary",
-        type=float,
-        default=1500,
-    )
-
-    parser.add_argument(
-        "--color-by-Li-content",
-        "-cl",
-        help="Whether color the surface pd by the Li content.",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "--color-by-O-content",
-        "-co",
-        help="Whether color the surface pd by the O content.",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "--discharge",
-        "-d",
-        help="If the surface pd represents charge or discharge",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "--save",
-        "-s",
-        help="Whether to save the charge/discharge surface pd.",
-        action="store_true",
-    )
-
+    """Run the generalized phase-diagram plotting command."""
+    parser = _parser()
     args = parser.parse_args(argv)
-    if len(args.surface_pd_data) not in (1, 2):
-        parser.error("exactly one or two DATA_FILE arguments are required")
+    if args.output is None and not args.show:
+        parser.error("at least one of --output or --show is required")
 
-    surface_pd_plot(
-        args.surface_pd_data,
-        args.lithium_like_species,
-        args.oxygen_like_species,
-        args.low_T,
-        args.high_T,
-        args.color_by_Li_content,
-        args.color_by_O_content,
-        args.discharge,
-        args.save,
-    )
+    figure = None
+    try:
+        configuration = PhaseDiagramConfiguration.read_json(
+            args.configuration
+        )
+        _, figure, _, _ = _prepare_phase_diagram(configuration)
+        if args.output is not None:
+            figure.savefig(args.output)
+        if args.show:
+            plt.show()
+    except (OSError, TypeError, ValueError) as error:
+        parser.error(str(error))
+    finally:
+        if figure is not None:
+            plt.close(figure)
 
 
 if __name__ == "__main__":

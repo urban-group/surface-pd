@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 
+from surface_pd.plot.phase_diagram import CompositionColoring
 from surface_pd.thermodynamics import (
     AlignedPhaseDataset,
     ConstantChemicalPotential,
@@ -545,6 +546,42 @@ class PhaseDiagramConfiguration:
     def source_path(self) -> Path | None:
         """Return the absolute source JSON path, if read from a file."""
         return self._source_path
+
+    @property
+    def colormap(self) -> str:
+        """Return the configured Matplotlib colormap name."""
+        return self._data["rendering"]["colormap"]
+
+    @property
+    def invert_x_axis(self) -> bool:
+        """Return whether rendering should invert the horizontal axis."""
+        return self._data["rendering"]["invert_x_axis"]
+
+    @property
+    def invert_y_axis(self) -> bool:
+        """Return whether rendering should invert the vertical axis."""
+        return self._data["rendering"]["invert_y_axis"]
+
+    def create_coloring(self) -> CompositionColoring | None:
+        """Construct the configured composition coloring, if any.
+
+        Returns
+        -------
+        CompositionColoring or None
+            ``None`` for discrete qualified phase identities; otherwise the
+            validated continuous composition-coloring definition.
+        """
+        definition = self._data["rendering"]["coloring"]
+        mode = definition["mode"]
+        if mode == "phase_identity":
+            return None
+        return CompositionColoring(
+            component=definition["component"],
+            normalization=mode,
+            reference_component=definition.get("reference_component"),
+            label=definition["label"],
+            unit=definition["unit"],
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a deep mutable copy of the canonical JSON data."""
