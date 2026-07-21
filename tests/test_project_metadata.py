@@ -26,7 +26,12 @@ USER_DOCUMENTATION = (
 def _documented_autoclass_targets():
     """Return every fully qualified class target in the API reference."""
     targets = set()
-    for filename in ("core.rst", "plot.rst", "error.rst"):
+    for filename in (
+        "core.rst",
+        "plot.rst",
+        "thermodynamics.rst",
+        "error.rst",
+    ):
         text = (PROJECT_ROOT / "docs" / "source" / filename).read_text()
         targets.update(re.findall(r"^\.\. autoclass:: (\S+)$", text, re.M))
     return targets
@@ -228,9 +233,10 @@ def test_package_exports_resolve_to_defined_names():
     import surface_pd.analysis as analysis
     import surface_pd.error as error
     import surface_pd.plot as plot
+    import surface_pd.thermodynamics as thermodynamics
     import surface_pd.util as util
 
-    for module in (analysis, error, plot, util):
+    for module in (analysis, error, plot, thermodynamics, util):
         assert all(hasattr(module, name) for name in module.__all__)
 
 
@@ -326,11 +332,15 @@ def test_release_policy_and_sphinx_use_authoritative_version():
 
 def test_sphinx_documents_exact_canonical_public_api():
     """Autodoc should cover supported classes through installed paths."""
-    from surface_pd import core, error, plot
+    from surface_pd import core, error, plot, thermodynamics
 
     expected = {
         *(f"surface_pd.core.{name}" for name in core.__all__),
         *(f"surface_pd.plot.{name}" for name in plot.__all__),
+        *(
+            f"surface_pd.thermodynamics.{name}"
+            for name in thermodynamics.__all__
+        ),
         *(f"surface_pd.error.{name}" for name in error.__all__),
     }
 

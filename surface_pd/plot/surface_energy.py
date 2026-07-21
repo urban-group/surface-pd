@@ -8,13 +8,10 @@ voltage-dependent surface Gibbs free energies from DFT data.
 import numpy as np
 
 from surface_pd.plot.reference_energies import ReferenceEnergies
-
-_STANDARD_TEMPERATURE_K = 298.15
-_GAS_CONSTANT_KJ_PER_MOL_K = 0.008314463
-_O2_ENTHALPY_INCREMENT_KJ_PER_MOL = 8.683
-_O2_STANDARD_ENTROPY_KJ_PER_MOL_K = 205.147e-3
-_O2_HEAT_CAPACITY_KJ_PER_MOL_K = 3.5 * _GAS_CONSTANT_KJ_PER_MOL_K
-_KJ_PER_MOL_PER_EV = 96.487
+from surface_pd.thermodynamics import (
+    FixedPressureOxygenChemicalPotential,
+    ThermodynamicState,
+)
 
 
 class SurfaceEnergy:
@@ -108,23 +105,15 @@ class SurfaceEnergy:
         298.15 K, and the standard-state O2 entropy and 0-to-298.15 K
         enthalpy increment are taken from NIST-JANAF thermochemical data.
         """
-        temperature = np.asarray(self.T)
-        if np.any(temperature <= 0):
-            raise ValueError("Temperature must be positive in Kelvin.")
-
-        delta_H = _O2_HEAT_CAPACITY_KJ_PER_MOL_K * (
-            temperature - _STANDARD_TEMPERATURE_K
+        model = FixedPressureOxygenChemicalPotential(
+            raw_o2_energy_ev_per_molecule=(
+                self.reference_energies.o2_raw_ev_per_molecule
+            ),
+            correction_ev_per_molecule=(
+                self.reference_energies.o2_correction_ev_per_molecule
+            ),
         )
-        delta_S = _O2_HEAT_CAPACITY_KJ_PER_MOL_K * np.log(
-            temperature / _STANDARD_TEMPERATURE_K
-        )
-        delta_mu_kj_per_mol = (
-            _O2_ENTHALPY_INCREMENT_KJ_PER_MOL + delta_H
-        ) - temperature * (_O2_STANDARD_ENTROPY_KJ_PER_MOL_K + delta_S)
-        return 0.5 * (
-            self.reference_energies.o2_ev_per_molecule
-            + delta_mu_kj_per_mol / _KJ_PER_MOL_PER_EV
-        )
+        return model.evaluate(ThermodynamicState({"temperature": self.T}))
 
     def get_gibbs_free_energy(self):
         """Calculate the surface Gibbs free energy.

@@ -10,7 +10,7 @@ from pymatgen.core.structure import Structure
 from pymatgen.core.surface import Slab as PymatgenSlab
 
 import surface_pd
-from surface_pd import analysis, core, error, plot, util
+from surface_pd import analysis, core, error, plot, thermodynamics, util
 from surface_pd.core.enumeration_slab import EnumerationSlab
 from surface_pd.core.post_check import PostCheck
 from surface_pd.plot import pd_data, surface_energy
@@ -22,6 +22,11 @@ PUBLIC_CLASSES = (
     plot.PdData,
     plot.ReferenceEnergies,
     plot.SurfaceEnergy,
+    thermodynamics.ThermodynamicState,
+    thermodynamics.ConstantChemicalPotential,
+    thermodynamics.DirectChemicalPotential,
+    thermodynamics.IntercalationChemicalPotential,
+    thermodynamics.FixedPressureOxygenChemicalPotential,
 )
 
 
@@ -65,6 +70,14 @@ def test_subpackage_exports_define_the_supported_api():
     """Only domain-facing classes and raised errors are public exports."""
     assert core.__all__ == ["EnumerationSlab", "EnumWithComposition"]
     assert plot.__all__ == ["PdData", "ReferenceEnergies", "SurfaceEnergy"]
+    assert thermodynamics.__all__ == [
+        "ChemicalPotentialModel",
+        "ConstantChemicalPotential",
+        "DirectChemicalPotential",
+        "FixedPressureOxygenChemicalPotential",
+        "IntercalationChemicalPotential",
+        "ThermodynamicState",
+    ]
     assert analysis.__all__ == []
     assert util.__all__ == []
     assert error.__all__ == [

@@ -21,11 +21,14 @@ error
 plot
     Plotting modules to manage DFT results and construct surface phase
     diagrams.
+thermodynamics
+    Named thermodynamic states and chemical-potential models.
 util
     Utility functions for various operations.
 
 The supported domain APIs are available from :mod:`surface_pd.core`,
-:mod:`surface_pd.plot`, and :mod:`surface_pd.error`. See the documentation at
+:mod:`surface_pd.plot`, :mod:`surface_pd.thermodynamics`, and
+:mod:`surface_pd.error`. See the documentation at
 https://surface-pd.readthedocs.io for complete examples.
 
 Authors

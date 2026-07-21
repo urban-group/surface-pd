@@ -7,6 +7,7 @@ Modules
     core
     error
     plot
+    thermodynamics
 
 .. toctree::
     :hidden:
