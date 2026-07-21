@@ -302,3 +302,62 @@ views cannot be chained and cyclic alignment graphs cannot be constructed.
 
 .. autoclass:: surface_pd.thermodynamics.AlignedPhaseDataset
     :members:
+
+Two-dimensional numerical diagrams
+===================================
+
+``DiagramAxis`` defines one named state variable independently of its display
+label and unit. Coordinates are finite, one-dimensional, strictly increasing,
+and contain at least two points. Reversing an axis is a rendering operation and
+does not change the thermodynamic state.
+
+.. autoclass:: surface_pd.thermodynamics.DiagramAxis
+    :members:
+
+``PhaseDiagramSpecification`` combines distinct x and y axes with finite
+scalar fixed conditions. Together, those inputs must match the state variables
+required by the ``GrandPotentialModel`` exactly. Missing variables and unused
+conditions are rejected before any phase energy is evaluated.
+
+The state mesh uses conventional plotting orientation equivalent to
+``numpy.meshgrid(x, y, indexing="xy")``. Every numerical diagram array
+therefore has mesh shape
+
+.. math::
+
+    (N_y, N_x),
+
+where x varies along the last dimension and y varies along the first. This
+shape is retained for voltage/temperature, voltage/direct-chemical-potential,
+temperature/direct-chemical-potential, and future state-variable pairs.
+
+One specification can compare multiple ordinary or aligned datasets in the
+declared order. Dataset IDs must be unique. An aligned target is accepted only
+when its ordinary root dataset is also supplied, ensuring that every compared
+energy uses the declared root convention.
+
+.. autoclass:: surface_pd.thermodynamics.PhaseDiagramSpecification
+    :members:
+
+``PhaseDiagramResult`` retains the complete surface-grand-potential tensor
+with shape ``(number_of_phases, N_y, N_x)`` and every underlying
+``GrandPotentialResult``. Stability is always determined from the intensive
+surface grand potential in eV per square angstrom.
+
+At every mesh point, phase :math:`s` is co-stable when
+
+.. math::
+
+    \left|\gamma_s - \min_j\gamma_j\right|
+    \le 10^{-10}\ \mathrm{eV/angstrom^2}.
+
+The relative tolerance is zero. This threshold represents floating-point
+equality, not uncertainty in the calculated energies. ``stable_phase_mask``
+preserves every co-stable phase. ``representative_phase_indices`` chooses the
+first stable phase in declared input order solely for deterministic
+single-color rendering; it does not replace or alter the tie mask.
+
+The numerical classes do not import Matplotlib. Rendering is a separate layer.
+
+.. autoclass:: surface_pd.thermodynamics.PhaseDiagramResult
+    :members:

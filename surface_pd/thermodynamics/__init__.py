@@ -10,6 +10,11 @@ from .chemical_potential import (
 )
 from .grand_potential import GrandPotentialModel, GrandPotentialResult
 from .phase_data import Phase, PhaseDataset, ReferencePhase
+from .phase_diagram import (
+    DiagramAxis,
+    PhaseDiagramResult,
+    PhaseDiagramSpecification,
+)
 from .state import ThermodynamicState
 
 __all__ = [
@@ -20,10 +25,13 @@ __all__ = [
     "FixedPressureOxygenChemicalPotential",
     "IntercalationChemicalPotential",
     "DatasetAlignment",
+    "DiagramAxis",
     "GrandPotentialModel",
     "GrandPotentialResult",
     "Phase",
     "PhaseDataset",
+    "PhaseDiagramResult",
+    "PhaseDiagramSpecification",
     "ReferencePhase",
     "ThermodynamicState",
 ]
