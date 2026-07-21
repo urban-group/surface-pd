@@ -2,6 +2,7 @@
 
 import json
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -131,6 +132,24 @@ def test_repository_has_no_custom_readthedocs_deployment_trigger():
     assert "READTHEDOCS_TOKEN" not in workflow_text
     assert "api/v2/webhook" not in workflow_text
     assert "api/v3/projects" not in workflow_text
+
+
+def test_repository_does_not_track_os_generated_metadata():
+    """Git should ignore and never track macOS metadata files."""
+    tracked_files = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.split("\0")
+    tracked_ds_store = [
+        path for path in tracked_files if Path(path).name == ".DS_Store"
+    ]
+    ignore_rules = (PROJECT_ROOT / ".gitignore").read_text().splitlines()
+
+    assert ".DS_Store" in ignore_rules
+    assert tracked_ds_store == []
 
 
 def test_documented_installation_commands_match_metadata():
