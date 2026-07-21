@@ -7,7 +7,14 @@ and temperature.
 """
 
 from .pd_data import PdData
+from .phase_diagram import CompositionColoring, plot_phase_diagram
 from .reference_energies import ReferenceEnergies
 from .surface_energy import SurfaceEnergy
 
-__all__ = ["PdData", "ReferenceEnergies", "SurfaceEnergy"]
+__all__ = [
+    "CompositionColoring",
+    "PdData",
+    "ReferenceEnergies",
+    "SurfaceEnergy",
+    "plot_phase_diagram",
+]

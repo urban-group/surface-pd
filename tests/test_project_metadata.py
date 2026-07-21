@@ -23,8 +23,8 @@ USER_DOCUMENTATION = (
 )
 
 
-def _documented_autoclass_targets():
-    """Return every fully qualified class target in the API reference."""
+def _documented_autodoc_targets():
+    """Return every fully qualified class or function API target."""
     targets = set()
     for filename in (
         "core.rst",
@@ -33,7 +33,13 @@ def _documented_autoclass_targets():
         "error.rst",
     ):
         text = (PROJECT_ROOT / "docs" / "source" / filename).read_text()
-        targets.update(re.findall(r"^\.\. autoclass:: (\S+)$", text, re.M))
+        targets.update(
+            re.findall(
+                r"^\.\. auto(?:class|function):: (\S+)$",
+                text,
+                re.M,
+            )
+        )
     return targets
 
 
@@ -331,7 +337,7 @@ def test_release_policy_and_sphinx_use_authoritative_version():
 
 
 def test_sphinx_documents_exact_canonical_public_api():
-    """Autodoc should cover supported classes through installed paths."""
+    """Autodoc should cover the API through installed package paths."""
     from surface_pd import core, error, plot, thermodynamics
 
     expected = {
@@ -344,7 +350,7 @@ def test_sphinx_documents_exact_canonical_public_api():
         *(f"surface_pd.error.{name}" for name in error.__all__),
     }
 
-    assert _documented_autoclass_targets() == expected
+    assert _documented_autodoc_targets() == expected
 
 
 def test_sphinx_imports_installed_package_without_dependency_mocks():

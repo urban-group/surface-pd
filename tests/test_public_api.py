@@ -22,6 +22,7 @@ PUBLIC_CLASSES = (
     plot.PdData,
     plot.ReferenceEnergies,
     plot.SurfaceEnergy,
+    plot.CompositionColoring,
     thermodynamics.ThermodynamicState,
     thermodynamics.ConstantChemicalPotential,
     thermodynamics.DirectChemicalPotential,
@@ -79,7 +80,13 @@ def test_package_root_remains_lightweight():
 def test_subpackage_exports_define_the_supported_api():
     """Only domain-facing classes and raised errors are public exports."""
     assert core.__all__ == ["EnumerationSlab", "EnumWithComposition"]
-    assert plot.__all__ == ["PdData", "ReferenceEnergies", "SurfaceEnergy"]
+    assert plot.__all__ == [
+        "CompositionColoring",
+        "PdData",
+        "ReferenceEnergies",
+        "SurfaceEnergy",
+        "plot_phase_diagram",
+    ]
     assert thermodynamics.__all__ == [
         "AlignedPhaseDataset",
         "ChemicalPotentialModel",
