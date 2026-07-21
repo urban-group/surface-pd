@@ -1,0 +1,84 @@
+{
+  "provenance": {
+    "source": "Validated legacy surface-pd Li-Ni-O implementation",
+    "calculation_method": "SCAN+rVV10+U; U_Ni=? eV",
+    "recorded_on": "2026-07-21",
+    "energy_unit": "eV",
+    "area_unit": "angstrom^2",
+    "surface_energy_unit": "eV/angstrom^2"
+  },
+  "grid": {
+    "voltage_v": [0.0, 2.5, 5.0],
+    "temperature_k": [300.0, 900.0, 1500.0]
+  },
+  "references": {
+    "li_ev_per_atom": -2.33333,
+    "o2_raw_ev_per_molecule": -12.00701,
+    "o2_correction_ev_per_molecule": 0.0,
+    "bulk_lino2_ev_per_formula_unit": -36.8133525
+  },
+  "chemical_potentials": {
+    "li_ev_per_atom": [-2.33333, -4.83333, -7.33333],
+    "o_ev_per_atom": [
+      -6.277434475889935,
+      -6.974466732654416,
+      -7.737346845304067
+    ]
+  },
+  "representative_phase": {
+    "phase_id": "full-O-full-Li-symmetrized-M-1",
+    "composition": {"Li": 16, "Ni": 12, "O": 32},
+    "dft_energy_ev": -507.50507,
+    "lattice": {"a": 5.661, "b": 5.802, "gamma_degrees": 59.156},
+    "surface_multiplicity": 2,
+    "surface_energy_ev_per_angstrom2": [
+      [-0.10978911195869856, 0.06751761993596646, 0.24482435183063148],
+      [-0.010918302781040194, 0.16638842911362484, 0.34369516100828984],
+      [0.09729272090003505, 0.27459945279470005, 0.4519061846893651]
+    ]
+  },
+  "lno001_alignment": {
+    "reference_anchor": {
+      "phase_id": "Li8Ni12O24_3-phase-25",
+      "composition": {"Li": 8, "Ni": 12, "O": 24},
+      "dft_energy_ev": -415.07716,
+      "surface_area_angstrom2": 28.199718908419207
+    },
+    "target_anchor": {
+      "phase_id": "full-O-full-Li",
+      "composition": {"Li": 12, "Ni": 16, "O": 32},
+      "dft_energy_ev": -562.40779,
+      "surface_area_angstrom2": 28.125665845783782
+    },
+    "surface_multiplicity": 2,
+    "bulk_unit_count": 4,
+    "generalized_total_offset_ev": 0.07721999999998275,
+    "legacy_shift_ev_per_angstrom2": 0.0013691625836902974,
+    "generalized_shift_ev_per_target_angstrom2": 0.0013727675003925022,
+    "maximum_grid_difference_ev_per_angstrom2": 3.6049167048135544e-06
+  },
+  "stable_phase_ids": {
+    "lno001_charge": [
+      [
+        "li:Li16Ni12O28-phase-11",
+        "li:Li16Ni12O28-phase-11",
+        "ni:layered_phase_50_QW"
+      ],
+      [
+        "li:16_POSCAR_bottom_M_1",
+        "li:24_POSCAR_top",
+        "ni:layered_phase_50_QW"
+      ],
+      [
+        "li:21_POSCAR_bottom",
+        "li:24_POSCAR_top",
+        "ni:layered_phase_50_QW"
+      ]
+    ],
+    "lno104_charge": [
+      ["lno104:Li18Ni18O36_1", "lno104:Li18Ni18O36_1", "lno104:Li10Ni18O34_1"],
+      ["lno104:Li18Ni18O36_1", "lno104:Li18Ni18O36_1", "lno104:Li10Ni18O30_0"],
+      ["lno104:Li18Ni18O36_1", "lno104:Li18Ni18O36_1", "lno104:Li10Ni18O28_0"]
+    ]
+  }
+}
