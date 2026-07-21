@@ -1,7 +1,6 @@
 """Tests for self-contained phase-diagram input files."""
 
 from io import StringIO
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -22,7 +21,6 @@ VALID_INPUT = """\
 structure Li Ni O E a b gamma
 phase-1 1 1 2 -40.0 2.0 3.0 90.0
 """
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_phase_diagram_loader_returns_data_and_references(tmp_path):
@@ -146,20 +144,3 @@ def test_identical_reference_sets_are_compatible():
     references = ReferenceEnergies("method", -1.0, -2.0, 0.0, -3.0)
 
     _require_matching_reference_energies(references, references)
-
-
-def test_all_committed_phase_examples_are_self_contained():
-    """Every maintained example should carry explicit, auditable references."""
-    example_paths = sorted(
-        path
-        for path in (
-            PROJECT_ROOT / "examples" / "plotting-examples"
-        ).glob("**/*.dat")
-        if ".ipynb_checkpoints" not in path.parts
-    )
-
-    assert len(example_paths) == 12
-    for path in example_paths:
-        dataframe, references = _read_phase_diagram_file(path)
-        assert not dataframe.empty
-        assert "U_Ni=? eV" in references.method

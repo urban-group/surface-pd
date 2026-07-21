@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "calculation_method": "PBE+U; U_Ni=? eV",
+  "components": [
+    "Li",
+    "Ni",
+    "O"
+  ],
+  "independent_chemical_potentials": {
+    "Li": {
+      "model": "intercalation_voltage",
+      "reference_energy_ev_per_component": -1.89965,
+      "electrons_per_component": 1,
+      "voltage_reference": "Li/Li+"
+    },
+    "O": {
+      "model": "fixed_pressure_oxygen",
+      "raw_o2_energy_ev_per_molecule": -9.86018,
+      "correction_ev_per_molecule": 1.36
+    }
+  },
+  "reference_phases": [
+    {
+      "reference_id": "bulk-LiNiO2",
+      "composition": {
+        "Li": 1,
+        "Ni": 1,
+        "O": 2
+      },
+      "energy_ev_per_formula_unit": -19.92283375
+    }
+  ],
+  "diagram": {
+    "x_axis": {
+      "state_variable": "voltage",
+      "coordinates": {
+        "kind": "linear",
+        "start": 0.0,
+        "stop": 5.0,
+        "number": 201
+      },
+      "label": "Potential vs. Li/Li+",
+      "unit": "V"
+    },
+    "y_axis": {
+      "state_variable": "temperature",
+      "coordinates": {
+        "kind": "linear",
+        "start": 1.0,
+        "stop": 1500.0,
+        "number": 201
+      },
+      "label": "Temperature",
+      "unit": "K"
+    },
+    "fixed_conditions": {}
+  },
+  "datasets": [
+    {
+      "dataset_id": "li",
+      "path": "li-terminated.dat",
+      "columns": {
+        "phase_id": "phase_id",
+        "composition": {
+          "Li": "Li",
+          "Ni": "Ni",
+          "O": "O"
+        },
+        "dft_energy_ev": "dft_energy_ev",
+        "surface_area_angstrom2": "surface_area_angstrom2",
+        "surface_multiplicity": {
+          "constant": 2
+        }
+      }
+    },
+    {
+      "dataset_id": "ni",
+      "path": "ni-terminated.dat",
+      "columns": {
+        "phase_id": "phase_id",
+        "composition": {
+          "Li": "Li",
+          "Ni": "Ni",
+          "O": "O"
+        },
+        "dft_energy_ev": "dft_energy_ev",
+        "surface_area_angstrom2": "surface_area_angstrom2",
+        "surface_multiplicity": {
+          "constant": 2
+        }
+      }
+    }
+  ],
+  "alignments": [
+    {
+      "root_dataset_id": "li",
+      "target_dataset_id": "ni",
+      "reference_anchor_phase_id": "Li8Ni12O24_3-phase-25",
+      "target_anchor_phase_id": "full-O-full-Li",
+      "bulk_reference_id": "bulk-LiNiO2"
+    }
+  ],
+  "rendering": {
+    "coloring": {
+      "mode": "phase_identity"
+    },
+    "colormap": "tab20",
+    "invert_x_axis": false,
+    "invert_y_axis": false
+  }
+}

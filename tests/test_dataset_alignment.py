@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from surface_pd.plot._phase_data_io import _read_phase_diagram_file
+from surface_pd.configuration import PhaseDiagramConfiguration
 from surface_pd.thermodynamics import (
     AlignedPhaseDataset,
     ConstantChemicalPotential,
@@ -18,9 +18,6 @@ from surface_pd.thermodynamics import (
 )
 
 _METHOD = "test DFT method"
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-
 def _phase(phase_id, composition, energy, area=2.0, multiplicity=2):
     """Return one concise phase for alignment tests."""
     return Phase(phase_id, composition, energy, area, multiplicity)
@@ -260,59 +257,17 @@ def test_alignment_rejects_chaining_an_aligned_view():
         DatasetAlignment(reference, aligned, "anchor", "anchor", _bulk())
 
 
-def test_committed_lno001_anchors_reproduce_legacy_shift():
-    """General alignment should reproduce the maintained LNO-001 result."""
-    directory = _PROJECT_ROOT / "examples" / "plotting-examples" / "LNO-001"
-    li_table, references = _read_phase_diagram_file(
-        directory / "LNO-001-Li-SCAN-rVV10-U-spd-charge.dat"
+def test_migrated_lno001_configuration_preserves_explicit_alignment():
+    """The maintained LNO-001 input should retain reviewed provenance."""
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples/plotting-examples/lno-001-scan/charge.json"
     )
-    ni_table, ni_references = _read_phase_diagram_file(
-        directory / "LNO-001-Ni-SCAN-rVV10-U-spd-charge.dat"
-    )
-    assert references == ni_references
-    li_row = li_table.loc[
-        li_table["structure"] == "Li8Ni12O24_3-phase-25"
-    ].iloc[0]
-    ni_row = ni_table.loc[
-        ni_table["structure"] == "full-O-full-Li"
-    ].iloc[0]
+    _, aligned = PhaseDiagramConfiguration.read_json(path).load_datasets()
 
-    def phase_from_row(phase_id, row):
-        area = np.sin(np.deg2rad(row["gamma"])) * row["a"] * row["b"]
-        return Phase(
-            phase_id,
-            {name: int(row[name]) for name in ("Li", "Ni", "O")},
-            row["E"],
-            area,
-            2,
-        )
-
-    li_dataset = PhaseDataset(
-        "Li-terminated",
-        ("Li", "Ni", "O"),
-        (phase_from_row("anchor", li_row),),
-        references.method,
+    assert aligned.alignment.bulk_unit_count == 4
+    assert aligned.alignment.energy_offset_ev == pytest.approx(0.07722)
+    assert aligned.alignment.reference_anchor_id == (
+        "li:Li8Ni12O24_3-phase-25"
     )
-    ni_dataset = PhaseDataset(
-        "Ni-terminated",
-        ("Li", "Ni", "O"),
-        (phase_from_row("anchor", ni_row),),
-        references.method,
-    )
-    bulk = ReferencePhase(
-        "bulk-LiNiO2",
-        {"Li": 1, "Ni": 1, "O": 2},
-        references.bulk_litmo2_ev_per_formula_unit,
-        references.method,
-    )
-
-    alignment = DatasetAlignment(
-        li_dataset, ni_dataset, "anchor", "anchor", bulk
-    )
-    legacy_density_shift = alignment.energy_offset_ev / (
-        li_dataset.get_phase("anchor").surface_multiplicity
-        * li_dataset.get_phase("anchor").surface_area_angstrom2
-    )
-
-    assert alignment.bulk_unit_count == 4
-    assert legacy_density_shift == pytest.approx(0.0013691625836902974)
+    assert aligned.alignment.target_anchor_id == "ni:full-O-full-Li"

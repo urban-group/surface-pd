@@ -15,9 +15,11 @@ examples/
 │       ├── electrode/                # Electrode structures (Li, Li2O, LCO, LNO)
 │       ├── metal/                    # Semiconductor structures (GaAs)
 │       └── other/                    # Other structures (NaTiS2)
-└── plotting-examples/                # DFT data for phase diagram construction
-    ├── *.dat                         # Energy data files
-    └── LNO-001/, LNO-104/            # Specific system data
+└── plotting-examples/                # Generalized phase-diagram inputs
+    ├── lno-001-pbe/                  # PBE+U charge configuration
+    ├── lno-001-scan/                 # SCAN charge and discharge examples
+    ├── lno-104-pbe/                  # PBE+U charge configuration
+    └── lno-104-scan/                 # SCAN charge and discharge examples
 ```
 
 ## Quick Start
@@ -44,15 +46,15 @@ The `surface-pd-plot` command evaluates one versioned generalized configuration:
 **Example:**
 
 ```bash
-surface-pd-plot CONFIG.json --output diagram.pdf
+surface-pd-plot \
+    examples/plotting-examples/lno-001-scan/charge.json \
+    --output lno-001-charge.pdf
 ```
 
-The existing files under `plotting-examples/` use the former Li/O-specific
-format. They are retained temporarily as numerical regression inputs and are
-not accepted directly by the generalized command. Issue 42 tracks reproduction
-of their validated results, migration to version-1 JSON plus explicitly mapped
-tables, and removal of the legacy files and implementation before the initial
-release.
+The plotting examples use version-1 JSON and explicitly mapped phase tables.
+Distinct PBE+U and SCAN+rVV10+U calculations are retained. The discharge
+examples contain only accessible candidate phases and preserve their original
+charge-state DFT energies; they do not use zero-energy exclusion sentinels.
 
 ## Getting Help
 

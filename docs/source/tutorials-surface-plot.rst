@@ -65,19 +65,51 @@ Rendering configuration
 x- or y-axis inversion. Axis inversion changes presentation only; it does not
 change the thermodynamic state or stable-phase calculation.
 
-Legacy migration
-================
+Battery examples and legacy migration
+=====================================
 
 The older plotting command accepted one or two Li/O-specific ``.dat`` files,
 inferred scientific meanings from column names, reconstructed areas from
 lattice parameters, and read reference energies from leading comments. Those
 arguments and inference rules are not part of the generalized command.
 
-The old data and implementation remain temporarily for numerical regression in
-issue 42. They are not a second supported command-line format and will be
-removed before the initial release. Issue 42 will provide the maintained
-Li--transition-metal--O configuration and document migration of the committed
-legacy datasets after reproducing their validated results.
+The maintained PBE+U and SCAN+rVV10+U inputs have been migrated under
+``examples/plotting-examples``. Each directory contains version-1 JSON and
+tables with explicit surface areas and multiplicities. For example:
+
+.. code-block:: bash
+
+    surface-pd-plot \
+        examples/plotting-examples/lno-001-scan/charge.json \
+        --output lno-001-charge.pdf
+
+The chemistry-specific implementation remains temporarily only for frozen
+numerical regression and will be removed before the initial release. It is not
+a second supported input format.
+
+Irreversible oxygen loss during charge is a restriction on which phases remain
+accessible during subsequent discharge. It does not change any phase's DFT
+energy. The migrated discharge tables therefore contain a filtered subset of
+the charge candidates with their original energies.
+
+The accessibility rule is system-specific user policy. One transparent choice
+is to normalize oxygen inventory to an explicitly selected invariant host
+component. If Ni is invariant, a user might filter records before writing the
+discharge table as follows:
+
+.. code-block:: python
+
+    retained_oxygen_per_host = 1.75
+    accessible = [
+        phase
+        for phase in charge_phases
+        if phase["O"] / phase["Ni"] <= retained_oxygen_per_host
+    ]
+
+The threshold must come from the scientific model of the degradation history;
+the package does not choose it. A zero DFT energy is an ordinary numeric input,
+not an exclusion marker. The discharge configuration uses the ordinary
+evaluator, and optional voltage-axis inversion changes presentation only.
 
 See also
 ========
