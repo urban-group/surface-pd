@@ -68,7 +68,8 @@ def _configuration_data():
             {
                 "dataset_id": "surface",
                 "path": "phases.dat",
-                "columns": {
+                "number_of_surfaces": 2,
+                "column_overrides": {
                     "phase_id": "name",
                     "composition": {
                         "Li": "nLi",
@@ -77,8 +78,7 @@ def _configuration_data():
                         "C": "nC",
                     },
                     "dft_energy_ev": "energy",
-                    "surface_area_angstrom2": {"constant": 10.0},
-                    "surface_multiplicity": {"constant": 2},
+                    "surface_area_angstrom2": "area",
                 },
             }
         ],
@@ -96,9 +96,9 @@ def _write_inputs(tmp_path, data=None):
     """Write one configuration and compatible phase table."""
     data = data or _configuration_data()
     (tmp_path / "phases.dat").write_text(
-        "name nLi nO nX nC energy note\n"
-        "alpha 1 2 1 0 -20 ignored\n"
-        "beta 0 1 2 1 -15 ignored\n"
+        "name nLi nO nX nC energy area note\n"
+        "alpha 1 2 1 0 -20 10 ignored\n"
+        "beta 0 1 2 1 -15 10 ignored\n"
     )
     path = tmp_path / "config.json"
     path.write_text(json.dumps(data))
@@ -289,7 +289,8 @@ def test_cli_reports_table_context_without_a_traceback(tmp_path):
     """Expected input errors should remain concise command-line diagnostics."""
     path = _write_inputs(tmp_path)
     (tmp_path / "phases.dat").write_text(
-        "name nLi nO nX nC energy\nalpha 1 invalid 1 0 -20\n"
+        "name nLi nO nX nC energy area\n"
+        "alpha 1 invalid 1 0 -20 10\n"
     )
     output = tmp_path / "must-not-exist.png"
 
@@ -339,16 +340,25 @@ def test_cli_evaluates_configured_alignment(tmp_path):
     ]
     data["diagram"]["x_axis"]["state_variable"] = "mu_A"
     data["diagram"]["y_axis"]["state_variable"] = "mu_B"
-    columns = {
+    column_overrides = {
         "phase_id": "name",
         "composition": {"A": "nA", "B": "nB", "C": "nC"},
         "dft_energy_ev": "energy",
-        "surface_area_angstrom2": {"constant": 10.0},
-        "surface_multiplicity": {"constant": 2},
+        "surface_area_angstrom2": "area",
     }
     data["datasets"] = [
-        {"dataset_id": "root", "path": "root.dat", "columns": columns},
-        {"dataset_id": "target", "path": "target.dat", "columns": columns},
+        {
+            "dataset_id": "root",
+            "path": "root.dat",
+            "number_of_surfaces": 2,
+            "column_overrides": column_overrides,
+        },
+        {
+            "dataset_id": "target",
+            "path": "target.dat",
+            "number_of_surfaces": 2,
+            "column_overrides": column_overrides,
+        },
     ]
     data["alignments"] = [
         {
@@ -360,10 +370,10 @@ def test_cli_evaluates_configured_alignment(tmp_path):
         }
     ]
     (tmp_path / "root.dat").write_text(
-        "name nA nB nC energy\nanchor 1 1 1 10\n"
+        "name nA nB nC energy area\nanchor 1 1 1 10 10\n"
     )
     (tmp_path / "target.dat").write_text(
-        "name nA nB nC energy\nanchor 1 1 2 30\n"
+        "name nA nB nC energy area\nanchor 1 1 2 30 10\n"
     )
     path = tmp_path / "aligned.json"
     path.write_text(json.dumps(data))

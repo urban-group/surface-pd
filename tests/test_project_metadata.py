@@ -60,6 +60,9 @@ def test_dev_extra_declares_configured_tools():
     dev_dependencies = metadata["project"]["optional-dependencies"]["dev"]
 
     assert {
+        "ipykernel",
+        "nbclient",
+        "nbformat",
         "pytest",
         "pytest-cov",
         "ruff",

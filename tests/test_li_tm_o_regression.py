@@ -98,7 +98,7 @@ def test_generalized_surface_energy_matches_representative_legacy_phase(
         frozen_phase["composition"],
         frozen_phase["dft_energy_ev"],
         area,
-        frozen_phase["surface_multiplicity"],
+        frozen_phase["number_of_surfaces"],
     )
     dataset = PhaseDataset(
         "representative",
@@ -134,7 +134,7 @@ def test_alignment_difference_is_bounded_and_scientifically_explicit(
     _, bulk = _model(regression)
     frozen = regression["lno001_alignment"]
     method = regression["provenance"]["calculation_method"]
-    multiplicity = frozen["surface_multiplicity"]
+    number_of_surfaces = frozen["number_of_surfaces"]
 
     def dataset(dataset_id, definition):
         phase = Phase(
@@ -142,7 +142,7 @@ def test_alignment_difference_is_bounded_and_scientifically_explicit(
             definition["composition"],
             definition["dft_energy_ev"],
             definition["surface_area_angstrom2"],
-            multiplicity,
+            number_of_surfaces,
         )
         return PhaseDataset(
             dataset_id, ("Li", "Ni", "O"), (phase,), method
@@ -158,7 +158,7 @@ def test_alignment_difference_is_bounded_and_scientifically_explicit(
         bulk,
     )
     generalized_density_shift = alignment.energy_offset_ev / (
-        multiplicity
+        number_of_surfaces
         * frozen["target_anchor"]["surface_area_angstrom2"]
     )
 

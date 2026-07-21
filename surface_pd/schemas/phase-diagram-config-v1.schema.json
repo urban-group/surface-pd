@@ -200,41 +200,9 @@
         }
       }
     },
-    "constantSource": {
+    "columnOverrides": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["constant"],
-      "properties": {"constant": {"$ref": "#/$defs/finiteNumber"}}
-    },
-    "columnSource": {
-      "oneOf": [
-        {"$ref": "#/$defs/nonemptyString"},
-        {"$ref": "#/$defs/constantSource"}
-      ]
-    },
-    "positiveIntegerSource": {
-      "oneOf": [
-        {"$ref": "#/$defs/nonemptyString"},
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["constant"],
-          "properties": {
-            "constant": {"$ref": "#/$defs/positiveInteger"}
-          }
-        }
-      ]
-    },
-    "columns": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "phase_id",
-        "composition",
-        "dft_energy_ev",
-        "surface_area_angstrom2",
-        "surface_multiplicity"
-      ],
       "properties": {
         "phase_id": {"$ref": "#/$defs/nonemptyString"},
         "composition": {
@@ -243,20 +211,18 @@
           "additionalProperties": {"$ref": "#/$defs/nonemptyString"}
         },
         "dft_energy_ev": {"$ref": "#/$defs/nonemptyString"},
-        "surface_area_angstrom2": {"$ref": "#/$defs/columnSource"},
-        "surface_multiplicity": {
-          "$ref": "#/$defs/positiveIntegerSource"
-        }
+        "surface_area_angstrom2": {"$ref": "#/$defs/nonemptyString"}
       }
     },
     "dataset": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dataset_id", "path", "columns"],
+      "required": ["dataset_id", "path", "number_of_surfaces"],
       "properties": {
         "dataset_id": {"$ref": "#/$defs/identifierText"},
         "path": {"$ref": "#/$defs/nonemptyString"},
-        "columns": {"$ref": "#/$defs/columns"}
+        "number_of_surfaces": {"$ref": "#/$defs/positiveInteger"},
+        "column_overrides": {"$ref": "#/$defs/columnOverrides"}
       }
     },
     "alignment": {

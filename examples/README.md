@@ -8,6 +8,7 @@ for the installed surface-pd commands.
 ```
 examples/
 ├── README.md                         # This file
+├── phase-diagram-python-api.ipynb    # Reviewed Python API tutorial
 ├── enumeration-examples/             # Input files and structures for enumeration
 │   ├── input/                        # JSON configuration files
 │   └── structure/                    # VASP structure files
@@ -24,7 +25,13 @@ examples/
 
 ## Quick Start
 
-See the docs for further details.
+The maintained
+[phase-diagram Python API tutorial](phase-diagram-python-api.ipynb) evaluates
+the SCAN+rVV10+U LiNiO2 (001) example step by step. It is intentionally more
+explicit than the command-line workflow so that the model, datasets,
+thermodynamic result, and rendering API can be inspected independently.
+
+See the docs for reference details.
 
 ### 1. Surface Enumeration
 

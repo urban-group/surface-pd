@@ -75,7 +75,8 @@ arguments and inference rules are not part of the generalized command.
 
 The maintained PBE+U and SCAN+rVV10+U inputs have been migrated under
 ``examples/plotting-examples``. Each directory contains version-1 JSON and
-tables with explicit surface areas and multiplicities. For example:
+tables with explicit surface areas and numbers of represented surfaces. For
+example:
 
 .. code-block:: bash
 

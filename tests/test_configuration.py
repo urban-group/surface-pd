@@ -73,7 +73,8 @@ def _configuration_data():
             {
                 "dataset_id": "dataset",
                 "path": "phases.dat",
-                "columns": {
+                "number_of_surfaces": 2,
+                "column_overrides": {
                     "phase_id": "structure",
                     "composition": {
                         "Li": "n_Li",
@@ -83,7 +84,6 @@ def _configuration_data():
                     },
                     "dft_energy_ev": "energy",
                     "surface_area_angstrom2": "area",
-                    "surface_multiplicity": {"constant": 2},
                 },
             }
         ],
@@ -178,9 +178,9 @@ def test_configuration_json_round_trip_is_canonical_and_owned(tmp_path):
             "linear coordinates.*unknown fields",
         ),
         (
-            ("datasets", 0, "columns", "unknown"),
+            ("datasets", 0, "column_overrides", "unknown"),
             "column",
-            "columns.*unknown fields",
+            "column_overrides.*unknown fields",
         ),
         (
             ("rendering", "coloring", "unknown"),
@@ -222,6 +222,10 @@ def test_configuration_rejects_unknown_fields_recursively(
                 number=1
             ),
             "number",
+        ),
+        (
+            lambda data: data["datasets"][0].update(number_of_surfaces=0),
+            "number_of_surfaces",
         ),
     ],
 )

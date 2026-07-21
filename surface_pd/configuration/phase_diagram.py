@@ -183,18 +183,59 @@ def _parse_axis(value: object, context: str) -> DiagramAxis:
     )
 
 
-def _validate_source(value: object, context: str, integer: bool) -> None:
-    """Validate a table column name or a tagged constant source."""
-    if isinstance(value, str):
-        _require_column_name(value, context)
-        return
-    mapping = _require_keys(value, {"constant"}, context)
-    if integer:
-        validate_positive_integer(mapping["constant"], f"{context} constant")
-        return
-    constant = validate_finite_real(mapping["constant"], f"{context} constant")
-    if constant <= 0:
-        raise ValueError(f"{context} constant must be positive")
+def _resolved_columns(
+    dataset: Mapping[str, Any], components: tuple[str, ...]
+) -> dict[str, Any]:
+    """Return canonical table columns with validated optional overrides."""
+    columns: dict[str, Any] = {
+        "phase_id": "phase_id",
+        "composition": {component: component for component in components},
+        "dft_energy_ev": "dft_energy_ev",
+        "surface_area_angstrom2": "surface_area_angstrom2",
+    }
+    overrides = _require_keys(
+        dataset.get("column_overrides", {}),
+        set(),
+        "column_overrides",
+        {
+            "phase_id",
+            "composition",
+            "dft_energy_ev",
+            "surface_area_angstrom2",
+        },
+    )
+    for field_name in (
+        "phase_id",
+        "dft_energy_ev",
+        "surface_area_angstrom2",
+    ):
+        if field_name in overrides:
+            columns[field_name] = _require_column_name(
+                overrides[field_name], f"{field_name} column override"
+            )
+    if "composition" in overrides:
+        composition = _require_mapping(
+            overrides["composition"], "composition column overrides"
+        )
+        unknown = sorted(set(composition) - set(components))
+        if unknown:
+            raise ValueError(
+                "composition column overrides contain unknown components: "
+                + ", ".join(unknown)
+            )
+        for component, column in composition.items():
+            columns["composition"][component] = _require_column_name(
+                column, f"composition column override {component}"
+            )
+    mapped_columns = [
+        columns["phase_id"],
+        columns["dft_energy_ev"],
+        columns["surface_area_angstrom2"],
+        *columns["composition"].values(),
+    ]
+    if len(mapped_columns) != len(set(mapped_columns)):
+        raise ValueError("resolved source columns must be unique")
+    return columns
 
 
 class PhaseDiagramConfiguration:
@@ -366,8 +407,9 @@ class PhaseDiagramConfiguration:
         for index, item in enumerate(items):
             dataset = _require_keys(
                 item,
-                {"dataset_id", "path", "columns"},
+                {"dataset_id", "path", "number_of_surfaces"},
                 f"datasets[{index}]",
+                {"column_overrides"},
             )
             dataset_id = validate_identifier(
                 dataset["dataset_id"], f"datasets[{index}].dataset_id"
@@ -376,52 +418,10 @@ class PhaseDiagramConfiguration:
                 raise ValueError("dataset_id values must be unique")
             dataset_ids.add(dataset_id)
             _require_column_name(dataset["path"], f"datasets[{index}].path")
-            columns = _require_keys(
-                dataset["columns"],
-                {
-                    "phase_id",
-                    "composition",
-                    "dft_energy_ev",
-                    "surface_area_angstrom2",
-                    "surface_multiplicity",
-                },
-                f"datasets[{index}].columns",
+            validate_positive_integer(
+                dataset["number_of_surfaces"], "number_of_surfaces"
             )
-            _require_column_name(columns["phase_id"], "phase_id column")
-            _require_column_name(columns["dft_energy_ev"], "energy column")
-            composition = _require_mapping(
-                columns["composition"], "composition columns"
-            )
-            if set(composition) != set(components):
-                raise ValueError(
-                    "composition column mapping must exactly match components"
-                )
-            for component, column in composition.items():
-                _require_column_name(column, f"composition column {component}")
-            _validate_source(
-                columns["surface_area_angstrom2"],
-                "surface_area_angstrom2 source",
-                integer=False,
-            )
-            _validate_source(
-                columns["surface_multiplicity"],
-                "surface_multiplicity source",
-                integer=True,
-            )
-            mapped_columns = [
-                columns["phase_id"],
-                columns["dft_energy_ev"],
-                *composition.values(),
-            ]
-            for source_name in (
-                "surface_area_angstrom2",
-                "surface_multiplicity",
-            ):
-                source = columns[source_name]
-                if isinstance(source, str):
-                    mapped_columns.append(source)
-            if len(mapped_columns) != len(set(mapped_columns)):
-                raise ValueError("mapped source columns must be unique")
+            _resolved_columns(dataset, components)
         return dataset_ids
 
     @staticmethod

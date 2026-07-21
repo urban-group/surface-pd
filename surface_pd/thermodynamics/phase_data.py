@@ -30,7 +30,7 @@ class Phase:
         Finite total DFT energy of the calculated cell in eV.
     surface_area_angstrom2 : float
         Positive surface-unit-cell area in square angstroms.
-    surface_multiplicity : int
+    number_of_surfaces : int
         Positive number of equivalent surfaces represented by the cell.
     """
 
@@ -38,7 +38,7 @@ class Phase:
     composition: Mapping[str, int]
     dft_energy_ev: float
     surface_area_angstrom2: float
-    surface_multiplicity: int
+    number_of_surfaces: int
 
     def __post_init__(self) -> None:
         """Validate inputs and take ownership of the composition."""
@@ -61,9 +61,9 @@ class Phase:
         object.__setattr__(self, "surface_area_angstrom2", area)
         object.__setattr__(
             self,
-            "surface_multiplicity",
+            "number_of_surfaces",
             validate_positive_integer(
-                self.surface_multiplicity, "surface_multiplicity"
+                self.number_of_surfaces, "number_of_surfaces"
             ),
         )
 

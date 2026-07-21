@@ -176,7 +176,11 @@ def test_installed_surface_plot_command_creates_an_image(
     """The installed plotting entry point should run the generalized path."""
     _, scripts_dir = installed_wheel_environment
     table = tmp_path / "phases.dat"
-    table.write_text("name nA nB energy\np0 1 1 -3\np1 2 1 -4\n")
+    table.write_text(
+        "name nA nB energy area\n"
+        "p0 1 1 -3 10\n"
+        "p1 2 1 -4 10\n"
+    )
     data = {
         "schema_version": 1,
         "calculation_method": "packaging test method",
@@ -206,12 +210,12 @@ def test_installed_surface_plot_command_creates_an_image(
             {
                 "dataset_id": "surface",
                 "path": table.name,
-                "columns": {
+                "number_of_surfaces": 2,
+                "column_overrides": {
                     "phase_id": "name",
                     "composition": {"A": "nA", "B": "nB"},
                     "dft_energy_ev": "energy",
-                    "surface_area_angstrom2": {"constant": 10.0},
-                    "surface_multiplicity": {"constant": 2},
+                    "surface_area_angstrom2": "area",
                 },
             }
         ],

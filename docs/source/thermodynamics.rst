@@ -27,10 +27,10 @@ and compares phases using the surface-normalized value
 
 .. math::
 
-    \gamma_s = \frac{\Omega_s}{m_s A_s}.
+    \gamma_s = \frac{\Omega_s}{N_{s,\mathrm{surfaces}} A_s}.
 
 ``surface_area_angstrom2`` is the area of one surface unit cell, while
-``surface_multiplicity`` records how many equivalent surfaces the calculated
+``number_of_surfaces`` records how many equivalent surfaces the calculated
 cell represents. Keeping the two quantities explicit avoids hiding the
 factor-of-two convention commonly used for symmetric slabs.
 
@@ -284,7 +284,7 @@ ordinary surface-cell and surface-area normalizations.
 
 Alignment requires identical ordered component bases and exact
 calculation-method provenance. The explicitly selected anchors must have equal
-surface multiplicities, and their surface areas must agree using a relative
+numbers of represented surfaces, and their surface areas must agree using a relative
 tolerance of 0.5% and an absolute tolerance of
 :math:`10^{-8}` square angstroms. Their composition difference must be exactly
 an integer multiple of the bulk formula unit across every component.

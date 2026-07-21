@@ -41,7 +41,7 @@ def test_migrated_configuration_loads_explicit_phase_data(
     assert configuration.components == ("Li", "Ni", "O")
     assert configuration.calculation_method.endswith("U_Ni=? eV")
     assert all(
-        phase.surface_multiplicity == 2
+        phase.number_of_surfaces == 2
         and phase.surface_area_angstrom2 > 0
         for dataset in datasets
         for phase in dataset.phases

@@ -30,7 +30,7 @@
     "composition": {"Li": 16, "Ni": 12, "O": 32},
     "dft_energy_ev": -507.50507,
     "lattice": {"a": 5.661, "b": 5.802, "gamma_degrees": 59.156},
-    "surface_multiplicity": 2,
+    "number_of_surfaces": 2,
     "surface_energy_ev_per_angstrom2": [
       [-0.10978911195869856, 0.06751761993596646, 0.24482435183063148],
       [-0.010918302781040194, 0.16638842911362484, 0.34369516100828984],
@@ -50,7 +50,7 @@
       "dft_energy_ev": -562.40779,
       "surface_area_angstrom2": 28.125665845783782
     },
-    "surface_multiplicity": 2,
+    "number_of_surfaces": 2,
     "bulk_unit_count": 4,
     "generalized_total_offset_ev": 0.07721999999998275,
     "legacy_shift_ev_per_angstrom2": 0.0013691625836902974,

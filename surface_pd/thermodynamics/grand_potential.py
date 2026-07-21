@@ -440,7 +440,8 @@ class GrandPotentialModel:
         Parameters
         ----------
         dataset : PhaseDataset or AlignedPhaseDataset
-            Absolute phase energies, compositions, areas, and multiplicities.
+            Absolute phase energies, compositions, areas, and numbers of
+            represented surfaces.
         state : ThermodynamicState
             Named scalar or array-valued thermodynamic conditions.
 
@@ -459,9 +460,11 @@ class GrandPotentialModel:
 
         .. math::
 
-            \Omega_s^\mathrm{cell} = \Omega_s/m_s,
+            \Omega_s^\mathrm{cell} =
+            \Omega_s/N_{s,\mathrm{surfaces}},
             \qquad
-            \gamma_s = \Omega_s/(m_s A_s).
+            \gamma_s =
+            \Omega_s/(N_{s,\mathrm{surfaces}} A_s).
         """
         if not isinstance(dataset, (PhaseDataset, AlignedPhaseDataset)):
             raise TypeError(
@@ -497,15 +500,15 @@ class GrandPotentialModel:
         ).reshape(phase_axis_shape)
         if isinstance(dataset, AlignedPhaseDataset):
             dft_energies = dft_energies + dataset.energy_offset_ev
-        multiplicities = np.array(
-            [phase.surface_multiplicity for phase in dataset.phases]
+        numbers_of_surfaces = np.array(
+            [phase.number_of_surfaces for phase in dataset.phases]
         ).reshape(phase_axis_shape)
         areas = np.array(
             [phase.surface_area_angstrom2 for phase in dataset.phases]
         ).reshape(phase_axis_shape)
 
         total = dft_energies - reservoir_energy
-        per_surface_cell = total / multiplicities
+        per_surface_cell = total / numbers_of_surfaces
         per_area = per_surface_cell / areas
         return GrandPotentialResult(
             dataset_id=dataset.dataset_id,

@@ -35,8 +35,8 @@
       "state_variable": "voltage",
       "coordinates": {
         "kind": "linear",
-        "start": 0.0,
-        "stop": 5.0,
+        "start": 0,
+        "stop": 5,
         "number": 201
       },
       "label": "Potential vs. Li/Li+",
@@ -46,8 +46,8 @@
       "state_variable": "temperature",
       "coordinates": {
         "kind": "linear",
-        "start": 1.0,
-        "stop": 1500.0,
+        "start": 1,
+        "stop": 1500,
         "number": 201
       },
       "label": "Temperature",
@@ -59,19 +59,7 @@
     {
       "dataset_id": "lno104",
       "path": "phases.dat",
-      "columns": {
-        "phase_id": "phase_id",
-        "composition": {
-          "Li": "Li",
-          "Ni": "Ni",
-          "O": "O"
-        },
-        "dft_energy_ev": "dft_energy_ev",
-        "surface_area_angstrom2": "surface_area_angstrom2",
-        "surface_multiplicity": {
-          "constant": 2
-        }
-      }
+      "number_of_surfaces": 2
     }
   ],
   "alignments": [],

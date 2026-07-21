@@ -24,7 +24,8 @@ Every configuration contains exactly these top-level fields:
 ``diagram``
     Two axes and finite scalar fixed conditions.
 ``datasets``
-    Separate whitespace-delimited table paths and explicit column mappings.
+    Separate whitespace-delimited tables with canonical columns and optional
+    name overrides.
 ``alignments``
     Explicit direct-to-root dataset alignments.
 ``rendering``
@@ -99,22 +100,42 @@ and comment lines are not supported. In particular, legacy leading-comment
 reference metadata is not read: the JSON file is the single source of
 thermodynamic configuration and provenance.
 
-For example, the table
+The canonical table columns are ``phase_id``, one column named for every
+declared component, ``dft_energy_ev``, and ``surface_area_angstrom2``. Extra
+columns are ignored. For example:
 
 .. code-block:: text
 
-    name  n_Li  n_Ni  n_O  energy_ev  area_a2  surfaces  note
-    p0    1     1     2    -40.0      12.5     2         pristine
-    p1    0     1     2    -36.0      12.5     2         delithiated
+    phase_id  Li  Ni  O  dft_energy_ev  surface_area_angstrom2  note
+    p0        1   1   2  -40.0          12.5                    pristine
+    p1        0   1   2  -36.0          12.5                    delithiated
 
-can be mapped with
+needs only the concise dataset definition
 
 .. code-block:: json
 
     {
       "dataset_id": "facet_001",
       "path": "tables/facet-001.dat",
-      "columns": {
+      "number_of_surfaces": 2
+    }
+
+``number_of_surfaces`` is a positive integer shared by the dataset. It is the
+number of equivalent surfaces represented by each calculated cell and is the
+explicit divisor in the surface-energy normalization. Two is appropriate for
+a symmetric slab with two equivalent surfaces; the field describes the
+normalization rather than merely asserting structural symmetry.
+
+External tables with different headings may declare only the names that
+differ from the canonical contract:
+
+.. code-block:: json
+
+    {
+      "dataset_id": "facet_001",
+      "path": "tables/external.dat",
+      "number_of_surfaces": 2,
+      "column_overrides": {
         "phase_id": "name",
         "composition": {
           "Li": "n_Li",
@@ -122,26 +143,14 @@ can be mapped with
           "O": "n_O"
         },
         "dft_energy_ev": "energy_ev",
-        "surface_area_angstrom2": "area_a2",
-        "surface_multiplicity": "surfaces"
+        "surface_area_angstrom2": "area_a2"
       }
     }
 
-The unmapped ``note`` column is ignored. It has no thermodynamic meaning.
-Area and multiplicity may instead be constants shared by every row:
-
-.. code-block:: json
-
-    {
-      "surface_area_angstrom2": {"constant": 12.5},
-      "surface_multiplicity": {"constant": 2}
-    }
-
 Counts must be nonnegative integers, total DFT energies must be finite in eV,
-areas must be positive in square angstroms, and surface multiplicities must be
-positive integers. Mapped source columns must be distinct. Phase identifiers
-must be unique within each dataset; their stable global identities are
-``dataset_id:phase_id``.
+and areas must be positive in square angstroms. Resolved source columns must
+be distinct. Phase identifiers must be unique within each dataset; their
+stable global identities are ``dataset_id:phase_id``.
 
 Configured alignment
 ====================

@@ -124,10 +124,12 @@ class DatasetAlignment:
                 "bulk reference calculation_method must match the datasets"
             )
 
-        if reference_anchor.surface_multiplicity != (
-            target_anchor.surface_multiplicity
+        if reference_anchor.number_of_surfaces != (
+            target_anchor.number_of_surfaces
         ):
-            raise ValueError("alignment anchor multiplicities must match")
+            raise ValueError(
+                "alignment anchor numbers of surfaces must match"
+            )
         if not np.isclose(
             reference_anchor.surface_area_angstrom2,
             target_anchor.surface_area_angstrom2,

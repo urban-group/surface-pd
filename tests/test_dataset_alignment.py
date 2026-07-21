@@ -18,9 +18,11 @@ from surface_pd.thermodynamics import (
 )
 
 _METHOD = "test DFT method"
-def _phase(phase_id, composition, energy, area=2.0, multiplicity=2):
+def _phase(
+    phase_id, composition, energy, area=2.0, number_of_surfaces=2
+):
     """Return one concise phase for alignment tests."""
-    return Phase(phase_id, composition, energy, area, multiplicity)
+    return Phase(phase_id, composition, energy, area, number_of_surfaces)
 
 
 def _dataset(dataset_id, phases, components=("A", "B"), method=_METHOD):
@@ -211,12 +213,15 @@ def test_alignment_rejects_missing_anchor_and_self_alignment():
                 "target",
                 (
                     _phase(
-                        "anchor", {"A": 3, "B": 2}, 30.0, multiplicity=1
+                        "anchor",
+                        {"A": 3, "B": 2},
+                        30.0,
+                        number_of_surfaces=1,
                     ),
                 ),
             ),
             _bulk(),
-            "multiplicities",
+            "numbers of surfaces",
         ),
         (
             _dataset(

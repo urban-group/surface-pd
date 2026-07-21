@@ -15,7 +15,7 @@ def _phase(**overrides):
         "composition": {"Li": 4, "Ni": 4, "O": 8},
         "dft_energy_ev": -80.0,
         "surface_area_angstrom2": 9.0,
-        "surface_multiplicity": 2,
+        "number_of_surfaces": 2,
     }
     values.update(overrides)
     return Phase(**values)
@@ -43,7 +43,7 @@ def test_phase_owns_immutable_absolute_composition():
     assert dict(phase.composition) == {"Li": 4, "Ni": 4, "O": 8}
     assert phase.dft_energy_ev == -80.0
     assert phase.surface_area_angstrom2 == 9.0
-    assert phase.surface_multiplicity == 2
+    assert phase.number_of_surfaces == 2
     with pytest.raises(TypeError):
         phase.composition["Li"] = 3
     with pytest.raises(FrozenInstanceError):
@@ -94,13 +94,13 @@ def test_phase_rejects_invalid_surface_area(area):
         _phase(surface_area_angstrom2=area)
 
 
-@pytest.mark.parametrize("multiplicity", [True, 0, -1, 1.5])
-def test_phase_rejects_invalid_surface_multiplicity(multiplicity):
-    """Surface multiplicity should be a positive integer."""
+@pytest.mark.parametrize("number_of_surfaces", [True, 0, -1, 1.5])
+def test_phase_rejects_invalid_number_of_surfaces(number_of_surfaces):
+    """The number of represented surfaces should be a positive integer."""
     with pytest.raises(
-        (TypeError, ValueError), match="surface_multiplicity"
+        (TypeError, ValueError), match="number_of_surfaces"
     ):
-        _phase(surface_multiplicity=multiplicity)
+        _phase(number_of_surfaces=number_of_surfaces)
 
 
 def test_reference_phase_owns_stoichiometry_and_provenance():

@@ -66,7 +66,7 @@ and temperature:
         {"A": 2, "B": 1},
         dft_energy_ev=-8.0,
         surface_area_angstrom2=9.0,
-        surface_multiplicity=2,
+        number_of_surfaces=2,
     )
     dataset = PhaseDataset(
         "surface",

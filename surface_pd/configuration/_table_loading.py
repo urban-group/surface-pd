@@ -1,4 +1,4 @@
-"""Strict loading of explicitly mapped version-1 phase tables."""
+"""Strict loading of canonical version-1 phase tables."""
 
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -81,16 +81,6 @@ def _read_rows(
     return header, rows
 
 
-def _source_value(
-    source: str | Mapping[str, object],
-    row: Mapping[str, str],
-) -> object:
-    """Return a mapped row value or a previously validated constant."""
-    if isinstance(source, str):
-        return row[source]
-    return source["constant"]
-
-
 def load_phase_dataset(
     definition: Mapping[str, object],
     *,
@@ -100,7 +90,21 @@ def load_phase_dataset(
 ) -> PhaseDataset:
     """Load one configured table as an immutable phase dataset."""
     dataset_id = validate_identifier(definition["dataset_id"], "dataset_id")
-    columns = definition["columns"]
+    columns = {
+        "phase_id": "phase_id",
+        "composition": {component: component for component in components},
+        "dft_energy_ev": "dft_energy_ev",
+        "surface_area_angstrom2": "surface_area_angstrom2",
+    }
+    overrides = definition.get("column_overrides", {})
+    for field_name in (
+        "phase_id",
+        "dft_energy_ev",
+        "surface_area_angstrom2",
+    ):
+        if field_name in overrides:
+            columns[field_name] = overrides[field_name]
+    columns["composition"].update(overrides.get("composition", {}))
     header, rows = _read_rows(path, dataset_id)
 
     mapped_columns = {
@@ -108,13 +112,7 @@ def load_phase_dataset(
         columns["dft_energy_ev"],
         *columns["composition"].values(),
     }
-    for source_name in (
-        "surface_area_angstrom2",
-        "surface_multiplicity",
-    ):
-        source = columns[source_name]
-        if isinstance(source, str):
-            mapped_columns.add(source)
+    mapped_columns.add(columns["surface_area_angstrom2"])
     missing = sorted(mapped_columns - set(header))
     if missing:
         raise ValueError(
@@ -145,32 +143,22 @@ def load_phase_dataset(
             f"dataset {dataset_id!r} row {line_number} column "
             f"{energy_column!r}",
         )
-        area_source = columns["surface_area_angstrom2"]
-        area_value = _source_value(area_source, row)
-        area = (
-            _finite_float(
-                area_value,
-                f"dataset {dataset_id!r} row {line_number} column "
-                f"{area_source!r}",
-            )
-            if isinstance(area_source, str)
-            else area_value
+        area_column = columns["surface_area_angstrom2"]
+        area = _finite_float(
+            row[area_column],
+            f"dataset {dataset_id!r} row {line_number} column "
+            f"{area_column!r}",
         )
-        multiplicity_source = columns["surface_multiplicity"]
-        multiplicity_value = _source_value(multiplicity_source, row)
-        multiplicity = (
-            _integer(
-                multiplicity_value,
-                f"dataset {dataset_id!r} row {line_number} column "
-                f"{multiplicity_source!r}",
-                positive=True,
-            )
-            if isinstance(multiplicity_source, str)
-            else multiplicity_value
-        )
+        number_of_surfaces = definition["number_of_surfaces"]
         try:
             phases.append(
-                Phase(phase_id, composition, energy, area, multiplicity)
+                    Phase(
+                        phase_id,
+                        composition,
+                        energy,
+                        area,
+                        number_of_surfaces,
+                    )
             )
         except (TypeError, ValueError) as error:
             raise type(error)(
