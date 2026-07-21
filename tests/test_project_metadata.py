@@ -68,13 +68,24 @@ def test_docs_requirements_match_docs_extra():
     assert docs_requirements == docs_extra
 
 
-def test_readthedocs_installs_existing_docs_requirements():
-    """Read the Docs should install the committed docs requirements file."""
+def test_readthedocs_installs_project_with_docs_dependencies():
+    """Read the Docs should install the package and its docs dependencies."""
     rtd_config = (PROJECT_ROOT / ".readthedocs.yaml").read_text()
 
-    assert "requirements: docs/requirements.txt" in rtd_config
+    assert re.search(r'^    python: "3\.14"$', rtd_config, re.M)
+    assert re.search(r"^    - method: pip$", rtd_config, re.M)
+    assert re.search(r"^      path: \.$", rtd_config, re.M)
+    assert re.search(r"^      extra_requirements:$", rtd_config, re.M)
+    assert re.search(r"^        - docs$", rtd_config, re.M)
     assert (PROJECT_ROOT / "docs" / "requirements.txt").is_file()
     assert not (PROJECT_ROOT / "requirements.txt").exists()
+
+
+def test_readthedocs_fails_on_sphinx_warnings():
+    """Hosted documentation builds should reject Sphinx warnings."""
+    rtd_config = (PROJECT_ROOT / ".readthedocs.yaml").read_text()
+
+    assert re.search(r"^  fail_on_warning: true$", rtd_config, re.M)
 
 
 def test_documented_installation_commands_match_metadata():
