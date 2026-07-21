@@ -242,3 +242,63 @@ evaluation layer.
 
 .. autoclass:: surface_pd.thermodynamics.GrandPotentialResult
     :members:
+
+Explicit dataset alignment
+==========================
+
+Slab datasets with different numbers of bulk-like layers can share the same
+surface termination but use different total-energy zeros. ``DatasetAlignment``
+places one target dataset on the energy convention of one root dataset using
+explicitly named anchor phases and exactly one bulk ``ReferencePhase``. It
+never guesses anchors from compositions or energies.
+
+The signed integer number of bulk units :math:`k` is defined by
+
+.. math::
+
+    \mathbf{n}_\mathrm{target}
+    - \mathbf{n}_\mathrm{reference}
+    = k\mathbf{n}_\mathrm{bulk}.
+
+The constant total-energy offset applied to the target dataset is
+
+.. math::
+
+    \Delta E_\mathrm{target}
+    = E_\mathrm{reference} - E_\mathrm{target}
+    + kG_\mathrm{bulk}.
+
+Consequently, the aligned anchors obey
+
+.. math::
+
+    E_\mathrm{target} + \Delta E_\mathrm{target}
+    = E_\mathrm{reference} + kG_\mathrm{bulk}.
+
+The sign of :math:`k` follows target minus reference and may be positive,
+negative, or zero. ``energy_offset_ev`` is a total cell energy in eV, not an
+energy per area. ``GrandPotentialModel`` adds this offset before applying its
+ordinary surface-cell and surface-area normalizations.
+
+Alignment requires identical ordered component bases and exact
+calculation-method provenance. The explicitly selected anchors must have equal
+surface multiplicities, and their surface areas must agree using a relative
+tolerance of 0.5% and an absolute tolerance of
+:math:`10^{-8}` square angstroms. Their composition difference must be exactly
+an integer multiple of the bulk formula unit across every component.
+
+.. autoclass:: surface_pd.thermodynamics.DatasetAlignment
+    :members:
+
+``AlignedPhaseDataset`` is a non-mutating view created by
+``DatasetAlignment.create_aligned_dataset()``. It retains the root and target
+datasets, both explicit anchor identities, the bulk reference, signed bulk-unit
+count, and energy offset through its ``alignment`` property. Source
+``Phase.dft_energy_ev`` values remain unchanged.
+
+Only direct-to-root alignment is supported initially. Both inputs to
+``DatasetAlignment`` must be ordinary ``PhaseDataset`` objects, so aligned
+views cannot be chained and cyclic alignment graphs cannot be constructed.
+
+.. autoclass:: surface_pd.thermodynamics.AlignedPhaseDataset
+    :members:

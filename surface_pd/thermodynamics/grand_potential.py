@@ -8,6 +8,7 @@ from types import MappingProxyType
 import numpy as np
 
 from ._validation import validate_identifier, validate_variable_name
+from .alignment import AlignedPhaseDataset
 from .chemical_potential import ChemicalPotentialModel
 from .phase_data import PhaseDataset, ReferencePhase
 from .state import ThermodynamicState
@@ -430,13 +431,15 @@ class GrandPotentialModel:
         return dependent_values
 
     def evaluate(
-        self, dataset: PhaseDataset, state: ThermodynamicState
+        self,
+        dataset: PhaseDataset | AlignedPhaseDataset,
+        state: ThermodynamicState,
     ) -> GrandPotentialResult:
         r"""Evaluate all phases without selecting stable phases.
 
         Parameters
         ----------
-        dataset : PhaseDataset
+        dataset : PhaseDataset or AlignedPhaseDataset
             Absolute phase energies, compositions, areas, and multiplicities.
         state : ThermodynamicState
             Named scalar or array-valued thermodynamic conditions.
@@ -460,8 +463,10 @@ class GrandPotentialModel:
             \qquad
             \gamma_s = \Omega_s/(m_s A_s).
         """
-        if not isinstance(dataset, PhaseDataset):
-            raise TypeError("dataset must be a PhaseDataset")
+        if not isinstance(dataset, (PhaseDataset, AlignedPhaseDataset)):
+            raise TypeError(
+                "dataset must be a PhaseDataset or AlignedPhaseDataset"
+            )
         if tuple(dataset.components) != tuple(self.components):
             raise ValueError("dataset component basis must match model order")
         if self.reference_phases and dataset.calculation_method != (
@@ -490,6 +495,8 @@ class GrandPotentialModel:
         dft_energies = np.array(
             [phase.dft_energy_ev for phase in dataset.phases]
         ).reshape(phase_axis_shape)
+        if isinstance(dataset, AlignedPhaseDataset):
+            dft_energies = dft_energies + dataset.energy_offset_ev
         multiplicities = np.array(
             [phase.surface_multiplicity for phase in dataset.phases]
         ).reshape(phase_axis_shape)

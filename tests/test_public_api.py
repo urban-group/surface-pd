@@ -32,6 +32,8 @@ PUBLIC_CLASSES = (
     thermodynamics.ReferencePhase,
     thermodynamics.GrandPotentialModel,
     thermodynamics.GrandPotentialResult,
+    thermodynamics.DatasetAlignment,
+    thermodynamics.AlignedPhaseDataset,
 )
 
 
@@ -76,11 +78,13 @@ def test_subpackage_exports_define_the_supported_api():
     assert core.__all__ == ["EnumerationSlab", "EnumWithComposition"]
     assert plot.__all__ == ["PdData", "ReferenceEnergies", "SurfaceEnergy"]
     assert thermodynamics.__all__ == [
+        "AlignedPhaseDataset",
         "ChemicalPotentialModel",
         "ConstantChemicalPotential",
         "DirectChemicalPotential",
         "FixedPressureOxygenChemicalPotential",
         "IntercalationChemicalPotential",
+        "DatasetAlignment",
         "GrandPotentialModel",
         "GrandPotentialResult",
         "Phase",
