@@ -14,7 +14,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONSOLE_SCRIPTS = (
     "surface-enumeration",
     "surface-pd-plot",
-    "generate-discharge-pd",
 )
 PACKAGE_FILES = (
     "surface_pd/_version.py",
@@ -22,7 +21,6 @@ PACKAGE_FILES = (
     "surface_pd/analysis/__init__.py",
     "surface_pd/analysis/slab_analysis.py",
     "surface_pd/cli/__init__.py",
-    "surface_pd/cli/discharge_pd_gene.py",
     "surface_pd/cli/surface_enumeration.py",
     "surface_pd/cli/surface_pd_plot.py",
     "surface_pd/configuration/__init__.py",
@@ -36,11 +34,7 @@ PACKAGE_FILES = (
     "surface_pd/error/__init__.py",
     "surface_pd/error/error.py",
     "surface_pd/plot/__init__.py",
-    "surface_pd/plot/_phase_data_io.py",
-    "surface_pd/plot/pd_data.py",
-    "surface_pd/plot/plot.py",
-    "surface_pd/plot/reference_energies.py",
-    "surface_pd/plot/surface_energy.py",
+    "surface_pd/plot/phase_diagram.py",
     "surface_pd/schemas/phase-diagram-config-v1.schema.json",
     "surface_pd/util/__init__.py",
     "surface_pd/util/util.py",

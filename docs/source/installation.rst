@@ -73,12 +73,11 @@ Additional requirements
 Installation test
 ***********************************************
 
-After installation, you should be able to see three scripts, they
+After installation, you should be able to see two scripts. They
 are::
 
     $ surface-enumeration
     $ surface-pd-plot
-    $ generate-discharge-pd
 
 To check whether the **surface-pd** package is successfully installed, you
 can try if the following command can be executed::

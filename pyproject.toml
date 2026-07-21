@@ -61,7 +61,6 @@ Issues = "https://github.com/urban-group/surface-pd/issues"
 [project.scripts]
 surface-enumeration = "surface_pd.cli.surface_enumeration:main"
 surface-pd-plot = "surface_pd.cli.surface_pd_plot:main"
-generate-discharge-pd = "surface_pd.cli.discharge_pd_gene:main"
 
 [tool.setuptools.packages.find]
 include = ["surface_pd*"]

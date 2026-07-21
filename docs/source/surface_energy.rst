@@ -1,8 +1,10 @@
-Below shows an example of how the surface energy of |LiTMO2| is calculated for the both
-non-polar and polar surface facets.
-The brief overview of how the surface energy  is described here.
-For a detailed description of how all the equations listed below are
-derived, please refer to the paper.
+This page derives the Li-TM-O battery specialization used by the example
+datasets.  It applies to both non-polar and polar facets.  The package's
+chemistry-independent formulation and implementation are described in
+:doc:`thermodynamics`; Li, O, voltage, and temperature are choices made by
+this particular configuration rather than fixed roles in the general API.
+For a detailed derivation of the battery-specific equations, refer to the
+paper.
 
 `Understanding the Onset of Surface Degradation in LiNiO2 Cathodes
 <https://pubs.acs.org/doi/10.1021/acsaem.2c00012>`__
@@ -88,10 +90,10 @@ Reference energies
 
 Reference energies are user-provided scientific inputs. The package does not
 select them from a functional name or contain a supported-method list. Each
-phase-diagram file declares the Li energy in eV per atom, the raw O2 energy and
-explicit correction in eV per molecule, and the bulk LiTMO2 energy in eV per
-formula unit. The method description is retained as free-text provenance but
-is not interpreted by the code.
+version-1 JSON configuration declares the Li energy in eV per atom, the raw O2
+energy and explicit correction in eV per molecule, and the bulk LiTMO2 energy
+in eV per formula unit. The method description is retained as free-text
+provenance but is not interpreted by the code.
 
 For example, the committed Ni data used in the reference publications records:
 
@@ -113,10 +115,14 @@ physical reference. LiNiO2 ``r2SCAN+rVV10+U`` was not supplied. Users must
 supply references appropriate to their own calculation settings rather than
 relying on these historic values.
 
-Programmatic callers use :class:`surface_pd.plot.ReferenceEnergies`. Its
-corrected O2 property is the sum of the separately retained raw energy and
-correction. Input files use the equivalent metadata keys documented in
-:doc:`tutorials-surface-plot`.
+The configuration represents these quantities explicitly: an
+:class:`~surface_pd.thermodynamics.IntercalationChemicalPotential` contains
+the Li-metal reference, a
+:class:`~surface_pd.thermodynamics.FixedPressureOxygenChemicalPotential`
+contains the separately retained raw O2 energy and correction, and a
+:class:`~surface_pd.thermodynamics.ReferencePhase` contains the bulk
+composition and energy.  The corresponding JSON fields are documented in
+:doc:`configuration`.
 
 ..
     For the fully lithiated |LiTMO2| bulk composition, the number of Li

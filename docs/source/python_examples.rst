@@ -46,51 +46,51 @@ The example configures enumeration but does not call
 operation requires the external enumlib executables. See
 :doc:`tutorials-surface-enum` for the complete command-line workflow.
 
-Surface-energy calculation
-==========================
+Grand-potential calculation
+===========================
 
 Construct a one-phase dataset and evaluate its surface energy at one voltage
 and temperature:
 
 .. testcode:: phase-diagram
 
-    import numpy as np
-    import pandas as pd
-
-    from surface_pd.plot import PdData, ReferenceEnergies
-
-    references = ReferenceEnergies(
-        method="demonstration values (not for scientific use)",
-        li_ev_per_atom=-2.0,
-        o2_raw_ev_per_molecule=-10.0,
-        o2_correction_ev_per_molecule=0.0,
-        bulk_litmo2_ev_per_formula_unit=-20.0,
+    from surface_pd.thermodynamics import (
+        ConstantChemicalPotential,
+        GrandPotentialModel,
+        Phase,
+        PhaseDataset,
+        ThermodynamicState,
     )
-    dataframe = pd.DataFrame(
+    phase = Phase(
+        "example",
+        {"A": 2, "B": 1},
+        dft_energy_ev=-8.0,
+        surface_area_angstrom2=9.0,
+        surface_multiplicity=2,
+    )
+    dataset = PhaseDataset(
+        "surface",
+        ("A", "B"),
+        (phase,),
+        "demonstration values (not for scientific use)",
+    )
+    model = GrandPotentialModel(
+        ("A", "B"),
         {
-            "Li": [4],
-            "Ni": [4],
-            "O": [8],
-            "E": [-80.0],
-            "a": [3.0],
-            "b": [3.0],
-            "gamma": [90.0],
-        }
+            "A": ConstantChemicalPotential(-2.0),
+            "B": ConstantChemicalPotential(-3.0),
+        },
+        (),
     )
-    phases = PdData(dataframe, "Li", "O", references)
-    phases.standardize_pd_data()
-    energies = phases.get_surface_energy(
-        V=np.array([0.0]),
-        T=np.array([298.15]),
-    )
-    print(energies.shape)
-    print(bool(np.isfinite(energies).all()))
+    result = model.evaluate(dataset, ThermodynamicState({}))
+    print(result.surface_grand_potential_ev_per_angstrom2.shape)
+    print(result.surface_grand_potential_ev_per_angstrom2[0])
 
 .. testoutput:: phase-diagram
 
-    (1, 1)
-    True
+    (1,)
+    -0.05555555555555555
 
-The numerical references above are deliberately synthetic. Real calculations
-must use reference energies obtained with computational settings consistent
-with the slab energies, as described in :doc:`tutorials-surface-plot`.
+The numerical values above are deliberately synthetic. Real calculations must
+use reference phases and chemical-potential parameters obtained with settings
+consistent with the slab energies, as described in :doc:`configuration`.

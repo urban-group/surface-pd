@@ -13,6 +13,7 @@ STALE_DOC_COMMANDS = (
     "surface-enumeration.py",
     "surface-pd-plot.py",
     "discharge_pd_gene.py",
+    "generate-discharge-pd",
     "./scripts/surface-pd-plot.py",
 )
 SOFTWARE_CITATION_YEAR = "2024"

@@ -83,9 +83,9 @@ tables with explicit surface areas and multiplicities. For example:
         examples/plotting-examples/lno-001-scan/charge.json \
         --output lno-001-charge.pdf
 
-The chemistry-specific implementation remains temporarily only for frozen
-numerical regression and will be removed before the initial release. It is not
-a second supported input format.
+The chemistry-specific implementation and metadata reader have been removed.
+Frozen numerical values preserve regression coverage without retaining a
+second implementation or supported input format.
 
 Irreversible oxygen loss during charge is a restriction on which phases remain
 accessible during subsequent discharge. It does not change any phase's DFT

@@ -5,12 +5,9 @@ from dataclasses import FrozenInstanceError
 import numpy as np
 import pytest
 
-from surface_pd.plot import ReferenceEnergies, SurfaceEnergy
 from surface_pd.thermodynamics import (
     DirectChemicalPotential,
-    FixedPressureOxygenChemicalPotential,
     GrandPotentialModel,
-    IntercalationChemicalPotential,
     Phase,
     PhaseDataset,
     ReferencePhase,
@@ -248,72 +245,3 @@ def test_model_validates_independent_model_results(result):
 
     with pytest.raises(ValueError, match="chemical potential.*A"):
         model.chemical_potentials(ThermodynamicState({}))
-
-
-def test_general_model_reproduces_legacy_li_tmo_surface_energy():
-    """The generalized equations should reproduce the legacy Li-TM-O path."""
-    references = ReferenceEnergies(
-        method="legacy-compatible method",
-        li_ev_per_atom=-1.89965,
-        o2_raw_ev_per_molecule=-9.86018,
-        o2_correction_ev_per_molecule=1.36,
-        bulk_litmo2_ev_per_formula_unit=-22.69242,
-    )
-    voltage, temperature = np.meshgrid(
-        np.array([2.5, 4.0]), np.array([298.15, 1000.0])
-    )
-    model = GrandPotentialModel(
-        components=("Li", "Ni", "O"),
-        independent_chemical_potentials={
-            "Li": IntercalationChemicalPotential(
-                references.li_ev_per_atom, 1, "Li/Li+"
-            ),
-            "O": FixedPressureOxygenChemicalPotential(
-                references.o2_raw_ev_per_molecule,
-                references.o2_correction_ev_per_molecule,
-            ),
-        },
-        reference_phases=(
-            _reference(
-                "bulk-LiNiO2",
-                {"Li": 1, "Ni": 1, "O": 2},
-                references.bulk_litmo2_ev_per_formula_unit,
-                references.method,
-            ),
-        ),
-    )
-    phase = Phase(
-        "surface",
-        {"Li": 0, "Ni": 1, "O": 1},
-        -10.0,
-        6.0,
-        2,
-    )
-    dataset = PhaseDataset(
-        "legacy",
-        ("Li", "Ni", "O"),
-        (phase,),
-        references.method,
-    )
-    state = ThermodynamicState(
-        {"voltage": voltage, "temperature": temperature}
-    )
-
-    result = model.evaluate(dataset, state)
-    legacy = SurfaceEnergy(
-        voltage,
-        temperature,
-        0,
-        1,
-        1,
-        -10.0,
-        2.0,
-        3.0,
-        90.0,
-        references,
-    ).get_gibbs_free_energy()
-
-    np.testing.assert_allclose(
-        result.surface_grand_potential_ev_per_angstrom2[0], legacy
-    )
-    assert phase.dft_energy_ev == -10.0

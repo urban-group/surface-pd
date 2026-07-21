@@ -8,7 +8,6 @@ LIBRARY_MODULES_WITHOUT_STDOUT = [
     PROJECT_ROOT / "surface_pd" / "core" / "post_check.py",
     PROJECT_ROOT / "surface_pd" / "core" / "pre_check.py",
     PROJECT_ROOT / "surface_pd" / "core" / "enumeration_slab.py",
-    PROJECT_ROOT / "surface_pd" / "plot" / "pd_data.py",
 ]
 PACKAGE_MODULES_WITHOUT_PASS = [
     path

@@ -21,15 +21,10 @@ from surface_pd import (
 )
 from surface_pd.core.enumeration_slab import EnumerationSlab
 from surface_pd.core.post_check import PostCheck
-from surface_pd.plot import pd_data, surface_energy
-from surface_pd.plot.reference_energies import ReferenceEnergies
 
 PUBLIC_CLASSES = (
     core.EnumerationSlab,
     core.EnumWithComposition,
-    plot.PdData,
-    plot.ReferenceEnergies,
-    plot.SurfaceEnergy,
     plot.CompositionColoring,
     configuration.PhaseDiagramConfiguration,
     thermodynamics.ThermodynamicState,
@@ -91,9 +86,6 @@ def test_subpackage_exports_define_the_supported_api():
     assert core.__all__ == ["EnumerationSlab", "EnumWithComposition"]
     assert plot.__all__ == [
         "CompositionColoring",
-        "PdData",
-        "ReferenceEnergies",
-        "SurfaceEnergy",
         "plot_phase_diagram",
     ]
     assert configuration.__all__ == ["PhaseDiagramConfiguration"]
@@ -312,16 +304,6 @@ def test_removed_post_check_compatibility_wrapper_is_not_available():
     """The internal post-check pipeline has one supported repair method."""
     assert hasattr(PostCheck, "repair_refined_slab_geometry")
     assert not hasattr(PostCheck, "slab_size_check")
-
-
-def test_energy_references_are_private_and_shared():
-    """Reference energies should be public values, not built-in tables."""
-    assert not hasattr(surface_energy, "E_O2_by_funtional")
-    assert not hasattr(surface_energy, "E_bulk_by_funtional")
-    assert not hasattr(surface_energy, "E_Li_by_funtional")
-    assert plot.ReferenceEnergies is ReferenceEnergies
-    assert pd_data.ReferenceEnergies is ReferenceEnergies
-    assert surface_energy.ReferenceEnergies is ReferenceEnergies
 
 
 def test_supported_api_has_consistent_structural_docstrings():
