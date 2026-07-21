@@ -7,6 +7,7 @@ from .chemical_potential import (
     FixedPressureOxygenChemicalPotential,
     IntercalationChemicalPotential,
 )
+from .phase_data import Phase, PhaseDataset, ReferencePhase
 from .state import ThermodynamicState
 
 __all__ = [
@@ -15,5 +16,8 @@ __all__ = [
     "DirectChemicalPotential",
     "FixedPressureOxygenChemicalPotential",
     "IntercalationChemicalPotential",
+    "Phase",
+    "PhaseDataset",
+    "ReferencePhase",
     "ThermodynamicState",
 ]

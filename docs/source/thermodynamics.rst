@@ -7,6 +7,59 @@ states and chemical-potential models independently of phase data and plotting.
 All microscopic energies and chemical potentials use electronvolts (eV),
 temperature uses kelvin (K), and voltage uses volts (V).
 
+Phase and reference data
+========================
+
+``Phase`` stores the absolute elemental counts :math:`n_{s,i}`, total DFT
+energy :math:`E_s`, surface-unit-cell area :math:`A_s`, and number of
+equivalent surfaces :math:`m_s` for a calculated phase :math:`s`. Counts are
+not reduced to a formula unit. This retains enough information to compare
+cells containing different numbers of atoms and to support adsorption as well
+as substitutional defects.
+
+For chemical potentials :math:`\mu_i`, a later grand-potential evaluator uses
+
+.. math::
+
+    \Omega_s = E_s - \sum_i n_{s,i}\mu_i,
+
+and compares phases using the surface-normalized value
+
+.. math::
+
+    \gamma_s = \frac{\Omega_s}{m_s A_s}.
+
+``surface_area_angstrom2`` is the area of one surface unit cell, while
+``surface_multiplicity`` records how many equivalent surfaces the calculated
+cell represents. Keeping the two quantities explicit avoids hiding the
+factor-of-two convention commonly used for symmetric slabs.
+
+.. autoclass:: surface_pd.thermodynamics.Phase
+    :members:
+
+``PhaseDataset`` groups phases calculated with one declared method and an
+explicit ordered component basis. Phase identifiers are local to a dataset;
+the canonical qualified identifier is ``dataset_id:phase_id``. The dataset
+does not read files or alter the supplied energies.
+
+.. autoclass:: surface_pd.thermodynamics.PhaseDataset
+    :members:
+
+``ReferencePhase`` represents one bulk thermodynamic equality. For reference
+composition :math:`n_{r,i}` and energy per formula unit :math:`G_r`, the
+constraint is
+
+.. math::
+
+    \sum_i n_{r,i}\mu_i = G_r.
+
+The present object records this scientific input without choosing dependent
+chemical potentials or solving the equality; that responsibility belongs to
+the generalized grand-potential model.
+
+.. autoclass:: surface_pd.thermodynamics.ReferencePhase
+    :members:
+
 Model interface
 ===============
 

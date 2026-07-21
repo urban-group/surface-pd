@@ -27,6 +27,9 @@ PUBLIC_CLASSES = (
     thermodynamics.DirectChemicalPotential,
     thermodynamics.IntercalationChemicalPotential,
     thermodynamics.FixedPressureOxygenChemicalPotential,
+    thermodynamics.Phase,
+    thermodynamics.PhaseDataset,
+    thermodynamics.ReferencePhase,
 )
 
 
@@ -76,6 +79,9 @@ def test_subpackage_exports_define_the_supported_api():
         "DirectChemicalPotential",
         "FixedPressureOxygenChemicalPotential",
         "IntercalationChemicalPotential",
+        "Phase",
+        "PhaseDataset",
+        "ReferencePhase",
         "ThermodynamicState",
     ]
     assert analysis.__all__ == []
