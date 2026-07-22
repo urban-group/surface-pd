@@ -97,6 +97,9 @@ class PhaseDiagramResult:
     dataset_results : sequence of GrandPotentialResult
         Per-dataset results retaining resolved chemical potentials and every
         grand-potential normalization.
+    independent_components : sequence of str
+        Ordered components whose chemical potentials are defined directly by
+        the model rather than solved from reference constraints.
     phase_ids : sequence of str
         Qualified phase identities in energy-tensor order.
     surface_grand_potential_ev_per_angstrom2 : array-like
@@ -118,6 +121,7 @@ class PhaseDiagramResult:
     specification: "PhaseDiagramSpecification"
     datasets: Sequence[PhaseDataset | AlignedPhaseDataset]
     dataset_results: Sequence[GrandPotentialResult]
+    independent_components: Sequence[str]
     phase_ids: Sequence[str]
     surface_grand_potential_ev_per_angstrom2: np.ndarray
     stable_phase_mask: np.ndarray
@@ -136,6 +140,10 @@ class PhaseDiagramResult:
             )
         datasets = tuple(self.datasets)
         dataset_results = tuple(self.dataset_results)
+        independent_components = tuple(
+            validate_variable_name(component)
+            for component in self.independent_components
+        )
         phase_ids = tuple(self.phase_ids)
         if not datasets or len(datasets) != len(dataset_results):
             raise ValueError(
@@ -143,6 +151,20 @@ class PhaseDiagramResult:
             )
         if not phase_ids or len(set(phase_ids)) != len(phase_ids):
             raise ValueError("phase_ids must be nonempty and unique")
+        if not independent_components or len(
+            set(independent_components)
+        ) != len(independent_components):
+            raise ValueError(
+                "independent_components must be nonempty and unique"
+            )
+        if any(
+            component not in dataset.components
+            for dataset in datasets
+            for component in independent_components
+        ):
+            raise ValueError(
+                "independent_components must be present in every dataset"
+            )
 
         mesh_shape = (
             self.specification.y_axis.values.size,
@@ -197,6 +219,9 @@ class PhaseDiagramResult:
 
         object.__setattr__(self, "datasets", datasets)
         object.__setattr__(self, "dataset_results", dataset_results)
+        object.__setattr__(
+            self, "independent_components", independent_components
+        )
         object.__setattr__(self, "phase_ids", phase_ids)
         object.__setattr__(
             self, "surface_grand_potential_ev_per_angstrom2", energies
@@ -409,6 +434,9 @@ class PhaseDiagramSpecification:
             specification=self,
             datasets=datasets,
             dataset_results=dataset_results,
+            independent_components=tuple(
+                model.independent_chemical_potentials
+            ),
             phase_ids=phase_ids,
             surface_grand_potential_ev_per_angstrom2=surface_energies,
             stable_phase_mask=stable_mask,

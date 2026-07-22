@@ -62,13 +62,5 @@
       "number_of_surfaces": 2
     }
   ],
-  "alignments": [],
-  "rendering": {
-    "coloring": {
-      "mode": "phase_identity"
-    },
-    "colormap": "tab20",
-    "invert_x_axis": true,
-    "invert_y_axis": false
-  }
+  "alignments": []
 }

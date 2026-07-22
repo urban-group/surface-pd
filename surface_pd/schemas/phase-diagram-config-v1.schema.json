@@ -12,8 +12,7 @@
     "reference_phases",
     "diagram",
     "datasets",
-    "alignments",
-    "rendering"
+    "alignments"
   ],
   "properties": {
     "schema_version": {"const": 1},
@@ -41,8 +40,7 @@
     "alignments": {
       "type": "array",
       "items": {"$ref": "#/$defs/alignment"}
-    },
-    "rendering": {"$ref": "#/$defs/rendering"}
+    }
   },
   "$defs": {
     "nonemptyString": {
@@ -243,63 +241,6 @@
         },
         "target_anchor_phase_id": {"$ref": "#/$defs/identifierText"},
         "bulk_reference_id": {"$ref": "#/$defs/identifierText"}
-      }
-    },
-    "identityColoring": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["mode"],
-      "properties": {"mode": {"const": "phase_identity"}}
-    },
-    "atomicFractionColoring": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["mode", "component", "label", "unit"],
-      "properties": {
-        "mode": {"const": "atomic_fraction"},
-        "component": {"$ref": "#/$defs/identifier"},
-        "label": {"$ref": "#/$defs/nonemptyString"},
-        "unit": {"$ref": "#/$defs/nonemptyString"}
-      }
-    },
-    "ratioColoring": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mode",
-        "component",
-        "reference_component",
-        "label",
-        "unit"
-      ],
-      "properties": {
-        "mode": {"const": "component_ratio"},
-        "component": {"$ref": "#/$defs/identifier"},
-        "reference_component": {"$ref": "#/$defs/identifier"},
-        "label": {"$ref": "#/$defs/nonemptyString"},
-        "unit": {"$ref": "#/$defs/nonemptyString"}
-      }
-    },
-    "rendering": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "coloring",
-        "colormap",
-        "invert_x_axis",
-        "invert_y_axis"
-      ],
-      "properties": {
-        "coloring": {
-          "oneOf": [
-            {"$ref": "#/$defs/identityColoring"},
-            {"$ref": "#/$defs/atomicFractionColoring"},
-            {"$ref": "#/$defs/ratioColoring"}
-          ]
-        },
-        "colormap": {"$ref": "#/$defs/nonemptyString"},
-        "invert_x_axis": {"type": "boolean"},
-        "invert_y_axis": {"type": "boolean"}
       }
     }
   }

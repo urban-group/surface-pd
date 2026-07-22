@@ -345,6 +345,9 @@ compared energy uses the declared reference convention.
 with shape ``(number_of_phases, N_y, N_x)`` and every underlying
 ``GrandPotentialResult``. Stability is always determined from the intensive
 surface grand potential in eV per square angstrom.
+It also retains ``independent_components`` in declared model-component order,
+so downstream inspection and rendering can identify independently modeled
+chemical potentials without recovering configuration state.
 
 At every mesh point, phase :math:`s` is co-stable when
 

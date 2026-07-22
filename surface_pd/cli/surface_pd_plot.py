@@ -11,12 +11,15 @@ from matplotlib.colorbar import Colorbar
 from matplotlib.figure import Figure
 
 from surface_pd.configuration import PhaseDiagramConfiguration
-from surface_pd.plot import plot_phase_diagram
+from surface_pd.plot import CompositionColoring, plot_phase_diagram
 from surface_pd.thermodynamics import PhaseDiagramResult
 
 
 def _prepare_phase_diagram(
     configuration: PhaseDiagramConfiguration,
+    *,
+    color_component: str | None = None,
+    phase_identity_colors: bool = False,
 ) -> tuple[PhaseDiagramResult, Figure, Axes, Colorbar]:
     """Evaluate and render without displaying or saving the figure."""
     if not isinstance(configuration, PhaseDiagramConfiguration):
@@ -28,12 +31,19 @@ def _prepare_phase_diagram(
         configuration.model,
         datasets,
     )
+    coloring = None
+    if phase_identity_colors:
+        coloring = "phase_identity"
+    elif color_component is not None:
+        if color_component not in result.independent_components:
+            raise ValueError(
+                "color component must be an independent component: "
+                + ", ".join(result.independent_components)
+            )
+        coloring = CompositionColoring.atomic_fraction(color_component)
     figure, axes, colorbar = plot_phase_diagram(
         result,
-        coloring=configuration.create_coloring(),
-        cmap=configuration.colormap,
-        invert_x_axis=configuration.invert_x_axis,
-        invert_y_axis=configuration.invert_y_axis,
+        coloring=coloring,
     )
     return result, figure, axes, colorbar
 
@@ -65,6 +75,20 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="display the figure interactively",
     )
+    coloring = parser.add_mutually_exclusive_group()
+    coloring.add_argument(
+        "--color-component",
+        metavar="COMPONENT",
+        help=(
+            "color by the atomic fraction of this independent component; "
+            "defaults to the first independent component"
+        ),
+    )
+    coloring.add_argument(
+        "--phase-identity-colors",
+        action="store_true",
+        help="use discrete stable-phase colors instead of composition",
+    )
     return parser
 
 
@@ -80,7 +104,11 @@ def main(argv: list[str] | None = None) -> None:
         configuration = PhaseDiagramConfiguration.read_json(
             args.configuration
         )
-        _, figure, _, _ = _prepare_phase_diagram(configuration)
+        _, figure, _, _ = _prepare_phase_diagram(
+            configuration,
+            color_component=args.color_component,
+            phase_identity_colors=args.phase_identity_colors,
+        )
         if args.output is not None:
             figure.savefig(args.output)
         if args.show:

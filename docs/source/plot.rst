@@ -11,10 +11,14 @@ thermodynamic state, reevaluate energies, select a different stable phase, show
 a GUI window, or save a file. It returns the Matplotlib figure, axes, and
 colorbar so applications retain control of presentation and output.
 
-With no composition coloring, each deterministic representative phase is
-colored by its qualified ``dataset_id:phase_id`` identity. At a numerical tie,
-the renderer uses the first phase in declared input order, while the source
-result's complete ``stable_phase_mask`` remains unchanged.
+By default, the renderer uses a continuous atomic-fraction gradient for the
+first independent component retained by the numerical result. Independent
+component order follows the model's declared component order, making this
+choice deterministic. Pass ``coloring="phase_identity"`` to color each
+deterministic representative by its qualified ``dataset_id:phase_id``
+identity. At a numerical tie, either rendering uses the first phase in declared
+input order, while the source result's complete ``stable_phase_mask`` remains
+unchanged.
 
 Axis text comes only from each
 :class:`~surface_pd.thermodynamics.DiagramAxis` label and unit. Optional axis
@@ -53,6 +57,19 @@ where both numerator component :math:`i` and denominator component :math:`k`
 are named by the user. A zero denominator is rejected. The renderer never
 infers a host species, transition metal, occupancy scale, or grouping from row
 positions.
+
+The named constructors keep common Python calls concise:
+
+.. code-block:: python
+
+    li_fraction = CompositionColoring.atomic_fraction("Li")
+    oxygen_fraction = CompositionColoring.atomic_fraction("O")
+    li_per_ni = CompositionColoring.component_ratio("Li", "Ni")
+
+Custom labels remain available through the constructors or full dataclass
+initialization. Atomic fraction is the general default because it requires no
+inferred host component. A component ratio is preferable when the user has an
+explicit, scientifically justified invariant reference such as Ni.
 
 Composition coloring follows the same first-in-order representative policy at
 ties. The numerical result continues to retain all co-stable phases and the

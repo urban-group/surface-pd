@@ -8,7 +8,6 @@ from typing import Any
 
 import numpy as np
 
-from surface_pd.plot.phase_diagram import CompositionColoring
 from surface_pd.thermodynamics import (
     AlignedPhaseDataset,
     ConstantChemicalPotential,
@@ -294,7 +293,6 @@ class PhaseDiagramConfiguration:
                 "diagram",
                 "datasets",
                 "alignments",
-                "rendering",
             },
             "configuration",
         )
@@ -388,8 +386,6 @@ class PhaseDiagramConfiguration:
         self._validate_alignments(
             root["alignments"], dataset_ids, reference_ids
         )
-        self._validate_rendering(root["rendering"], set(components))
-
         self._calculation_method = method
         self._components = components
         self._model = model
@@ -481,47 +477,6 @@ class PhaseDiagramConfiguration:
                 "an alignment reference cannot also be an alignment target"
             )
 
-    @staticmethod
-    def _validate_rendering(value: object, components: set[str]) -> None:
-        """Validate rendering choices without constructing plot output."""
-        rendering = _require_keys(
-            value,
-            {
-                "coloring",
-                "colormap",
-                "invert_x_axis",
-                "invert_y_axis",
-            },
-            "rendering",
-        )
-        validate_provenance(rendering["colormap"], "colormap")
-        for field_name in ("invert_x_axis", "invert_y_axis"):
-            if not isinstance(rendering[field_name], bool):
-                raise TypeError(f"{field_name} must be boolean")
-        coloring = _require_mapping(rendering["coloring"], "coloring")
-        mode = coloring.get("mode")
-        if mode == "phase_identity":
-            _require_keys(coloring, {"mode"}, "phase_identity coloring")
-            return
-        required = {"mode", "component", "label", "unit"}
-        if mode == "component_ratio":
-            required.add("reference_component")
-        elif mode != "atomic_fraction":
-            raise ValueError(f"unknown rendering coloring mode {mode!r}")
-        coloring = _require_keys(coloring, required, f"{mode} coloring")
-        if coloring["component"] not in components:
-            raise ValueError(
-                "rendering coloring contains an unknown component"
-            )
-        if mode == "component_ratio" and (
-            coloring["reference_component"] not in components
-        ):
-            raise ValueError(
-                "rendering coloring contains an unknown reference_component"
-            )
-        validate_provenance(coloring["label"], "coloring label")
-        validate_provenance(coloring["unit"], "coloring unit")
-
     @property
     def schema_version(self) -> int:
         """Return the supported configuration schema version."""
@@ -551,42 +506,6 @@ class PhaseDiagramConfiguration:
     def source_path(self) -> Path | None:
         """Return the absolute source JSON path, if read from a file."""
         return self._source_path
-
-    @property
-    def colormap(self) -> str:
-        """Return the configured Matplotlib colormap name."""
-        return self._data["rendering"]["colormap"]
-
-    @property
-    def invert_x_axis(self) -> bool:
-        """Return whether rendering should invert the horizontal axis."""
-        return self._data["rendering"]["invert_x_axis"]
-
-    @property
-    def invert_y_axis(self) -> bool:
-        """Return whether rendering should invert the vertical axis."""
-        return self._data["rendering"]["invert_y_axis"]
-
-    def create_coloring(self) -> CompositionColoring | None:
-        """Construct the configured composition coloring, if any.
-
-        Returns
-        -------
-        CompositionColoring or None
-            ``None`` for discrete qualified phase identities; otherwise the
-            validated continuous composition-coloring definition.
-        """
-        definition = self._data["rendering"]["coloring"]
-        mode = definition["mode"]
-        if mode == "phase_identity":
-            return None
-        return CompositionColoring(
-            component=definition["component"],
-            normalization=mode,
-            reference_component=definition.get("reference_component"),
-            label=definition["label"],
-            unit=definition["unit"],
-        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a deep mutable copy of the canonical JSON data."""

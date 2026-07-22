@@ -86,7 +86,9 @@ def test_identity_renderer_uses_qualified_phase_labels_without_side_effects(
         lambda: pytest.fail("renderer must not call pyplot.show"),
     )
 
-    figure, axes, colorbar = plot_phase_diagram(result)
+    figure, axes, colorbar = plot_phase_diagram(
+        result, coloring="phase_identity"
+    )
 
     assert figure is axes.figure
     assert colorbar.ax.figure is figure
@@ -160,7 +162,9 @@ def test_lno_001_boundary_layout_regression():
         configuration.model, configuration.load_datasets()
     )
 
-    figure, axes, _ = plot_phase_diagram(result)
+    figure, axes, _ = plot_phase_diagram(
+        result, coloring="phase_identity"
+    )
 
     assert np.unique(result.representative_phase_indices).size == 13
     boundaries = _boundary_lines(axes)
@@ -192,7 +196,9 @@ def test_renderer_uses_first_phase_for_ties_without_losing_tie_mask():
         "surfaces:A-rich",
     )
 
-    figure, axes, _ = plot_phase_diagram(result)
+    figure, axes, _ = plot_phase_diagram(
+        result, coloring="phase_identity"
+    )
 
     assert _quad_mesh(axes).get_array()[0, 0] == 0
     assert result.stable_phase_ids_at(0, 0) == (
@@ -224,6 +230,34 @@ def test_atomic_fraction_coloring_is_explicit_and_component_neutral():
     )
     assert colorbar.ax.get_ylabel() == "A atomic fraction (fraction)"
     plt.close(figure)
+
+
+def test_default_coloring_uses_first_independent_component_fraction():
+    """The default gradient should represent declared model provenance."""
+    result = _diagram_result()
+
+    figure, axes, colorbar = plot_phase_diagram(result)
+
+    np.testing.assert_allclose(
+        _quad_mesh(axes).get_array(),
+        [[0.5, 2 / 3], [0.5, 2 / 3]],
+    )
+    assert colorbar.ax.get_ylabel() == "A atomic fraction (1)"
+    assert colorbar.mappable.cmap.name == "viridis"
+    plt.close(figure)
+
+
+def test_named_composition_coloring_constructors_supply_clear_labels():
+    """Common composition scales should not require boilerplate metadata."""
+    atomic = CompositionColoring.atomic_fraction("A")
+    ratio = CompositionColoring.component_ratio("A", "B")
+
+    assert atomic == CompositionColoring(
+        "A", "atomic_fraction", None, "A atomic fraction", "1"
+    )
+    assert ratio == CompositionColoring(
+        "A", "component_ratio", "B", "A/B ratio", "1"
+    )
 
 
 def test_component_ratio_coloring_uses_declared_denominator():

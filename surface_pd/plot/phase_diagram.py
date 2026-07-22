@@ -89,6 +89,42 @@ class CompositionColoring:
             self, "unit", validate_provenance(self.unit, "unit")
         )
 
+    @classmethod
+    def atomic_fraction(
+        cls, component: str, *, label: str | None = None
+    ) -> "CompositionColoring":
+        """Return atomic-fraction coloring for one explicit component."""
+        return cls(
+            component=component,
+            normalization="atomic_fraction",
+            reference_component=None,
+            label=(
+                f"{component} atomic fraction" if label is None else label
+            ),
+            unit="1",
+        )
+
+    @classmethod
+    def component_ratio(
+        cls,
+        component: str,
+        reference_component: str,
+        *,
+        label: str | None = None,
+    ) -> "CompositionColoring":
+        """Return component-ratio coloring for an explicit numerator pair."""
+        return cls(
+            component=component,
+            normalization="component_ratio",
+            reference_component=reference_component,
+            label=(
+                f"{component}/{reference_component} ratio"
+                if label is None
+                else label
+            ),
+            unit="1",
+        )
+
     def phase_values(self, result: PhaseDiagramResult) -> np.ndarray:
         """Return one composition value per phase in result order.
 
@@ -195,7 +231,7 @@ def _phase_boundary_segments(result: PhaseDiagramResult) -> list[np.ndarray]:
 def plot_phase_diagram(
     result: PhaseDiagramResult,
     *,
-    coloring: CompositionColoring | None = None,
+    coloring: CompositionColoring | Literal["phase_identity"] | None = None,
     ax: Axes | None = None,
     cmap: str | None = None,
     invert_x_axis: bool = False,
@@ -209,9 +245,10 @@ def plot_phase_diagram(
     ----------
     result : PhaseDiagramResult
         Complete numerical result. Rendering does not reevaluate it.
-    coloring : CompositionColoring or None, optional
-        Explicit continuous composition scale. ``None`` uses discrete
-        qualified phase identities.
+    coloring : CompositionColoring, {"phase_identity"}, or None, optional
+        Explicit continuous composition scale. ``None`` uses the atomic
+        fraction of the first independent component. ``"phase_identity"``
+        uses discrete qualified phase identities.
     ax : matplotlib.axes.Axes or None, optional
         Existing axes to draw into. New figure and axes are created when
         omitted.
@@ -237,8 +274,17 @@ def plot_phase_diagram(
     """
     if not isinstance(result, PhaseDiagramResult):
         raise TypeError("result must be a PhaseDiagramResult")
-    if coloring is not None and not isinstance(coloring, CompositionColoring):
-        raise TypeError("coloring must be a CompositionColoring or None")
+    if coloring is None:
+        coloring = CompositionColoring.atomic_fraction(
+            result.independent_components[0]
+        )
+    elif isinstance(coloring, str):
+        if coloring != "phase_identity":
+            raise ValueError("unknown coloring mode; use 'phase_identity'")
+    elif not isinstance(coloring, CompositionColoring):
+        raise TypeError(
+            "coloring must be a CompositionColoring, 'phase_identity', or None"
+        )
     if ax is not None and not isinstance(ax, Axes):
         raise TypeError("ax must be a matplotlib.axes.Axes or None")
     if not isinstance(invert_x_axis, bool) or not isinstance(
@@ -264,7 +310,7 @@ def plot_phase_diagram(
         figure = axes.figure
 
     representatives = result.representative_phase_indices
-    if coloring is None:
+    if coloring == "phase_identity":
         phase_count = len(result.phase_ids)
         color_values = representatives
         color_map = matplotlib.colormaps.get_cmap(

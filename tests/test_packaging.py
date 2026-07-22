@@ -220,12 +220,6 @@ def test_installed_surface_plot_command_creates_an_image(
             }
         ],
         "alignments": [],
-        "rendering": {
-            "coloring": {"mode": "phase_identity"},
-            "colormap": "tab20",
-            "invert_x_axis": False,
-            "invert_y_axis": False,
-        },
     }
     data["diagram"]["fixed_conditions"] = {}
     configuration = tmp_path / "config.json"

@@ -75,13 +75,5 @@
       "target_anchor_phase_id": "full-O-full-Li",
       "bulk_reference_id": "bulk-LiNiO2"
     }
-  ],
-  "rendering": {
-    "coloring": {
-      "mode": "phase_identity"
-    },
-    "colormap": "tab20",
-    "invert_x_axis": false,
-    "invert_y_axis": false
-  }
+  ]
 }

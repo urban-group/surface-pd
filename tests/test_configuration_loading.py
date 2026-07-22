@@ -68,12 +68,6 @@ def _configuration_data(dataset_path="phases.dat"):
             }
         ],
         "alignments": [],
-        "rendering": {
-            "coloring": {"mode": "phase_identity"},
-            "colormap": "tab20",
-            "invert_x_axis": False,
-            "invert_y_axis": False,
-        },
     }
 
 

@@ -88,12 +88,6 @@ def _configuration_data():
             }
         ],
         "alignments": [],
-        "rendering": {
-            "coloring": {"mode": "phase_identity"},
-            "colormap": "tab20",
-            "invert_x_axis": False,
-            "invert_y_axis": False,
-        },
     }
 
 
@@ -122,6 +116,15 @@ def test_configuration_constructs_every_builtin_model_and_diagram():
         500.0,
         1000.0,
     ]
+
+
+def test_configuration_rejects_rendering_as_non_scientific_state():
+    """Presentation choices should not be accepted by scientific JSON."""
+    data = _configuration_data()
+    data["rendering"] = {"colormap": "viridis"}
+
+    with pytest.raises(ValueError, match="configuration.*unknown fields"):
+        PhaseDiagramConfiguration(data)
 
 
 def test_configuration_constructs_dependent_reference_constraints():
@@ -181,11 +184,6 @@ def test_configuration_json_round_trip_is_canonical_and_owned(tmp_path):
             ("datasets", 0, "column_overrides", "unknown"),
             "column",
             "column_overrides.*unknown fields",
-        ),
-        (
-            ("rendering", "coloring", "unknown"),
-            1,
-            "phase_identity coloring.*unknown fields",
         ),
     ],
 )

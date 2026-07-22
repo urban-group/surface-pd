@@ -178,6 +178,7 @@ def test_result_preserves_ties_and_complete_energy_tensor():
         _axis("voltage"), _axis("temperature"), {}
     ).evaluate(model, (dataset,))
 
+    assert result.independent_components == ("C0", "C1")
     assert result.surface_grand_potential_ev_per_angstrom2.shape == (3, 2, 2)
     assert result.stable_phase_mask.shape == (3, 2, 2)
     assert np.all(result.stable_phase_mask[0])

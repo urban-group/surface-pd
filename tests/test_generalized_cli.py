@@ -10,7 +10,6 @@ import pytest
 
 from surface_pd.cli import surface_pd_plot
 from surface_pd.configuration import PhaseDiagramConfiguration
-from surface_pd.plot import CompositionColoring
 
 matplotlib.use("Agg")
 
@@ -83,12 +82,6 @@ def _configuration_data():
             }
         ],
         "alignments": [],
-        "rendering": {
-            "coloring": {"mode": "phase_identity"},
-            "colormap": "tab20",
-            "invert_x_axis": False,
-            "invert_y_axis": False,
-        },
     }
 
 
@@ -119,6 +112,10 @@ def test_help_exposes_only_generalized_input_and_explicit_actions():
     assert "CONFIG" in result.stdout
     assert "--output" in result.stdout
     assert "--show" in result.stdout
+    assert "--color-component" in result.stdout
+    assert "--phase-identity-colors" in result.stdout
+    assert "--colormap" not in result.stdout
+    assert "--boundary-linewidth" not in result.stdout
     legacy_terms = ("lithium", "oxygen-like", "--low-T", "--save")
     assert not any(term in result.stdout for term in legacy_terms)
 
@@ -131,7 +128,7 @@ def test_cli_requires_an_explicit_output_or_show_action(tmp_path):
         surface_pd_plot.main([str(path)])
 
 
-def test_prepare_phase_diagram_covers_all_models_and_identity_rendering(
+def test_prepare_phase_diagram_defaults_to_first_independent_component(
     tmp_path,
 ):
     """The internal workflow should evaluate and render without I/O actions."""
@@ -147,77 +144,43 @@ def test_prepare_phase_diagram_covers_all_models_and_identity_rendering(
     assert result.surface_grand_potential_ev_per_angstrom2.shape == (2, 2, 2)
     assert axes.get_xlabel() == "Potential (V)"
     assert axes.get_ylabel() == "Temperature (K)"
-    assert colorbar.ax.get_ylabel() == "Stable phase"
+    assert colorbar.ax.get_ylabel() == "Li atomic fraction (1)"
     assert not axes.xaxis_inverted()
     assert not axes.yaxis_inverted()
     figure.clear()
 
 
-@pytest.mark.parametrize(
-    ("coloring", "expected_normalization"),
-    [
-        (
-            {
-                "mode": "atomic_fraction",
-                "component": "Li",
-                "label": "Lithium fraction",
-                "unit": "1",
-            },
-            "atomic_fraction",
-        ),
-        (
-            {
-                "mode": "component_ratio",
-                "component": "Li",
-                "reference_component": "O",
-                "label": "Li/O ratio",
-                "unit": "1",
-            },
-            "component_ratio",
-        ),
-    ],
-)
-def test_configuration_constructs_composition_coloring(
-    coloring, expected_normalization
-):
-    """JSON rendering choices should become the reviewed coloring object."""
-    data = _configuration_data()
-    data["rendering"]["coloring"] = coloring
-
-    configuration = PhaseDiagramConfiguration(data)
-
-    actual = configuration.create_coloring()
-    assert isinstance(actual, CompositionColoring)
-    assert actual.normalization == expected_normalization
-
-
-def test_prepare_phase_diagram_applies_rendering_options(tmp_path):
-    """Colormap, composition coloring, and inversion should reach rendering."""
-    data = _configuration_data()
-    data["rendering"] = {
-        "coloring": {
-            "mode": "atomic_fraction",
-            "component": "Li",
-            "label": "Lithium fraction",
-            "unit": "1",
-        },
-        "colormap": "plasma",
-        "invert_x_axis": True,
-        "invert_y_axis": True,
-    }
+def test_prepare_phase_diagram_accepts_simple_cli_coloring_choices(tmp_path):
+    """Quick inspection may select a component or discrete phase identity."""
     configuration = PhaseDiagramConfiguration.read_json(
-        _write_inputs(tmp_path, data)
+        _write_inputs(tmp_path)
     )
 
-    _, figure, axes, colorbar = surface_pd_plot._prepare_phase_diagram(
-        configuration
+    _, figure, _, colorbar = surface_pd_plot._prepare_phase_diagram(
+        configuration, color_component="O"
+    )
+    _, identity_figure, _, identity_colorbar = (
+        surface_pd_plot._prepare_phase_diagram(
+            configuration, phase_identity_colors=True
+        )
     )
 
-    assert axes.xaxis_inverted()
-    assert axes.yaxis_inverted()
-    assert colorbar.ax.get_ylabel() == "Lithium fraction (1)"
-    assert colorbar.mappable.cmap.name == "plasma"
+    assert colorbar.ax.get_ylabel() == "O atomic fraction (1)"
+    assert identity_colorbar.ax.get_ylabel() == "Stable phase"
     figure.clear()
+    identity_figure.clear()
+
+
+def test_prepare_rejects_nonindependent_color_component(tmp_path):
+    """CLI composition selection should reflect model provenance."""
+    configuration = PhaseDiagramConfiguration.read_json(
+        _write_inputs(tmp_path)
+    )
+
+    with pytest.raises(ValueError, match="independent component"):
+        surface_pd_plot._prepare_phase_diagram(
+            configuration, color_component="not-present"
+        )
 
 
 def test_cli_writes_output_without_showing(tmp_path, monkeypatch):

@@ -28,12 +28,12 @@ Every configuration contains exactly these top-level fields:
     name overrides.
 ``alignments``
     Explicit direct-to-reference dataset alignments.
-``rendering``
-    Identity or composition coloring and presentation options.
 
 Unknown and missing fields are rejected recursively. This strictness is part
 of the version contract: a misspelled scientific parameter cannot silently
-become unused metadata.
+become unused metadata. Matplotlib coloring, colormaps, axis inversion, and
+boundary styles are deliberately absent because they do not define the
+thermodynamic calculation.
 
 Built-in chemical-potential models
 ==================================

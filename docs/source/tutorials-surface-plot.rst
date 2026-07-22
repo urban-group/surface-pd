@@ -8,7 +8,7 @@ Overview
 ``surface-pd-plot`` evaluates and renders a generalized two-dimensional phase
 diagram from one versioned JSON configuration. The configuration names the
 thermodynamic models, axes, fixed conditions, phase tables, explicit column
-mappings, optional dataset alignments, and rendering choices. No chemical
+mappings, and optional dataset alignments. No chemical
 species has a special command-line role.
 
 See :doc:`configuration` for the complete version-1 format and
@@ -49,21 +49,27 @@ The command performs the following reviewed sequence:
 2. Resolve and load every explicitly mapped phase table.
 3. Construct any declared direct-to-reference aligned dataset views.
 4. Evaluate the configured thermodynamic model on the two-dimensional grid.
-5. Render phase identity or the configured composition quantity.
+5. Render the default composition gradient or a command-line composition
+   choice.
 6. Save and/or display only after every preceding stage succeeds.
 
 Errors retain their configuration, dataset, table-row, or alignment context
 and are reported as command-line errors without a Python traceback. A failed
 configuration or calculation creates no requested output and opens no display.
 
-Rendering configuration
-=======================
+Quick-inspection coloring
+=========================
 
-``rendering.coloring.mode`` selects discrete ``phase_identity`` coloring,
-``atomic_fraction`` of an explicit component, or an explicit
-``component_ratio``. The JSON configuration also owns the colormap and any
-x- or y-axis inversion. Axis inversion changes presentation only; it does not
-change the thermodynamic state or stable-phase calculation.
+The command defaults to an atomic-fraction gradient for the first independent
+component in declared component order. ``--color-component COMPONENT`` selects
+a different independent component, while ``--phase-identity-colors`` selects
+discrete stable-phase colors. The two options are mutually exclusive.
+
+The command intentionally does not expose detailed Matplotlib styling. Use
+the Python :func:`surface_pd.plot.plot_phase_diagram` interface for component
+ratios, colormaps, axis inversion, boundary styling, figure dimensions, and
+publication-quality output. None of these choices belongs to the scientific
+JSON configuration or changes the stable-phase calculation.
 
 Battery examples and legacy migration
 =====================================
