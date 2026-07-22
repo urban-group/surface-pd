@@ -12,6 +12,8 @@ from matplotlib.collections import LineCollection
 from matplotlib.colorbar import Colorbar
 from matplotlib.colors import BoundaryNorm, is_color_like
 from matplotlib.figure import Figure
+from matplotlib.legend import Legend
+from matplotlib.patches import Patch
 from matplotlib.typing import ColorType
 
 from surface_pd.thermodynamics import PhaseDiagramResult
@@ -238,7 +240,7 @@ def plot_phase_diagram(
     invert_y_axis: bool = False,
     boundary_color: ColorType | None = "black",
     boundary_linewidth: float = 1.0,
-) -> tuple[Figure, Axes, Colorbar]:
+) -> tuple[Figure, Axes, Colorbar | Legend]:
     """Render an already evaluated generalized phase diagram.
 
     Parameters
@@ -269,8 +271,11 @@ def plot_phase_diagram(
     Returns
     -------
     tuple
-        Matplotlib ``(figure, axes, colorbar)`` objects. The function neither
-        displays nor saves the figure.
+        Matplotlib ``(figure, axes, color_guide)`` objects. The color guide is
+        a categorical :class:`matplotlib.legend.Legend` for phase-identity
+        coloring and a continuous :class:`matplotlib.colorbar.Colorbar` for
+        composition coloring. The function neither displays nor saves the
+        figure.
     """
     if not isinstance(result, PhaseDiagramResult):
         raise TypeError("result must be a PhaseDiagramResult")
@@ -329,11 +334,19 @@ def plot_phase_diagram(
             norm=norm,
         )
         present_indices = np.unique(representatives)
-        colorbar = figure.colorbar(mesh, ax=axes, ticks=present_indices)
-        colorbar.ax.set_yticklabels(
-            [result.phase_ids[index] for index in present_indices]
+        guide = axes.legend(
+            handles=[
+                Patch(
+                    facecolor=color_map(norm(index)),
+                    label=result.phase_ids[index],
+                )
+                for index in present_indices
+            ],
+            title="Stable phase",
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            borderaxespad=0.0,
         )
-        colorbar.set_label("Stable phase")
     else:
         phase_values = coloring.phase_values(result)
         color_values = phase_values[representatives]
@@ -344,8 +357,8 @@ def plot_phase_diagram(
             shading="nearest",
             cmap=cmap or "viridis",
         )
-        colorbar = figure.colorbar(mesh, ax=axes)
-        colorbar.set_label(_axis_label(coloring.label, coloring.unit))
+        guide = figure.colorbar(mesh, ax=axes)
+        guide.set_label(_axis_label(coloring.label, coloring.unit))
 
     if boundary_color is not None:
         boundary_segments = _phase_boundary_segments(result)
@@ -367,4 +380,4 @@ def plot_phase_diagram(
         axes.invert_xaxis()
     if invert_y_axis and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    return figure, axes, colorbar
+    return figure, axes, guide

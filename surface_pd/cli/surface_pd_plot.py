@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.colorbar import Colorbar
 from matplotlib.figure import Figure
+from matplotlib.legend import Legend
 
 from surface_pd.configuration import PhaseDiagramConfiguration
 from surface_pd.plot import CompositionColoring, plot_phase_diagram
@@ -40,7 +41,7 @@ def _prepare_phase_diagram(
     fixed_conditions: dict[str, float] | None = None,
     color_component: str | None = None,
     phase_identity_colors: bool = False,
-) -> tuple[PhaseDiagramResult, Figure, Axes, Colorbar]:
+) -> tuple[PhaseDiagramResult, Figure, Axes, Colorbar | Legend]:
     """Evaluate and render without displaying or saving the figure."""
     if not isinstance(configuration, PhaseDiagramConfiguration):
         raise TypeError(
@@ -70,11 +71,11 @@ def _prepare_phase_diagram(
                 + ", ".join(result.independent_components)
             )
         coloring = CompositionColoring.atomic_fraction(color_component)
-    figure, axes, colorbar = plot_phase_diagram(
+    figure, axes, color_guide = plot_phase_diagram(
         result,
         coloring=coloring,
     )
-    return result, figure, axes, colorbar
+    return result, figure, axes, color_guide
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -179,7 +180,7 @@ def main(argv: list[str] | None = None) -> None:
             phase_identity_colors=args.phase_identity_colors,
         )
         if args.output is not None:
-            figure.savefig(args.output)
+            figure.savefig(args.output, bbox_inches="tight")
         if args.show:
             plt.show()
     except (OSError, TypeError, ValueError) as error:

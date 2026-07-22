@@ -7,6 +7,8 @@ from pathlib import Path
 
 import matplotlib
 import pytest
+from matplotlib.colorbar import Colorbar
+from matplotlib.legend import Legend
 
 from surface_pd.cli import surface_pd_plot
 from surface_pd.configuration import PhaseDiagramConfiguration
@@ -222,14 +224,16 @@ def test_prepare_phase_diagram_accepts_simple_cli_coloring_choices(tmp_path):
     _, figure, _, colorbar = surface_pd_plot._prepare_phase_diagram(
         configuration, color_component="O", **_EVALUATION
     )
-    _, identity_figure, _, identity_colorbar = (
+    _, identity_figure, _, identity_legend = (
         surface_pd_plot._prepare_phase_diagram(
             configuration, phase_identity_colors=True, **_EVALUATION
         )
     )
 
+    assert isinstance(colorbar, Colorbar)
     assert colorbar.ax.get_ylabel() == "O atomic fraction (1)"
-    assert identity_colorbar.ax.get_ylabel() == "Stable phase"
+    assert isinstance(identity_legend, Legend)
+    assert identity_legend.get_title().get_text() == "Stable phase"
     figure.clear()
     identity_figure.clear()
 

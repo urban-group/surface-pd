@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.collections import LineCollection, QuadMesh
+from matplotlib.legend import Legend
 
 from surface_pd.configuration import PhaseDiagramConfiguration
 from surface_pd.plot import CompositionColoring, plot_phase_diagram
@@ -86,18 +87,27 @@ def test_identity_renderer_uses_qualified_phase_labels_without_side_effects(
         lambda: pytest.fail("renderer must not call pyplot.show"),
     )
 
-    figure, axes, colorbar = plot_phase_diagram(
+    figure, axes, legend = plot_phase_diagram(
         result, coloring="phase_identity"
     )
 
     assert figure is axes.figure
-    assert colorbar.ax.figure is figure
+    assert isinstance(legend, Legend)
+    assert legend.axes is axes
+    assert legend.get_title().get_text() == "Stable phase"
     assert axes.get_xlabel() == "Horizontal condition (X-unit)"
     assert axes.get_ylabel() == "Vertical condition (Y-unit)"
-    assert [label.get_text() for label in colorbar.ax.get_yticklabels()] == [
+    assert [label.get_text() for label in legend.get_texts()] == [
         "surfaces:equal",
         "surfaces:A-rich",
     ]
+    mesh = _quad_mesh(axes)
+    expected_colors = [mesh.cmap(mesh.norm(index)) for index in (0, 1)]
+    np.testing.assert_allclose(
+        [handle.get_facecolor() for handle in legend.legend_handles],
+        expected_colors,
+    )
+    assert len(figure.axes) == 1
     np.testing.assert_array_equal(
         _quad_mesh(axes).get_array(), [[0, 1], [0, 1]]
     )
@@ -109,6 +119,21 @@ def test_identity_renderer_uses_qualified_phase_labels_without_side_effects(
         result.representative_phase_indices, representatives_before
     )
     assert len(_boundary_lines(axes)) == 1
+    plt.close(figure)
+
+
+def test_identity_legend_omits_phases_absent_from_the_evaluated_domain():
+    """The categorical guide should describe only visible phase regions."""
+    result = _diagram_result(energies=(0.0, 10.0))
+
+    figure, _, legend = plot_phase_diagram(
+        result, coloring="phase_identity", cmap="plasma"
+    )
+
+    assert isinstance(legend, Legend)
+    assert [label.get_text() for label in legend.get_texts()] == [
+        "surfaces:equal"
+    ]
     plt.close(figure)
 
 

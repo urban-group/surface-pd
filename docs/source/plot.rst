@@ -9,7 +9,7 @@ The generalized renderer consumes an already evaluated
 :class:`~surface_pd.thermodynamics.PhaseDiagramResult`. It does not construct a
 thermodynamic state, reevaluate energies, select a different stable phase, show
 a GUI window, or save a file. It returns the Matplotlib figure, axes, and
-colorbar so applications retain control of presentation and output.
+color guide so applications retain control of presentation and output.
 
 By default, the renderer uses a continuous atomic-fraction gradient for the
 first independent component retained by the numerical result. Independent
@@ -19,6 +19,14 @@ deterministic representative by its qualified ``dataset_id:phase_id``
 identity. At a numerical tie, either rendering uses the first phase in declared
 input order, while the source result's complete ``stable_phase_mask`` remains
 unchanged.
+
+Composition coloring uses a continuous colorbar. Phase-identity coloring is
+categorical and therefore uses a legend titled ``Stable phase`` containing
+only phases present in the evaluated domain. Both guides are returned as the
+third item from :func:`~surface_pd.plot.plot_phase_diagram`, so Python users
+can customize them with the normal Matplotlib interface. A selected colormap
+controls the phase swatches but does not change the categorical legend into a
+continuous colorbar.
 
 Axis text comes only from each
 :class:`~surface_pd.thermodynamics.DiagramAxis` label and unit. Optional axis
