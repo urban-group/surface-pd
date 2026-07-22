@@ -122,7 +122,9 @@ class EnumWithComposition:
             finalized = EnumerationSlab.from_structure(
                 candidate,
                 direction=structure.direction,
-                tolerance=structure.tolerance,
+                layer_tolerance_angstrom=(
+                    structure.layer_tolerance_angstrom
+                ),
                 enumerated_species=structure.enumerated_species,
                 num_enumerated_layers=structure.num_enumerated_layers,
                 symmetric=structure.symmetric,
@@ -132,13 +134,15 @@ class EnumWithComposition:
                     finalized,
                     structure.direction,
                     fixed_region_bounds,
-                    structure.tolerance,
+                    1e-8,
                 )
                 finalized = finalized.symmetrize_top_base()
                 finalized = EnumerationSlab.from_structure(
                     finalized,
                     direction=structure.direction,
-                    tolerance=structure.tolerance,
+                    layer_tolerance_angstrom=(
+                        structure.layer_tolerance_angstrom
+                    ),
                     enumerated_species=structure.enumerated_species,
                     num_enumerated_layers=structure.num_enumerated_layers,
                     symmetric=True,

@@ -29,12 +29,14 @@ class PostCheck:
     def __init__(
         self,
         structure: EnumerationSlab,
-        tolerance: float = 0.03,
+        inversion_center_tolerance_fractional: float = 0.03,
         direction: int = 2,
         symprec: float = 1e-2,
     ):
         self.structure = structure
-        self.tolerance = tolerance
+        self.inversion_center_tolerance_fractional = (
+            inversion_center_tolerance_fractional
+        )
         self.direction = direction
         self.symprec = symprec
 
@@ -198,7 +200,8 @@ class PostCheck:
             # direction origin
             if (
                 abs(origin[self.direction])
-                > self.tolerance + self.symprec * 100
+                > self.inversion_center_tolerance_fractional
+                + self.symprec * 100
             ):
                 logger.error(
                     "Detected non-central inversion symmetry origin: %s",
@@ -233,7 +236,9 @@ class PostCheck:
             ).get_refined_structure()
         )
         refined_structure.direction = self.direction
-        refined_structure.tolerance = self.tolerance
+        refined_structure.layer_tolerance_angstrom = (
+            self.structure.layer_tolerance_angstrom
+        )
         refined_structure.enumerated_species = (
             self.structure.enumerated_species
         )

@@ -4,13 +4,14 @@ This module extends pymatgen's ``Structure`` with layer identification,
 symmetry operations, and surface-enumeration configuration.
 """
 
-import collections
 import copy
 import logging
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from numbers import Integral, Real
 from os import PathLike
+from types import MappingProxyType
 
 import numpy as np
 from pymatgen.core import Composition, DummySpecies, Element, Species
@@ -23,6 +24,33 @@ from surface_pd.error import NoInversionSymmetryError
 from surface_pd.util.util import check_int
 
 logger = logging.getLogger(__name__)
+
+_FRACTIONAL_COORD_TOLERANCE = 1e-8
+
+
+@dataclass(frozen=True)
+class SlabLayer:
+    """Immutable description of one Cartesian slab layer.
+
+    Attributes
+    ----------
+    coordinate : float
+        Mean coordinate in angstroms along the oriented normal to the plane
+        spanned by the two periodic lattice vectors.
+    site_indices : tuple of int
+        Indices of sites assigned to this layer.
+    species_counts : mapping of str to int
+        Number of sites of each element in the layer.
+    """
+
+    coordinate: float
+    site_indices: tuple[int, ...]
+    species_counts: Mapping[str, int]
+
+    def __post_init__(self):
+        object.__setattr__(
+            self, "species_counts", MappingProxyType(dict(self.species_counts))
+        )
 
 
 class EnumerationSlab(Structure):
@@ -54,8 +82,9 @@ class EnumerationSlab(Structure):
         Lattice-axis index containing the broken periodicity and vacuum
         region. The corresponding vector need not be perpendicular to the
         surface plane. Must be 0, 1, or 2.
-    tolerance : float, default=0.03
-        Positive finite fractional-coordinate tolerance used to group layers.
+    layer_tolerance_angstrom : float, default=0.5
+        Positive finite maximum Cartesian span of sites grouped into one
+        layer, in angstroms.
     enumerated_species : sequence of str, optional
         Unique, nonempty species names whose surface sites will be enumerated.
     num_enumerated_layers : mapping of str to int, optional
@@ -87,7 +116,7 @@ class EnumerationSlab(Structure):
         properties: dict | None = None,
         *,
         direction: int = 2,
-        tolerance: float = 0.03,
+        layer_tolerance_angstrom: float = 0.5,
         enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
         symmetric: bool | None = None,
@@ -105,7 +134,7 @@ class EnumerationSlab(Structure):
             properties,
         )
         self.direction = direction
-        self.tolerance = tolerance
+        self.layer_tolerance_angstrom = layer_tolerance_angstrom
         self.enumerated_species = enumerated_species
         self.num_enumerated_layers = num_enumerated_layers
         self._validate_layer_species_match()
@@ -117,7 +146,7 @@ class EnumerationSlab(Structure):
         structure: Structure,
         *,
         direction: int = 2,
-        tolerance: float = 0.03,
+        layer_tolerance_angstrom: float = 0.5,
         enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
         symmetric: bool | None = None,
@@ -132,8 +161,8 @@ class EnumerationSlab(Structure):
         direction : int, default=2
             Lattice-axis index containing the slab's broken periodicity and
             vacuum region.
-        tolerance : float, default=0.03
-            Fractional-coordinate tolerance used to group layers.
+        layer_tolerance_angstrom : float, default=0.5
+            Maximum Cartesian span of one layer, in angstroms.
         enumerated_species : sequence of str, optional
             Species whose outer surface layers may be modified.
         num_enumerated_layers : mapping of str to int, optional
@@ -157,7 +186,7 @@ class EnumerationSlab(Structure):
             labels=structure.labels,
             properties=structure.properties,
             direction=direction,
-            tolerance=tolerance,
+            layer_tolerance_angstrom=layer_tolerance_angstrom,
             enumerated_species=enumerated_species,
             num_enumerated_layers=num_enumerated_layers,
             symmetric=symmetric,
@@ -172,7 +201,7 @@ class EnumerationSlab(Structure):
         merge_tol: float = 0.0,
         *,
         direction: int = 2,
-        tolerance: float = 0.03,
+        layer_tolerance_angstrom: float = 0.5,
         enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
         symmetric: bool | None = None,
@@ -199,8 +228,8 @@ class EnumerationSlab(Structure):
         direction : int, default=2
             Lattice-axis index containing the slab's broken periodicity and
             vacuum region.
-        tolerance : float, default=0.03
-            Fractional-coordinate tolerance used to group layers.
+        layer_tolerance_angstrom : float, default=0.5
+            Maximum Cartesian span of one layer, in angstroms.
         enumerated_species : sequence of str, optional
             Species whose outer surface layers may be modified.
         num_enumerated_layers : mapping of str to int, optional
@@ -225,7 +254,7 @@ class EnumerationSlab(Structure):
         return cls.from_structure(
             structure,
             direction=direction,
-            tolerance=tolerance,
+            layer_tolerance_angstrom=layer_tolerance_angstrom,
             enumerated_species=enumerated_species,
             num_enumerated_layers=num_enumerated_layers,
             symmetric=symmetric,
@@ -249,24 +278,26 @@ class EnumerationSlab(Structure):
         self._direction = int(value)
 
     @property
-    def tolerance(self):
-        """float: Fractional-coordinate tolerance used to group layers.
+    def layer_tolerance_angstrom(self):
+        """float: Maximum Cartesian span of one layer, in angstroms.
 
         The value must be positive and finite.
         """
-        return self._tolerance
+        return self._layer_tolerance_angstrom
 
-    @tolerance.setter
-    def tolerance(self, value: float):
+    @layer_tolerance_angstrom.setter
+    def layer_tolerance_angstrom(self, value: float):
         if (
             isinstance(value, bool)
             or not isinstance(value, Real)
             or not math.isfinite(value)
         ):
-            raise TypeError("tolerance must be a finite real number")
+            raise TypeError(
+                "layer_tolerance_angstrom must be a finite real number"
+            )
         if value <= 0:
-            raise ValueError("tolerance must be positive")
-        self._tolerance = float(value)
+            raise ValueError("layer_tolerance_angstrom must be positive")
+        self._layer_tolerance_angstrom = float(value)
 
     @property
     def enumerated_species(self):
@@ -352,43 +383,73 @@ class EnumerationSlab(Structure):
             raise TypeError("symmetric must be a boolean or None")
         self._symmetric = value
 
-    def group_atoms_by_layer(self, layers: dict):
-        """
-        Group misclassified atoms into the right layers.
-
-        For example, c_atom1 = 0.01, c_atoms2 = 0.02, they should be
-        classified in one layer. But actually they are not. So this function
-        here will search the difference between two closest atoms, if the
-        difference is smaller than diff, they will be regrouped in the same
-        layer.
-
-        Parameters
-        ----------
-        layers : dict[float, int]
-            Fractional heights mapped to atom populations.
-
-        Returns
-        -------
-        dict[float, int]
-            Layer populations after adjacent heights within ``tolerance`` are
-            merged. The input mapping is not mutated.
-
-        """
-        res = {}
-        o_layer_sorted = dict(
-            sorted(layers.items(), key=lambda x: x[0], reverse=True)
+    def _plane_height_angstrom(self):
+        """Return the repeat distance normal to the in-plane lattice."""
+        in_plane = [index for index in range(3) if index != self.direction]
+        normal = np.cross(
+            self.lattice.matrix[in_plane[0]],
+            self.lattice.matrix[in_plane[1]],
         )
-        for i, (height_, num_) in enumerate(o_layer_sorted.items()):
-            if i == 0:
-                res[height_] = num_
-                previous_height = height_
-                continue
-            if abs(previous_height - height_) <= self.tolerance:
-                res[previous_height] += num_
+        normal /= np.linalg.norm(normal)
+        height = float(np.dot(normal, self.lattice.matrix[self.direction]))
+        return abs(height)
+
+    def _find_layers(self):
+        """Detect Cartesian layers after cutting the largest periodic gap."""
+        if not self:
+            return ()
+        period = self._plane_height_angstrom()
+        coordinates = [
+            (float(site.frac_coords[self.direction]) % 1.0) * period
+            for site in self
+        ]
+        ordered = sorted(enumerate(coordinates), key=lambda item: item[1])
+        circular_gaps = [
+            ordered[index + 1][1] - ordered[index][1]
+            for index in range(len(ordered) - 1)
+        ]
+        circular_gaps.append(ordered[0][1] + period - ordered[-1][1])
+        cut = (int(np.argmax(circular_gaps)) + 1) % len(ordered)
+        unwrapped = ordered[cut:] + ordered[:cut]
+        start = unwrapped[0][1]
+        positioned = [
+            (index, coordinate if coordinate >= start else coordinate + period)
+            for index, coordinate in unwrapped
+        ]
+
+        clusters = []
+        current = [positioned[0]]
+        for item in positioned[1:]:
+            if item[1] - current[0][1] <= self.layer_tolerance_angstrom:
+                current.append(item)
             else:
-                res[height_] = num_
-                previous_height = height_
-        return res
+                clusters.append(current)
+                current = [item]
+        clusters.append(current)
+
+        layers = []
+        for cluster in clusters:
+            indices = tuple(sorted(index for index, _ in cluster))
+            counts = {}
+            for symbol in self.symbol_set:
+                count = sum(symbol in self[index] for index in indices)
+                if count:
+                    counts[symbol] = count
+            layers.append(
+                SlabLayer(
+                    coordinate=float(
+                        np.mean([coordinate for _, coordinate in cluster])
+                    ),
+                    site_indices=indices,
+                    species_counts=counts,
+                )
+            )
+        return tuple(layers)
+
+    @property
+    def layers(self):
+        """Tuple of :class:`SlabLayer` objects ordered bottom to top."""
+        return self._find_layers()
 
     def wrap_pbc(self):
         """
@@ -413,7 +474,7 @@ class EnumerationSlab(Structure):
 
         for site in self:
             bounds = np.array([0.0, 0.0, 0.0])
-            bounds[self.direction] = self.tolerance
+            bounds[self.direction] = _FRACTIONAL_COORD_TOLERANCE
             for i in range(3):
                 while site.frac_coords[i] < -bounds[i]:
                     site.frac_coords[i] += 1.0
@@ -445,74 +506,6 @@ class EnumerationSlab(Structure):
         lower_limit, upper_limit = center_region[0]
         return lower_limit, upper_limit, center
 
-    def layers_finder(self, precision: int = 2):
-        """
-        Find species layer populations by fractional coordinate.
-
-        Parameters
-        ----------
-        precision : int, default=2
-            Decimal places used to round fractional layer coordinates.
-
-        Returns
-        -------
-        dict[str, dict[float, int]]
-            Species mapped to fractional heights and atom populations.
-
-        """
-        layers = {}
-        for species in self.symbol_set:
-            partial_layers = collections.defaultdict(int)
-            for s in self:
-                if species in s:
-                    # Since the c fractional coordinates of atoms even in the
-                    # exactly same layers are not identical, therefore, all c
-                    # fractional coordinates will be rounded to 2 decimal. Any
-                    # misclassified atoms will be regrouped by
-                    # "group_atoms_by_layer" function.
-                    partial_layers[
-                        round(s.frac_coords[self.direction], precision)
-                    ] += 1
-            partial_layers = self.group_atoms_by_layer(partial_layers)
-            layers[species] = partial_layers
-        return layers
-
-    def layer_distinguisher(self):
-        r"""
-        Distinguish the layers that will be relaxed.
-
-        Returns
-        -------
-        tuple[float, float, dict[str, list[float]]]
-            Lower and upper bounds of the fixed region, followed by target
-            layer heights for each enumerated species. Symmetric slabs contain
-            top and bottom heights; asymmetric slabs contain only the top.
-
-        """
-        # Initialize three dictionaries to store layer information of Li,
-        # TM, and O atoms
-        layers = self.layers_finder()
-
-        # Get the boundaries of the surface relaxed region in fractional
-        # coordinates format (c-direction)
-        target_layers = {}
-        for species in self.enumerated_species:
-            all_c_frac = list(layers[species])
-            if self.symmetric:
-                target_layers[species] = [
-                    all_c_frac[self.num_enumerated_layers[species] - 1],
-                    all_c_frac[-self.num_enumerated_layers[species]],
-                ]
-            else:
-                target_layers[species] = [
-                    all_c_frac[self.num_enumerated_layers[species] - 1]
-                ]
-
-        # Collect the central layers based on the "selective_dynamics"
-        lower_limit, upper_limit, _ = self.get_center_sites()
-
-        return lower_limit, upper_limit, target_layers
-
     def get_fixed_region_bounds(self):
         """Return fractional-coordinate bounds of the fixed slab region.
 
@@ -539,27 +532,25 @@ class EnumerationSlab(Structure):
             Selected site indices grouped by enumerated species.
 
         """
-        _, _, target_layers = self.layer_distinguisher()
-
         relaxed_index_by_species = {}
         for species in self.enumerated_species:
-            relaxed_index = []
-            for index, site in enumerate(self):
-                # Surface Li atoms index extraction (both top and bottom)
-                if species in site:
-                    if (
-                        site.frac_coords[self.direction]
-                        >= target_layers[species][0] - self.tolerance
-                    ):
-                        relaxed_index.append(index)
-                    if (
-                        self.symmetric
-                        and not only_top
-                        and site.frac_coords[self.direction]
-                        <= target_layers[species][1] + self.tolerance
-                    ):
-                        relaxed_index.append(index)
-            relaxed_index_by_species[species] = relaxed_index
+            species_layers = [
+                layer
+                for layer in self.layers
+                if species in layer.species_counts
+            ]
+            count = self.num_enumerated_layers[species]
+            selected_layers = list(species_layers[-count:])
+            if self.symmetric and not only_top:
+                selected_layers.extend(species_layers[:count])
+            relaxed_index_by_species[species] = sorted(
+                {
+                    index
+                    for layer in selected_layers
+                    for index in layer.site_indices
+                    if species in self[index]
+                }
+            )
 
         return relaxed_index_by_species
 
@@ -940,8 +931,8 @@ class EnumerationSlab(Structure):
         Returns
         -------
         EnumerationSlab
-            This slab after translating its sites. Displacements smaller than
-            ``tolerance`` are suppressed.
+            This slab after translating its sites. Numerically negligible
+            displacements are suppressed.
 
         Notes
         -----
@@ -951,7 +942,7 @@ class EnumerationSlab(Structure):
         _min_c, _ = self.get_max_min_c_frac()
         displace = target_min_c - _min_c
 
-        if abs(displace) < self.tolerance:
+        if abs(displace) < _FRACTIONAL_COORD_TOLERANCE:
             displace = 0
 
         for site in self:
@@ -977,7 +968,7 @@ class EnumerationSlab(Structure):
 
         """
         direction = self.direction
-        tolerance = self.tolerance
+        tolerance = _FRACTIONAL_COORD_TOLERANCE
         structure = copy.deepcopy(self)
         for site in structure:
             if (

@@ -113,7 +113,10 @@ class PreCheck:
             # Should not happen, but handle edge case
             lower_boundary = min(ranges[0])
 
-        if min_fixed_atom_c - lower_boundary < self.structure.tolerance:
+        separation = (
+            min_fixed_atom_c - lower_boundary
+        ) * self.structure._plane_height_angstrom()
+        if separation < self.structure.layer_tolerance_angstrom:
             logger.info(
                 "The slab model provided has the whole bottom surface fixed; "
                 "no symmetrization is needed."

@@ -110,13 +110,12 @@ def automate_surface(
 
     # Define important parameters which will be used later, including to be
     # enumerated species, number of layers relaxed, whether to keep the
-    # symmetry, direction of the slab, and the proximity tolerance for
-    # adjacent atoms
+    # symmetry and direction of the slab
     input_structure.enumerated_species = species
     input_structure.num_enumerated_layers = num_enumerated_layers
     input_structure.symmetric = symmetric
     direction = input_structure.direction
-    tolerance = input_structure.tolerance
+    fractional_tolerance = 1e-8
 
     # PreCheck
     pre_check = PreCheck(input_structure)
@@ -211,7 +210,7 @@ def automate_surface(
                     dummy_species=dummy_species,
                     center_bottom=center_bottom,
                     center_top=center_top,
-                    tolerance=tolerance,
+                    tolerance=fractional_tolerance,
                 )
 
             # Symmetrize slab models based on the top enumerated
@@ -278,7 +277,6 @@ def automate_surface(
                     refined_structure
                 )
                 noncontiguous = len(get_slab_regions(refined_structure)) == 2
-                # print(input_structure.layers_finder())
 
                 if noncontiguous:
                     refined_structure = refined_structure.tune_isc(
@@ -287,7 +285,6 @@ def automate_surface(
                     refined_structure = refined_structure.tune_c(
                         target_min_c=min_c
                     )
-                    # print(refined_structure.layers_finder())
                     refined_structure = (
                         refined_structure.add_selective_dynamics(
                             lower_limit=center_bottom, upper_limit=center_top
@@ -297,7 +294,6 @@ def automate_surface(
                     refined_structure = refined_structure.tune_c(
                         target_min_c=min_c
                     )
-                    # print(refined_structure.layers_finder())
                     refined_structure = (
                         refined_structure.add_selective_dynamics(
                             lower_limit=center_bottom, upper_limit=center_top

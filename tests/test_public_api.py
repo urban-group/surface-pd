@@ -83,7 +83,11 @@ def test_package_root_remains_lightweight():
 
 def test_subpackage_exports_define_the_supported_api():
     """Only domain-facing classes and raised errors are public exports."""
-    assert core.__all__ == ["EnumerationSlab", "EnumWithComposition"]
+    assert core.__all__ == [
+        "EnumerationSlab",
+        "SlabLayer",
+        "EnumWithComposition",
+    ]
     assert plot.__all__ == [
         "CompositionColoring",
         "plot_phase_diagram",
@@ -200,14 +204,14 @@ def test_enumeration_slab_has_explicit_validated_signature():
         "labels",
         "properties",
         "direction",
-        "tolerance",
+        "layer_tolerance_angstrom",
         "enumerated_species",
         "num_enumerated_layers",
         "symmetric",
     ]
     for name in (
         "direction",
-        "tolerance",
+        "layer_tolerance_angstrom",
         "enumerated_species",
         "num_enumerated_layers",
         "symmetric",
@@ -222,7 +226,7 @@ def test_enumeration_slab_has_explicit_validated_signature():
     "old_name",
     [
         "_direction",
-        "_tolerance",
+        "_layer_tolerance_angstrom",
         "_to_be_enumerated_species",
         "_num_enumerated_layers",
         "_symmetric",
@@ -245,9 +249,9 @@ def test_enumeration_slab_rejects_private_constructor_names(old_name):
         ("direction", True),
         ("direction", -1),
         ("direction", 3),
-        ("tolerance", True),
-        ("tolerance", 0),
-        ("tolerance", float("inf")),
+        ("layer_tolerance_angstrom", True),
+        ("layer_tolerance_angstrom", 0),
+        ("layer_tolerance_angstrom", float("inf")),
         ("enumerated_species", "Li"),
         ("enumerated_species", []),
         ("enumerated_species", ["Li", "Li"]),
@@ -283,7 +287,7 @@ def test_enumeration_slab_owns_configuration_collections():
         labels=["surface"],
         properties={"source": "test"},
         direction=1,
-        tolerance=0.1,
+        layer_tolerance_angstrom=0.1,
         enumerated_species=species,
         num_enumerated_layers=layers,
         symmetric=False,
@@ -292,7 +296,8 @@ def test_enumeration_slab_owns_configuration_collections():
     layers["O"] = 2
 
     assert slab.direction == 1
-    assert slab.tolerance == 0.1
+    assert slab.layer_tolerance_angstrom == 0.1
+    assert not hasattr(slab, "tolerance")
     assert slab.enumerated_species == ["Li"]
     assert not hasattr(slab, "to_be_enumerated_species")
     assert slab.num_enumerated_layers == {"Li": 1}
@@ -344,7 +349,7 @@ def test_enumeration_slab_from_file_preserves_data_and_surface_options(
     slab = EnumerationSlab.from_file(
         filename,
         direction=1,
-        tolerance=0.05,
+        layer_tolerance_angstrom=0.05,
         enumerated_species=["Li"],
         num_enumerated_layers={"Li": 1},
         symmetric=False,
@@ -353,7 +358,7 @@ def test_enumeration_slab_from_file_preserves_data_and_surface_options(
     assert isinstance(slab, EnumerationSlab)
     assert slab == Structure.from_file(filename)
     assert slab.direction == 1
-    assert slab.tolerance == 0.05
+    assert slab.layer_tolerance_angstrom == 0.05
     assert slab.enumerated_species == ["Li"]
     assert slab.num_enumerated_layers == {"Li": 1}
     assert slab.symmetric is False
@@ -368,7 +373,7 @@ def test_enumeration_slab_from_file_uses_default_surface_options(tmp_path):
 
     assert isinstance(slab, EnumerationSlab)
     assert slab.direction == 2
-    assert slab.tolerance == 0.03
+    assert slab.layer_tolerance_angstrom == 0.5
     assert slab.enumerated_species is None
     assert slab.num_enumerated_layers is None
     assert slab.symmetric is None

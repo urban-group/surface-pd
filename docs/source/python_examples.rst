@@ -9,7 +9,7 @@ windows, output files, and external executables.
 Slab and enumeration setup
 ==========================
 
-Create a toy slab, identify its surface-normal layers, and configure an
+Create a toy slab, identify its Cartesian layers, and configure an
 enumeration transformation:
 
 .. testcode:: enumeration
@@ -26,8 +26,8 @@ enumeration transformation:
         num_enumerated_layers={"Li": 1},
         symmetric=True,
     )
-    populations = slab.layers_finder()["Li"]
-    print(sorted(populations.values()))
+    populations = [layer.species_counts["Li"] for layer in slab.layers]
+    print(populations)
 
     enumerator = EnumWithComposition(
         {"Li": {"Li": 0.5}},
