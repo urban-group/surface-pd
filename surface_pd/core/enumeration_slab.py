@@ -53,7 +53,7 @@ class EnumerationSlab(Structure):
         Lattice-axis index normal to the surface. Must be 0, 1, or 2.
     tolerance : float, default=0.03
         Positive finite fractional-coordinate tolerance used to group layers.
-    to_be_enumerated_species : sequence of str, optional
+    enumerated_species : sequence of str, optional
         Unique, nonempty species names whose surface sites will be enumerated.
     num_enumerated_layers : mapping of str to int, optional
         Positive number of outer layers to enumerate for each target species.
@@ -85,7 +85,7 @@ class EnumerationSlab(Structure):
         *,
         direction: int = 2,
         tolerance: float = 0.03,
-        to_be_enumerated_species: Sequence[str] | None = None,
+        enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
         symmetric: bool | None = None,
     ):
@@ -103,9 +103,61 @@ class EnumerationSlab(Structure):
         )
         self.direction = direction
         self.tolerance = tolerance
-        self.to_be_enumerated_species = to_be_enumerated_species
+        self.enumerated_species = enumerated_species
         self.num_enumerated_layers = num_enumerated_layers
+        self._validate_layer_species_match()
         self.symmetric = symmetric
+
+    @classmethod
+    def from_structure(
+        cls,
+        structure: Structure,
+        *,
+        direction: int = 2,
+        tolerance: float = 0.03,
+        enumerated_species: Sequence[str] | None = None,
+        num_enumerated_layers: Mapping[str, int] | None = None,
+        symmetric: bool | None = None,
+    ):
+        """Construct an enumeration slab from a pymatgen structure.
+
+        Parameters
+        ----------
+        structure : Structure
+            Source structure whose lattice, sites, charge, labels, site
+            properties, and structure properties are copied.
+        direction : int, default=2
+            Lattice-axis index normal to the surface.
+        tolerance : float, default=0.03
+            Fractional-coordinate tolerance used to group layers.
+        enumerated_species : sequence of str, optional
+            Species whose outer surface layers may be modified.
+        num_enumerated_layers : mapping of str to int, optional
+            Independent outer-layer count for each enumerated species.
+        symmetric : bool, optional
+            Whether corresponding layers on both surfaces are selected.
+
+        Returns
+        -------
+        EnumerationSlab
+            Independent copy configured for surface enumeration.
+        """
+        if not isinstance(structure, Structure):
+            raise TypeError("structure must be a pymatgen Structure")
+        return cls(
+            structure.lattice,
+            structure.species,
+            structure.frac_coords,
+            charge=structure.charge,
+            site_properties=structure.site_properties,
+            labels=structure.labels,
+            properties=structure.properties,
+            direction=direction,
+            tolerance=tolerance,
+            enumerated_species=enumerated_species,
+            num_enumerated_layers=num_enumerated_layers,
+            symmetric=symmetric,
+        )
 
     @property
     def direction(self):
@@ -144,30 +196,31 @@ class EnumerationSlab(Structure):
         self._tolerance = float(value)
 
     @property
-    def to_be_enumerated_species(self):
+    def enumerated_species(self):
         """List of str or None: Species selected for enumeration.
 
         Values must be unique, nonempty strings. Assigned sequences are copied.
         """
-        return self._to_be_enumerated_species
+        return self._enumerated_species
 
-    @to_be_enumerated_species.setter
-    def to_be_enumerated_species(self, value: Sequence[str] | None):
+    @enumerated_species.setter
+    def enumerated_species(self, value: Sequence[str] | None):
         if value is None:
-            self._to_be_enumerated_species = None
+            self._enumerated_species = None
             return
         if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
-            raise TypeError("to_be_enumerated_species must be a sequence")
+            raise TypeError("enumerated_species must be a sequence")
         species = list(value)
         if not species:
-            raise ValueError("to_be_enumerated_species must not be empty")
+            raise ValueError("enumerated_species must not be empty")
         if any(
             not isinstance(item, str) or not item.strip() for item in species
         ):
             raise ValueError("enumerated species must be nonempty strings")
         if len(set(species)) != len(species):
             raise ValueError("enumerated species must be unique")
-        self._to_be_enumerated_species = species
+        self._enumerated_species = species
+        self._validate_layer_species_match()
 
     @property
     def num_enumerated_layers(self):
@@ -197,6 +250,20 @@ class EnumerationSlab(Structure):
                 raise ValueError("enumerated layer counts must be positive")
             layers[species] = int(count)
         self._num_enumerated_layers = layers
+        self._validate_layer_species_match()
+
+    def _validate_layer_species_match(self):
+        species = getattr(self, "_enumerated_species", None)
+        layers = getattr(self, "_num_enumerated_layers", None)
+        if (
+            species is not None
+            and layers is not None
+            and set(species) != set(layers)
+        ):
+            raise ValueError(
+                "num_enumerated_layers must contain the same species as "
+                "enumerated_species"
+            )
 
     @property
     def symmetric(self):
@@ -356,7 +423,7 @@ class EnumerationSlab(Structure):
         # Get the boundaries of the surface relaxed region in fractional
         # coordinates format (c-direction)
         target_layers = {}
-        for species in self.to_be_enumerated_species:
+        for species in self.enumerated_species:
             all_c_frac = list(layers[species])
             if self.symmetric:
                 target_layers[species] = [
@@ -373,7 +440,18 @@ class EnumerationSlab(Structure):
 
         return lower_limit, upper_limit, target_layers
 
-    def index_extraction(self, only_top: bool = False):
+    def get_fixed_region_bounds(self):
+        """Return fractional-coordinate bounds of the fixed slab region.
+
+        Returns
+        -------
+        tuple[float, float]
+            Lower and upper surface-normal bounds of the fixed central sites.
+        """
+        lower_limit, upper_limit, _ = self.get_center_sites()
+        return lower_limit, upper_limit
+
+    def get_enumerated_site_indices(self, only_top: bool = False):
         """
         Get target species indices in the relaxed surface layers.
 
@@ -384,15 +462,14 @@ class EnumerationSlab(Structure):
 
         Returns
         -------
-        tuple[float, float, dict[str, list[int]]]
-            Fixed-region bounds followed by site indices for each target
-            species.
+        dict[str, list[int]]
+            Selected site indices grouped by enumerated species.
 
         """
-        [lower_limit, upper_limit, target_layers] = self.layer_distinguisher()
+        _, _, target_layers = self.layer_distinguisher()
 
         relaxed_index_by_species = {}
-        for species in self.to_be_enumerated_species:
+        for species in self.enumerated_species:
             relaxed_index = []
             for index, site in enumerate(self):
                 # Surface Li atoms index extraction (both top and bottom)
@@ -411,9 +488,9 @@ class EnumerationSlab(Structure):
                         relaxed_index.append(index)
             relaxed_index_by_species[species] = relaxed_index
 
-        return lower_limit, upper_limit, relaxed_index_by_species
+        return relaxed_index_by_species
 
-    def surface_substitute(self, dummy_species: list):
+    def _surface_substitute(self, dummy_species: list):
         """
         Substitute top-surface target species with dummy species.
 
@@ -430,11 +507,11 @@ class EnumerationSlab(Structure):
 
         """
         slab_surface_substitute = copy.deepcopy(self)
-        _, _, relaxed_index = slab_surface_substitute.index_extraction(
+        relaxed_index = slab_surface_substitute.get_enumerated_site_indices(
             only_top=True
         )
 
-        for i, species in enumerate(self.to_be_enumerated_species):
+        for i, species in enumerate(self.enumerated_species):
             for j in relaxed_index[species]:
                 slab_surface_substitute.replace(
                     j,
@@ -470,7 +547,7 @@ class EnumerationSlab(Structure):
         """
         structure = copy.deepcopy(self)
         removed_index = []
-        for species in self.to_be_enumerated_species:
+        for species in self.enumerated_species:
             if subs_dict[species][species] == 0:
                 removed_index += relaxed_index[species]
         structure.remove_sites(removed_index)
@@ -715,7 +792,7 @@ class EnumerationSlab(Structure):
         total_target_atoms = {}
         num_rest_atoms = {}
         num_curr_atoms = {}
-        for i, species in enumerate(self.to_be_enumerated_species):
+        for i, species in enumerate(self.enumerated_species):
             num_relaxed_atoms[species] = (
                 len(relaxed_index[species]) * max_cell_size
             )

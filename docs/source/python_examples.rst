@@ -22,7 +22,7 @@ enumeration transformation:
         Lattice.tetragonal(3.0, 15.0),
         ["Li", "Li"],
         [[0.0, 0.0, 0.2], [0.0, 0.0, 0.8]],
-        to_be_enumerated_species=["Li"],
+        enumerated_species=["Li"],
         num_enumerated_layers={"Li": 1},
         symmetric=True,
     )
@@ -30,7 +30,7 @@ enumeration transformation:
     print(sorted(populations.values()))
 
     enumerator = EnumWithComposition(
-        {"X": {"Li": 0.5, "O": 0.5}},
+        {"Li": {"Li": 0.5}},
         min_cell_size=1,
         max_cell_size=1,
     )

@@ -190,7 +190,9 @@ def test_documented_example_paths_exist():
 
     for input_path in input_directory.glob("*.json"):
         configuration = json.loads(input_path.read_text())
-        target = PROJECT_ROOT / configuration["target_slab_path"]
+        target = (
+            PROJECT_ROOT / "examples" / configuration["target_slab_path"]
+        )
         assert target.is_file(), f"{input_path}: {target}"
 
     documentation = "\n".join(path.read_text() for path in USER_DOCUMENTATION)

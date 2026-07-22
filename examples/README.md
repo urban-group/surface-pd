@@ -8,6 +8,7 @@ for the installed surface-pd commands.
 ```
 examples/
 ├── README.md                         # This file
+├── enumeration-python-api.ipynb      # Reviewed enumeration API tutorial
 ├── phase-diagram-python-api.ipynb    # Reviewed Python API tutorial
 ├── enumeration-examples/             # Input files and structures for enumeration
 │   ├── input/                        # JSON configuration files
@@ -24,6 +25,20 @@ examples/
 ```
 
 ## Quick Start
+
+Run all commands and notebooks in this directory from the `examples/`
+directory. This keeps paths identical across the maintained examples:
+
+```bash
+cd examples
+```
+
+The maintained
+[surface-enumeration Python API tutorial](enumeration-python-api.ipynb)
+loads a committed Li(100) slab, identifies its layers and selected surface
+sites, and prepares a vacancy enumeration. Its deterministic setup runs
+without external tools; the final enumlib-dependent operation is clearly
+marked and opt-in.
 
 The maintained
 [phase-diagram Python API tutorial](phase-diagram-python-api.ipynb) evaluates
@@ -43,7 +58,7 @@ choice. Example configurations are in `enumeration-examples/input`.
 **Example:**
 
 ```bash
-surface-enumeration examples/enumeration-examples/input/input-Li.json
+surface-enumeration enumeration-examples/input/input-Li.json
 ```
 
 ### 2. Phase Diagram Plotting
@@ -54,7 +69,7 @@ The `surface-pd-plot` command evaluates one versioned generalized configuration:
 
 ```bash
 surface-pd-plot \
-    examples/plotting-examples/lno-001-scan/charge.json \
+    plotting-examples/lno-001-scan/charge.json \
     --x-range 0 5 --y-range 1 1500 \
     --output lno-001-charge.pdf
 ```

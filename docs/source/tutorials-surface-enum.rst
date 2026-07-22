@@ -129,11 +129,10 @@ General format::
 
     $ surface-enumeration JSON_FILE -g
 
-For example, you can go to ``surface-pd``
-and try to do a full enumeration on the (104) surface slab model of
-|LiCoO2|. ::
+For example, from the repository's ``examples/`` directory, try a full
+enumeration on the (104) surface slab model of |LiCoO2|. ::
 
-    $ surface-enumeration examples/enumeration-examples/input/input-LCO.json
+    $ surface-enumeration enumeration-examples/input/input-LCO.json
 
 For this slab model, the most top O atoms (8 atoms after creating the
 supercell) will be enumerated. The first and second top surface Li atoms (8

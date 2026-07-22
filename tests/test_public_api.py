@@ -201,14 +201,14 @@ def test_enumeration_slab_has_explicit_validated_signature():
         "properties",
         "direction",
         "tolerance",
-        "to_be_enumerated_species",
+        "enumerated_species",
         "num_enumerated_layers",
         "symmetric",
     ]
     for name in (
         "direction",
         "tolerance",
-        "to_be_enumerated_species",
+        "enumerated_species",
         "num_enumerated_layers",
         "symmetric",
     ):
@@ -248,9 +248,9 @@ def test_enumeration_slab_rejects_private_constructor_names(old_name):
         ("tolerance", True),
         ("tolerance", 0),
         ("tolerance", float("inf")),
-        ("to_be_enumerated_species", "Li"),
-        ("to_be_enumerated_species", []),
-        ("to_be_enumerated_species", ["Li", "Li"]),
+        ("enumerated_species", "Li"),
+        ("enumerated_species", []),
+        ("enumerated_species", ["Li", "Li"]),
         ("num_enumerated_layers", {}),
         ("num_enumerated_layers", {"Li": 0}),
         ("num_enumerated_layers", {"Li": True}),
@@ -284,7 +284,7 @@ def test_enumeration_slab_owns_configuration_collections():
         properties={"source": "test"},
         direction=1,
         tolerance=0.1,
-        to_be_enumerated_species=species,
+        enumerated_species=species,
         num_enumerated_layers=layers,
         symmetric=False,
     )
@@ -293,11 +293,51 @@ def test_enumeration_slab_owns_configuration_collections():
 
     assert slab.direction == 1
     assert slab.tolerance == 0.1
-    assert slab.to_be_enumerated_species == ["Li"]
+    assert slab.enumerated_species == ["Li"]
+    assert not hasattr(slab, "to_be_enumerated_species")
     assert slab.num_enumerated_layers == {"Li": 1}
     assert slab.symmetric is False
     assert slab.labels == ["surface"]
     assert slab.properties == {"source": "test"}
+
+
+def test_enumeration_slab_from_structure_preserves_structure_data():
+    """The factory should preserve pymatgen data and add surface options."""
+    structure = Structure(
+        Lattice.tetragonal(3.0, 15.0),
+        ["Li", "O"],
+        [[0, 0, 0.2], [0, 0, 0.8]],
+        charge=0,
+        site_properties={"tag": ["bottom", "top"]},
+        labels=["li", "oxygen"],
+        properties={"source": "unit test"},
+    )
+
+    slab = EnumerationSlab.from_structure(
+        structure,
+        enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 1},
+        symmetric=False,
+    )
+
+    assert slab == structure
+    assert slab.charge == structure.charge
+    assert slab.site_properties == structure.site_properties
+    assert slab.labels == structure.labels
+    assert slab.properties == structure.properties
+    assert slab.enumerated_species == ["Li"]
+
+
+def test_layer_map_keys_must_match_enumerated_species():
+    """Each selected species should have exactly one layer count."""
+    with pytest.raises(ValueError, match="same species"):
+        EnumerationSlab(
+            Lattice.cubic(3),
+            ["Li", "O"],
+            [[0, 0, 0], [0, 0, 0.5]],
+            enumerated_species=["Li", "O"],
+            num_enumerated_layers={"Li": 1},
+        )
 
 
 def test_removed_post_check_compatibility_wrapper_is_not_available():

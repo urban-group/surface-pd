@@ -137,9 +137,9 @@ class PreCheck:
         """
         is_int = []
 
+        selected_indices = self.structure.get_enumerated_site_indices()
         num_atoms = {
-            key: len(value)
-            for key, value in self.structure.index_extraction()[2].items()
+            key: len(value) for key, value in selected_indices.items()
         }
         for comp in replace:
             for s, n_s in num_atoms.items():

@@ -38,7 +38,8 @@ from surface_pd.analysis.slab_analysis import (
     selective_dynamics_completion,
     structure_filter,
 )
-from surface_pd.core import EnumerationSlab, EnumWithComposition
+from surface_pd.core import EnumerationSlab
+from surface_pd.core.enum import _apply_raw_enumeration
 from surface_pd.core.post_check import PostCheck
 from surface_pd.core.pre_check import PreCheck
 from surface_pd.error import (
@@ -111,7 +112,7 @@ def automate_surface(
     # enumerated species, number of layers relaxed, whether to keep the
     # symmetry, direction of the slab, and the proximity tolerance for
     # adjacent atoms
-    input_structure.to_be_enumerated_species = species
+    input_structure.enumerated_species = species
     input_structure.num_enumerated_layers = num_enumerated_layers
     input_structure.symmetric = symmetric
     direction = input_structure.direction
@@ -147,9 +148,8 @@ def automate_surface(
     # Get the indices of the to-be-enumerated atoms on the surface.
     # Get the c_frac coordinates of the lower and upper boundaries of the
     # fixed region in the central slab.
-    center_bottom, center_top, relaxed_index = (
-        input_structure.index_extraction(only_top=False)
-    )
+    center_bottom, center_top = input_structure.get_fixed_region_bounds()
+    relaxed_index = input_structure.get_enumerated_site_indices()
 
     # Define the "dummy" species that will be used to substitute the target
     # species
@@ -159,7 +159,7 @@ def automate_surface(
 
     # Replace the to-be-enumerated species from the slab top surface with
     # "dummy" species. This will facilitate the enumeration code.
-    input_substituted = input_structure.surface_substitute(dummy_species)
+    input_substituted = input_structure._surface_substitute(dummy_species)
 
     # Initialize a number to store total number of enumerated slab models
     num = 0
@@ -188,11 +188,14 @@ def automate_surface(
 
             subs_dict = replace_dummy(subs_dict, dummy_species)
 
-            ewc = EnumWithComposition(
-                subs_dict=subs_dict, max_cell_size=max_cell_size
+            structures = _apply_raw_enumeration(
+                slab_substituted,
+                subs_dict,
+                1,
+                max_cell_size,
+                1e-5,
+                2000,
             )
-
-            structures = ewc.apply_enumeration(slab_substituted)
 
             # Filtered out the structures which has c lattice as the
             # largest lattice (a tall cuboid)

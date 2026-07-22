@@ -234,8 +234,8 @@ class PostCheck:
         )
         refined_structure.direction = self.direction
         refined_structure.tolerance = self.tolerance
-        refined_structure.to_be_enumerated_species = (
-            self.structure.to_be_enumerated_species
+        refined_structure.enumerated_species = (
+            self.structure.enumerated_species
         )
         refined_structure.num_enumerated_layers = (
             self.structure.num_enumerated_layers

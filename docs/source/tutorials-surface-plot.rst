@@ -94,13 +94,13 @@ arguments and inference rules are not part of the generalized command.
 
 The maintained PBE+U and SCAN+rVV10+U inputs have been migrated under
 ``examples/plotting-examples``. Each directory contains version-1 JSON and
-tables with explicit surface areas and numbers of represented surfaces. For
-example:
+tables with explicit surface areas and numbers of represented surfaces. From
+the repository's ``examples/`` directory, for example:
 
 .. code-block:: bash
 
     surface-pd-plot \
-        examples/plotting-examples/lno-001-scan/charge.json \
+        plotting-examples/lno-001-scan/charge.json \
         --x-range 0 5 --y-range 1 1500 \
         --output lno-001-charge.pdf
 

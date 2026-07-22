@@ -25,6 +25,14 @@ SYMMETRIC_ENUM_INPUT = (
     / "input-Li2O.json"
 )
 MAKESTR_CANDIDATES = ("makestr.x", "makeStr.x", "makeStr.py")
+LI_SLAB = (
+    PROJECT_ROOT
+    / "examples"
+    / "enumeration-examples"
+    / "structure"
+    / "electrode"
+    / "POSCAR_Li_100.vasp"
+)
 
 
 def _enumlib_env(tmp_path: Path):
@@ -58,7 +66,7 @@ def _write_absolute_input(source_path: Path, tmp_path: Path):
     """Write a temp enumeration input with absolute structure paths."""
     data = json.loads(source_path.read_text())
     data["target_slab_path"] = str(
-        (PROJECT_ROOT / data["target_slab_path"]).resolve()
+        (PROJECT_ROOT / "examples" / data["target_slab_path"]).resolve()
     )
     input_path = tmp_path / source_path.name
     input_path.write_text(json.dumps(data))
@@ -121,3 +129,45 @@ def test_symmetric_surface_enumeration_cli_smoke(tmp_path):
         "['Li', 'O'] with [1.0, 0.75] composition."
     ) in result.stdout
     assert "6 distinct structures are found totally." in result.stdout
+
+
+def test_public_enumerator_returns_only_in_plane_surface_cells(tmp_path):
+    """Reject enumlib derivatives that multiply or tilt the slab normal."""
+    _, _, env = _skip_without_enumlib(tmp_path)
+    script = f"""
+from pymatgen.core import Structure
+from surface_pd.core import EnumerationSlab, EnumWithComposition
+
+source = Structure.from_file({str(LI_SLAB)!r})
+slab = EnumerationSlab.from_structure(
+    source,
+    enumerated_species=["Li"],
+    num_enumerated_layers={{"Li": 1}},
+    symmetric=False,
+)
+results = EnumWithComposition(
+    {{"Li": {{"Li": 0.5}}}}, min_cell_size=2, max_cell_size=2
+).apply_enumeration(slab, max_structures=20)
+print(len(results))
+for result in results:
+    print(len(result), *result.lattice.abc)
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=PROJECT_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=120,
+    )
+
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.splitlines()
+    assert lines[0] == "2"
+    structures = [line.split() for line in lines[1:]]
+    assert [int(values[0]) for values in structures] == [17, 17]
+    assert all(
+        float(values[3]) == pytest.approx(30.791121)
+        for values in structures
+    )
