@@ -7,7 +7,7 @@ Overview
 
 ``surface-pd-plot`` evaluates and renders a generalized two-dimensional phase
 diagram from one versioned JSON configuration. The configuration names the
-thermodynamic models, axes, fixed conditions, phase tables, explicit column
+thermodynamic models, axis state variables, phase tables, explicit column
 mappings, and optional dataset alignments. No chemical
 species has a special command-line role.
 
@@ -21,24 +21,37 @@ Saving a figure is explicit:
 
 .. code-block:: bash
 
-    surface-pd-plot CONFIG.json --output diagram.pdf
+    surface-pd-plot CONFIG.json \
+        --x-range 0 5 --y-range 1 1500 \
+        --output diagram.pdf
 
 The filename extension selects any output format supported by Matplotlib, such
 as PDF, PNG, or SVG. Interactive display is also explicit:
 
 .. code-block:: bash
 
-    surface-pd-plot CONFIG.json --show
+    surface-pd-plot CONFIG.json \
+        --x-range 0 5 --y-range 1 1500 \
+        --show
 
 Both actions may be requested together:
 
 .. code-block:: bash
 
-    surface-pd-plot CONFIG.json --output diagram.png --show
+    surface-pd-plot CONFIG.json \
+        --x-range 0 5 --y-range 1 1500 \
+        --output diagram.png --show
 
 At least one of ``--output`` or ``--show`` is required. The command never
 chooses an output filename and never displays a window merely because a
 configuration was validated.
+
+Both evaluation ranges are required because the generalized command cannot
+infer scientifically meaningful voltage, temperature, or chemical-potential
+domains. ``--mesh-points N`` selects one shared linear density for quick
+inspection and defaults to 201 points on each axis. Repeat
+``--condition STATE_VARIABLE=VALUE`` for any model variables not assigned to
+an axis. Unequal or nonuniform coordinate arrays belong in the Python API.
 
 Workflow
 ========
@@ -88,6 +101,7 @@ example:
 
     surface-pd-plot \
         examples/plotting-examples/lno-001-scan/charge.json \
+        --x-range 0 5 --y-range 1 1500 \
         --output lno-001-charge.pdf
 
 The chemistry-specific implementation and metadata reader have been removed.

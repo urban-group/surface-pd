@@ -158,7 +158,11 @@ def test_lno_001_boundary_layout_regression():
         _PROJECT_ROOT
         / "examples/plotting-examples/lno-001-scan/charge.json"
     )
-    result = configuration.diagram_specification.evaluate(
+    specification = configuration.create_diagram_specification(
+        x_values=np.linspace(0.0, 5.0, 201),
+        y_values=np.linspace(1.0, 1500.0, 201),
+    )
+    result = specification.evaluate(
         configuration.model, configuration.load_datasets()
     )
 

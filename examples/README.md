@@ -55,6 +55,7 @@ The `surface-pd-plot` command evaluates one versioned generalized configuration:
 ```bash
 surface-pd-plot \
     examples/plotting-examples/lno-001-scan/charge.json \
+    --x-range 0 5 --y-range 1 1500 \
     --output lno-001-charge.pdf
 ```
 

@@ -321,6 +321,13 @@ scalar fixed conditions. Together, those inputs must match the state variables
 required by the ``GrandPotentialModel`` exactly. Missing variables and unused
 conditions are rejected before any phase energy is evaluated.
 
+``PhaseDiagramConfiguration.create_diagram_specification`` is a convenience
+factory that combines explicitly supplied evaluation coordinates and fixed
+conditions with the state-variable identities, labels, and units stored in
+JSON. Coordinate domains and mesh density are therefore chosen independently
+for every evaluation. Direct ``DiagramAxis`` construction remains available
+for fully custom metadata.
+
 The state mesh uses conventional plotting orientation equivalent to
 ``numpy.meshgrid(x, y, indexing="xy")``. Every numerical diagram array
 therefore has mesh shape

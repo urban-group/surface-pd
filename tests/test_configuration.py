@@ -49,25 +49,14 @@ def _configuration_data():
         "diagram": {
             "x_axis": {
                 "state_variable": "voltage",
-                "coordinates": {
-                    "kind": "linear",
-                    "start": 0.0,
-                    "stop": 5.0,
-                    "number": 6,
-                },
                 "label": "Potential vs. Li/Li+",
                 "unit": "V",
             },
             "y_axis": {
                 "state_variable": "temperature",
-                "coordinates": {
-                    "kind": "values",
-                    "values": [298.15, 500.0, 1000.0],
-                },
                 "label": "Temperature",
                 "unit": "K",
             },
-            "fixed_conditions": {"delta_mu": -0.25},
         },
         "datasets": [
             {
@@ -103,19 +92,15 @@ def test_configuration_constructs_every_builtin_model_and_diagram():
     assert configuration.schema_version == 1
     assert configuration.calculation_method == _METHOD
     assert configuration.components == ("Li", "O", "X", "C")
-    assert configuration.diagram_specification.x_axis.values.tolist() == [
-        0.0,
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-    ]
-    assert configuration.diagram_specification.y_axis.values.tolist() == [
-        298.15,
-        500.0,
-        1000.0,
-    ]
+    specification = configuration.create_diagram_specification(
+        x_values=[0.0, 1.0, 2.0],
+        y_values=[298.15, 500.0, 1000.0],
+        fixed_conditions={"delta_mu": -0.25},
+    )
+    assert specification.x_axis.values.tolist() == [0.0, 1.0, 2.0]
+    assert specification.y_axis.values.tolist() == [298.15, 500.0, 1000.0]
+    assert specification.x_axis.label == "Potential vs. Li/Li+"
+    assert specification.y_axis.unit == "K"
 
 
 def test_configuration_rejects_rendering_as_non_scientific_state():
@@ -175,11 +160,7 @@ def test_configuration_json_round_trip_is_canonical_and_owned(tmp_path):
             1,
             "intercalation_voltage.*unknown fields",
         ),
-        (
-            ("diagram", "x_axis", "coordinates", "unknown"),
-            1,
-            "linear coordinates.*unknown fields",
-        ),
+        (("diagram", "x_axis", "unknown"), 1, "x_axis.*unknown fields"),
         (
             ("datasets", 0, "column_overrides", "unknown"),
             "column",
@@ -215,12 +196,7 @@ def test_configuration_rejects_unknown_fields_recursively(
             ),
             "unknown chemical-potential model",
         ),
-        (
-            lambda data: data["diagram"]["x_axis"]["coordinates"].update(
-                number=1
-            ),
-            "number",
-        ),
+        (lambda data: data["diagram"].update(fixed_conditions={}), "unknown"),
         (
             lambda data: data["datasets"][0].update(number_of_surfaces=0),
             "number_of_surfaces",
@@ -236,6 +212,34 @@ def test_configuration_rejects_missing_versioned_or_unsafe_data(
 
     with pytest.raises((TypeError, ValueError), match=message):
         PhaseDiagramConfiguration(data)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"x_values": [0.0]}, "at least two"),
+        ({"x_values": [1.0, 0.0]}, "strictly increasing"),
+        ({"fixed_conditions": {}}, "missing: delta_mu"),
+        (
+            {"fixed_conditions": {"delta_mu": -0.25, "unused": 0.0}},
+            "unused: unused",
+        ),
+    ],
+)
+def test_create_diagram_specification_validates_evaluation_domain(
+    kwargs, message
+):
+    """Coordinates and fixed slices should be explicit evaluation inputs."""
+    configuration = PhaseDiagramConfiguration(_configuration_data())
+    arguments = {
+        "x_values": [0.0, 1.0],
+        "y_values": [300.0, 600.0],
+        "fixed_conditions": {"delta_mu": -0.25},
+    }
+    arguments.update(kwargs)
+
+    with pytest.raises((TypeError, ValueError), match=message):
+        configuration.create_diagram_specification(**arguments)
 
 
 def test_configuration_rejects_malformed_json(tmp_path):

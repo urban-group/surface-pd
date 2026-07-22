@@ -22,7 +22,7 @@ Every configuration contains exactly these top-level fields:
 ``reference_phases``
     Constant bulk equalities used to solve dependent chemical potentials.
 ``diagram``
-    Two axes and finite scalar fixed conditions.
+    State-variable identities and default display metadata for two axes.
 ``datasets``
     Separate whitespace-delimited tables with canonical columns and optional
     name overrides.
@@ -52,25 +52,41 @@ The model registry contains only:
     ``raw_o2_energy_ev_per_molecule`` and ``correction_ev_per_molecule`` in eV
     per O2 molecule.
 
-Axes use either tagged linear coordinates
+The ``diagram`` node assigns model state variables to x and y axes and stores
+convenient default display metadata:
 
 .. code-block:: json
 
     {
-      "kind": "linear",
-      "start": 0.0,
-      "stop": 5.0,
-      "number": 501
+      "x_axis": {
+        "state_variable": "voltage",
+        "label": "Potential vs. Li/Li+",
+        "unit": "V"
+      },
+      "y_axis": {
+        "state_variable": "temperature",
+        "label": "Temperature",
+        "unit": "K"
+      }
     }
 
-or explicit, strictly increasing values:
+The JSON does not own evaluation ranges, coordinate arrays, mesh density, or
+fixed thermodynamic conditions. Python callers provide them for each numerical
+evaluation:
 
-.. code-block:: json
+.. code-block:: python
 
-    {
-      "kind": "values",
-      "values": [0.0, 0.25, 1.0, 2.0]
-    }
+    specification = configuration.create_diagram_specification(
+        x_values=numpy.linspace(0.0, 5.0, 501),
+        y_values=numpy.linspace(1.0, 1500.0, 501),
+        fixed_conditions={},
+    )
+
+Coordinates may be nonuniform but must be finite, strictly increasing, and
+contain at least two values. Required model state variables not assigned to an
+axis must be supplied in ``fixed_conditions``. The configured labels and units
+initialize the Matplotlib axes and can be replaced through the returned
+``Axes`` object.
 
 The complete Draft 2020-12 schema is packaged as
 ``surface_pd/schemas/phase-diagram-config-v1.schema.json``. Runtime validation

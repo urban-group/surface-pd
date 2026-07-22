@@ -6,8 +6,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-
 from surface_pd.thermodynamics import (
     AlignedPhaseDataset,
     ConstantChemicalPotential,
@@ -22,7 +20,6 @@ from surface_pd.thermodynamics import (
     ReferencePhase,
 )
 from surface_pd.thermodynamics._validation import (
-    validate_finite_real,
     validate_identifier,
     validate_positive_integer,
     validate_provenance,
@@ -140,45 +137,19 @@ def _parse_model(value: object, component: str) -> object:
     )
 
 
-def _parse_axis(value: object, context: str) -> DiagramAxis:
-    """Construct an axis from linear or explicit coordinates."""
+def _parse_axis_metadata(
+    value: object, context: str
+) -> tuple[str, str, str]:
+    """Return one configured state-variable identity and display metadata."""
     mapping = _require_keys(
         value,
-        {"state_variable", "coordinates", "label", "unit"},
+        {"state_variable", "label", "unit"},
         context,
     )
-    coordinates = _require_mapping(
-        mapping["coordinates"], f"{context} coordinates"
-    )
-    kind = coordinates.get("kind")
-    if kind == "linear":
-        coordinates = _require_keys(
-            coordinates,
-            {"kind", "start", "stop", "number"},
-            "linear coordinates",
-        )
-        start = validate_finite_real(coordinates["start"], "start")
-        stop = validate_finite_real(coordinates["stop"], "stop")
-        number = validate_positive_integer(coordinates["number"], "number")
-        if number < 2:
-            raise ValueError("number must be at least 2")
-        if stop <= start:
-            raise ValueError("linear coordinate stop must exceed start")
-        values = np.linspace(start, stop, number)
-    elif kind == "values":
-        coordinates = _require_keys(
-            coordinates,
-            {"kind", "values"},
-            "values coordinates",
-        )
-        values = coordinates["values"]
-    else:
-        raise ValueError(f"unknown coordinate kind {kind!r}")
-    return DiagramAxis(
-        mapping["state_variable"],
-        values,
-        mapping["label"],
-        mapping["unit"],
+    return (
+        validate_variable_name(mapping["state_variable"]),
+        validate_provenance(mapping["label"], f"{context} label"),
+        validate_provenance(mapping["unit"], f"{context} unit"),
     )
 
 
@@ -257,9 +228,10 @@ class PhaseDiagramConfiguration:
         "_calculation_method",
         "_components",
         "_data",
-        "_diagram_specification",
         "_model",
         "_source_path",
+        "_x_axis_metadata",
+        "_y_axis_metadata",
     )
 
     def __init__(
@@ -354,31 +326,27 @@ class PhaseDiagramConfiguration:
 
         diagram_data = _require_keys(
             root["diagram"],
-            {"x_axis", "y_axis", "fixed_conditions"},
+            {"x_axis", "y_axis"},
             "diagram",
         )
-        diagram = PhaseDiagramSpecification(
-            _parse_axis(diagram_data["x_axis"], "x_axis"),
-            _parse_axis(diagram_data["y_axis"], "y_axis"),
-            diagram_data["fixed_conditions"],
+        x_axis_metadata = _parse_axis_metadata(
+            diagram_data["x_axis"], "x_axis"
         )
-        supplied = {
-            diagram.x_axis.state_variable,
-            diagram.y_axis.state_variable,
-            *diagram.fixed_conditions,
-        }
-        required = set(model.required_state_variables)
-        if supplied != required:
-            missing = sorted(required - supplied)
-            unused = sorted(supplied - required)
-            details = []
-            if missing:
-                details.append("missing: " + ", ".join(missing))
-            if unused:
-                details.append("unused: " + ", ".join(unused))
+        y_axis_metadata = _parse_axis_metadata(
+            diagram_data["y_axis"], "y_axis"
+        )
+        axis_variables = {x_axis_metadata[0], y_axis_metadata[0]}
+        if len(axis_variables) != 2:
             raise ValueError(
-                "diagram state variables do not match model requirements; "
-                + "; ".join(details)
+                "x_axis and y_axis state variables must be distinct"
+            )
+        unknown_axis_variables = axis_variables - set(
+            model.required_state_variables
+        )
+        if unknown_axis_variables:
+            raise ValueError(
+                "diagram axes contain unused state variables: "
+                + ", ".join(sorted(unknown_axis_variables))
             )
 
         dataset_ids = self._validate_datasets(root["datasets"], components)
@@ -389,7 +357,8 @@ class PhaseDiagramConfiguration:
         self._calculation_method = method
         self._components = components
         self._model = model
-        self._diagram_specification = diagram
+        self._x_axis_metadata = x_axis_metadata
+        self._y_axis_metadata = y_axis_metadata
 
     @staticmethod
     def _validate_datasets(
@@ -497,10 +466,65 @@ class PhaseDiagramConfiguration:
         """Return the validated generalized grand-potential model."""
         return self._model
 
-    @property
-    def diagram_specification(self) -> PhaseDiagramSpecification:
-        """Return the validated two-dimensional diagram specification."""
-        return self._diagram_specification
+    def create_diagram_specification(
+        self,
+        *,
+        x_values: object,
+        y_values: object,
+        fixed_conditions: Mapping[str, object] | None = None,
+    ) -> PhaseDiagramSpecification:
+        """Construct one explicit numerical evaluation domain.
+
+        Parameters
+        ----------
+        x_values, y_values : array-like
+            Finite, strictly increasing coordinates supplied for this
+            evaluation. Each axis requires at least two values.
+        fixed_conditions : mapping or None, optional
+            Finite scalar values for required model state variables that are
+            not assigned to either configured axis.
+
+        Returns
+        -------
+        PhaseDiagramSpecification
+            Validated numerical specification using the configured state-
+            variable identities and default display metadata.
+        """
+        fixed = {} if fixed_conditions is None else fixed_conditions
+        specification = PhaseDiagramSpecification(
+            DiagramAxis(
+                self._x_axis_metadata[0],
+                x_values,
+                self._x_axis_metadata[1],
+                self._x_axis_metadata[2],
+            ),
+            DiagramAxis(
+                self._y_axis_metadata[0],
+                y_values,
+                self._y_axis_metadata[1],
+                self._y_axis_metadata[2],
+            ),
+            fixed,
+        )
+        supplied = {
+            specification.x_axis.state_variable,
+            specification.y_axis.state_variable,
+            *specification.fixed_conditions,
+        }
+        required = set(self.model.required_state_variables)
+        if supplied != required:
+            missing = sorted(required - supplied)
+            unused = sorted(supplied - required)
+            details = []
+            if missing:
+                details.append("missing: " + ", ".join(missing))
+            if unused:
+                details.append("unused: " + ", ".join(unused))
+            raise ValueError(
+                "diagram state variables do not match model requirements; "
+                + "; ".join(details)
+            )
+        return specification
 
     @property
     def source_path(self) -> Path | None:

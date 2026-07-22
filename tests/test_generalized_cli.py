@@ -14,6 +14,24 @@ from surface_pd.configuration import PhaseDiagramConfiguration
 matplotlib.use("Agg")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_EVALUATION = {
+    "x_range": (0.0, 1.0),
+    "y_range": (300.0, 600.0),
+    "mesh_points": 2,
+}
+
+
+def _cli_arguments(path):
+    """Return one explicit quick-inspection evaluation domain."""
+    return [
+        str(path),
+        "--x-range",
+        "0",
+        "1",
+        "--y-range",
+        "300",
+        "600",
+    ]
 
 
 def _configuration_data():
@@ -45,23 +63,14 @@ def _configuration_data():
         "diagram": {
             "x_axis": {
                 "state_variable": "voltage",
-                "coordinates": {
-                    "kind": "values",
-                    "values": [0.0, 1.0],
-                },
                 "label": "Potential",
                 "unit": "V",
             },
             "y_axis": {
                 "state_variable": "temperature",
-                "coordinates": {
-                    "kind": "values",
-                    "values": [300.0, 600.0],
-                },
                 "label": "Temperature",
                 "unit": "K",
             },
-            "fixed_conditions": {},
         },
         "datasets": [
             {
@@ -112,6 +121,10 @@ def test_help_exposes_only_generalized_input_and_explicit_actions():
     assert "CONFIG" in result.stdout
     assert "--output" in result.stdout
     assert "--show" in result.stdout
+    assert "--x-range" in result.stdout
+    assert "--y-range" in result.stdout
+    assert "--mesh-points" in result.stdout
+    assert "--condition" in result.stdout
     assert "--color-component" in result.stdout
     assert "--phase-identity-colors" in result.stdout
     assert "--colormap" not in result.stdout
@@ -125,7 +138,7 @@ def test_cli_requires_an_explicit_output_or_show_action(tmp_path):
     path = _write_inputs(tmp_path)
 
     with pytest.raises(SystemExit, match="2"):
-        surface_pd_plot.main([str(path)])
+        surface_pd_plot.main(_cli_arguments(path))
 
 
 def test_prepare_phase_diagram_defaults_to_first_independent_component(
@@ -137,7 +150,7 @@ def test_prepare_phase_diagram_defaults_to_first_independent_component(
     )
 
     result, figure, axes, colorbar = surface_pd_plot._prepare_phase_diagram(
-        configuration
+        configuration, **_EVALUATION
     )
 
     assert result.phase_ids == ("surface:alpha", "surface:beta")
@@ -150,6 +163,56 @@ def test_prepare_phase_diagram_defaults_to_first_independent_component(
     figure.clear()
 
 
+def test_prepare_phase_diagram_uses_explicit_range_and_mesh_density(tmp_path):
+    """CLI evaluation controls should determine the numerical mesh."""
+    configuration = PhaseDiagramConfiguration.read_json(
+        _write_inputs(tmp_path)
+    )
+
+    result, figure, _, _ = surface_pd_plot._prepare_phase_diagram(
+        configuration,
+        x_range=(-2.0, 3.0),
+        y_range=(250.0, 1250.0),
+        mesh_points=5,
+    )
+
+    assert result.mesh_shape == (5, 5)
+    assert result.specification.x_axis.values.tolist() == [
+        -2.0,
+        -0.75,
+        0.5,
+        1.75,
+        3.0,
+    ]
+    assert result.specification.y_axis.values[[0, -1]].tolist() == [
+        250.0,
+        1250.0,
+    ]
+    figure.clear()
+
+
+def test_cli_fixed_condition_parser_is_explicit():
+    """Additional thermodynamic slices should use NAME=VALUE syntax."""
+    assert surface_pd_plot._fixed_condition("delta_mu=-0.25") == (
+        "delta_mu",
+        -0.25,
+    )
+    with pytest.raises(SystemExit):
+        surface_pd_plot._parser().parse_args(
+            [
+                "config.json",
+                "--x-range",
+                "0",
+                "1",
+                "--y-range",
+                "0",
+                "1",
+                "--condition",
+                "invalid",
+            ]
+        )
+
+
 def test_prepare_phase_diagram_accepts_simple_cli_coloring_choices(tmp_path):
     """Quick inspection may select a component or discrete phase identity."""
     configuration = PhaseDiagramConfiguration.read_json(
@@ -157,11 +220,11 @@ def test_prepare_phase_diagram_accepts_simple_cli_coloring_choices(tmp_path):
     )
 
     _, figure, _, colorbar = surface_pd_plot._prepare_phase_diagram(
-        configuration, color_component="O"
+        configuration, color_component="O", **_EVALUATION
     )
     _, identity_figure, _, identity_colorbar = (
         surface_pd_plot._prepare_phase_diagram(
-            configuration, phase_identity_colors=True
+            configuration, phase_identity_colors=True, **_EVALUATION
         )
     )
 
@@ -179,7 +242,7 @@ def test_prepare_rejects_nonindependent_color_component(tmp_path):
 
     with pytest.raises(ValueError, match="independent component"):
         surface_pd_plot._prepare_phase_diagram(
-            configuration, color_component="not-present"
+            configuration, color_component="not-present", **_EVALUATION
         )
 
 
@@ -195,7 +258,9 @@ def test_cli_writes_output_without_showing(tmp_path, monkeypatch):
 
     monkeypatch.setattr(surface_pd_plot.plt, "show", record_show)
 
-    surface_pd_plot.main([str(path), "--output", str(output)])
+    surface_pd_plot.main(
+        [*_cli_arguments(path), "--output", str(output)]
+    )
 
     assert output.is_file()
     assert output.stat().st_size > 0
@@ -208,7 +273,7 @@ def test_cli_show_action_does_not_create_an_output(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(surface_pd_plot.plt, "show", lambda: calls.append(1))
 
-    surface_pd_plot.main([str(path), "--show"])
+    surface_pd_plot.main([*_cli_arguments(path), "--show"])
 
     assert calls == [1]
     assert not (tmp_path / "diagram.pdf").exists()
@@ -222,7 +287,7 @@ def test_cli_can_save_and_show_in_one_invocation(tmp_path, monkeypatch):
     monkeypatch.setattr(surface_pd_plot.plt, "show", lambda: calls.append(1))
 
     surface_pd_plot.main(
-        [str(path), "--output", str(output), "--show"]
+        [*_cli_arguments(path), "--output", str(output), "--show"]
     )
 
     assert output.is_file()
@@ -241,7 +306,7 @@ def test_invalid_configuration_has_no_rendering_side_effects(
 
     with pytest.raises(SystemExit, match="2"):
         surface_pd_plot.main(
-            [str(path), "--output", str(output), "--show"]
+            [*_cli_arguments(path), "--output", str(output), "--show"]
         )
 
     assert not output.exists()
@@ -262,7 +327,7 @@ def test_cli_reports_table_context_without_a_traceback(tmp_path):
             sys.executable,
             "-m",
             "surface_pd.cli.surface_pd_plot",
-            str(path),
+            *_cli_arguments(path),
             "--output",
             str(output),
         ],
@@ -342,7 +407,7 @@ def test_cli_evaluates_configured_alignment(tmp_path):
     path.write_text(json.dumps(data))
 
     result, figure, _, _ = surface_pd_plot._prepare_phase_diagram(
-        PhaseDiagramConfiguration.read_json(path)
+        PhaseDiagramConfiguration.read_json(path), **_EVALUATION
     )
 
     assert result.datasets[1].energy_offset_ev == pytest.approx(-25.0)

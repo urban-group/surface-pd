@@ -36,23 +36,14 @@ def _configuration_data(dataset_path="phases.dat"):
         "diagram": {
             "x_axis": {
                 "state_variable": "mu_A",
-                "coordinates": {
-                    "kind": "values",
-                    "values": [-1.0, 0.0],
-                },
                 "label": "A chemical potential",
                 "unit": "eV",
             },
             "y_axis": {
                 "state_variable": "mu_B",
-                "coordinates": {
-                    "kind": "values",
-                    "values": [-1.0, 0.0],
-                },
                 "label": "B chemical potential",
                 "unit": "eV",
             },
-            "fixed_conditions": {},
         },
         "datasets": [
             {

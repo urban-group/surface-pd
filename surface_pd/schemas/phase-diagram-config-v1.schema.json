@@ -145,42 +145,12 @@
         "energy_ev_per_formula_unit": {"$ref": "#/$defs/finiteNumber"}
       }
     },
-    "linearCoordinates": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "start", "stop", "number"],
-      "properties": {
-        "kind": {"const": "linear"},
-        "start": {"$ref": "#/$defs/finiteNumber"},
-        "stop": {"$ref": "#/$defs/finiteNumber"},
-        "number": {"type": "integer", "minimum": 2}
-      }
-    },
-    "explicitCoordinates": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "values"],
-      "properties": {
-        "kind": {"const": "values"},
-        "values": {
-          "type": "array",
-          "minItems": 2,
-          "items": {"$ref": "#/$defs/finiteNumber"}
-        }
-      }
-    },
     "axis": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["state_variable", "coordinates", "label", "unit"],
+      "required": ["state_variable", "label", "unit"],
       "properties": {
         "state_variable": {"$ref": "#/$defs/identifier"},
-        "coordinates": {
-          "oneOf": [
-            {"$ref": "#/$defs/linearCoordinates"},
-            {"$ref": "#/$defs/explicitCoordinates"}
-          ]
-        },
         "label": {"$ref": "#/$defs/nonemptyString"},
         "unit": {"$ref": "#/$defs/nonemptyString"}
       }
@@ -188,14 +158,10 @@
     "diagram": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["x_axis", "y_axis", "fixed_conditions"],
+      "required": ["x_axis", "y_axis"],
       "properties": {
         "x_axis": {"$ref": "#/$defs/axis"},
-        "y_axis": {"$ref": "#/$defs/axis"},
-        "fixed_conditions": {
-          "type": "object",
-          "additionalProperties": {"$ref": "#/$defs/finiteNumber"}
-        }
+        "y_axis": {"$ref": "#/$defs/axis"}
       }
     },
     "columnOverrides": {

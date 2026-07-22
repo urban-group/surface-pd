@@ -33,27 +33,14 @@
   "diagram": {
     "x_axis": {
       "state_variable": "voltage",
-      "coordinates": {
-        "kind": "linear",
-        "start": 0,
-        "stop": 5,
-        "number": 201
-      },
       "label": "Potential vs. Li/Li+",
       "unit": "V"
     },
     "y_axis": {
       "state_variable": "temperature",
-      "coordinates": {
-        "kind": "linear",
-        "start": 1,
-        "stop": 1500,
-        "number": 201
-      },
       "label": "Temperature",
       "unit": "K"
-    },
-    "fixed_conditions": {}
+    }
   },
   "datasets": [
     {

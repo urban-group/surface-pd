@@ -38,7 +38,9 @@ def test_phase_diagram_notebook_executes_from_examples_directory():
     executed = client.execute()
 
     assert executed.cells[-1].cell_type == "code"
-    assert not executed.cells[-1].get("outputs", [])
+    outputs = executed.cells[-1].get("outputs", [])
+    assert len(outputs) == 1
+    assert outputs[0].output_type == "display_data"
 
 
 def test_jupyter_checkpoint_files_are_absent():

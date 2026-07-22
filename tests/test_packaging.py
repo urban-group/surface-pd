@@ -197,7 +197,6 @@ def test_installed_surface_plot_command_creates_an_image(
         "diagram": {
             axis: {
                 "state_variable": variable,
-                "coordinates": {"kind": "values", "values": [-1.0, 0.0]},
                 "label": label,
                 "unit": "eV",
             }
@@ -221,7 +220,6 @@ def test_installed_surface_plot_command_creates_an_image(
         ],
         "alignments": [],
     }
-    data["diagram"]["fixed_conditions"] = {}
     configuration = tmp_path / "config.json"
     configuration.write_text(json.dumps(data))
     output = tmp_path / "diagram.png"
@@ -230,6 +228,12 @@ def test_installed_surface_plot_command_creates_an_image(
         [
             str(scripts_dir / "surface-pd-plot"),
             str(configuration),
+            "--x-range",
+            "-1",
+            "0",
+            "--y-range",
+            "-1",
+            "0",
             "--output",
             str(output),
         ],
