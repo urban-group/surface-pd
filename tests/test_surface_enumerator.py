@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from pymatgen.core import Lattice, Structure
 
-from surface_pd.core import EnumerationSlab, EnumWithComposition
+from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 from surface_pd.error import IncompatibleSymmError
 
 
@@ -193,7 +193,11 @@ def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
     tilted = slab.copy()
     tilted.make_supercell([[1, 0, 1], [0, 2, 0], [0, 0, 1]])
 
+    requested_raw_limit = None
+
     def fake_raw_enumeration(*args, **kwargs):
+        nonlocal requested_raw_limit
+        requested_raw_limit = args[-1]
         return [
             {"structure": doubled_normal},
             {"structure": tilted},
@@ -213,16 +217,52 @@ def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
         fake_raw_enumeration,
     )
     monkeypatch.setattr(EnumerationSlab, "analyze", counted_analyze)
-    enumerator = EnumWithComposition(
+    enumerator = SurfaceEnumerator(
         {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
     )
 
-    results = enumerator.apply_enumeration(slab)
+    results = enumerator.apply_enumeration(slab, max_structures=7)
 
     assert len(results) == 1
+    assert requested_raw_limit == 7
     assert analyze_calls == 1
     assert np.allclose(results[0].lattice.matrix[2], slab.lattice.matrix[2])
     assert all("X" not in str(species) for species in results[0].species)
+    assert results[0].enumeration_metadata.transformation_matrix == (
+        (2, 0, 0),
+        (0, 1, 0),
+        (0, 0, 1),
+    )
+    assert results[0].enumeration_metadata.area_multiplier == 2
+    assert results[0].enumeration_metadata.raw_candidate_rank == 2
+    assert results[0].enumeration_metadata.symmetric is False
+    with pytest.raises(AttributeError):
+        results[0].enumeration_metadata.area_multiplier = 3
+
+
+def test_finalized_candidates_retain_raw_order_without_deduplication(
+    monkeypatch,
+):
+    """Accepted raw candidates should remain separate and retain rank."""
+    slab = _configured_slab()
+    candidate = slab.copy()
+    candidate.make_supercell([[2, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    monkeypatch.setattr(
+        "surface_pd.core.enum._apply_raw_enumeration",
+        lambda *args, **kwargs: [
+            {"structure": candidate.copy()},
+            {"structure": candidate.copy()},
+        ],
+    )
+    results = SurfaceEnumerator(
+        {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
+    ).apply_enumeration(slab)
+
+    assert len(results) == 2
+    assert [
+        result.enumeration_metadata.raw_candidate_rank for result in results
+    ] == [0, 1]
 
 
 def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):
@@ -240,7 +280,7 @@ def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):
     monkeypatch.setattr(
         "surface_pd.core.enum._apply_raw_enumeration", fail_if_called
     )
-    enumerator = EnumWithComposition(
+    enumerator = SurfaceEnumerator(
         {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
     )
 
@@ -248,3 +288,75 @@ def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):
         enumerator.apply_enumeration(slab)
 
     assert raw_called is False
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"replacements": {}},
+        {"replacements": {"Li": {"Li": -0.1}}},
+        {"replacements": {"Li": {"Li": 1.1}}},
+        {"replacements": {"Li": {"Li": float("nan")}}},
+        {"replacements": {"Li": {"Li": 0.6, "Na": 0.5}}},
+        {"replacements": {"Li": {"Li": 1}}, "min_cell_size": 0},
+        {
+            "replacements": {"Li": {"Li": 1}},
+            "min_cell_size": 2,
+            "max_cell_size": 1,
+        },
+        {
+            "replacements": {"Li": {"Li": 1}},
+            "enum_precision_parameter": 0,
+        },
+    ],
+)
+def test_surface_enumerator_rejects_invalid_configuration(kwargs):
+    """Malformed occupancy and cell-size requests should fail immediately."""
+    with pytest.raises((TypeError, ValueError)):
+        SurfaceEnumerator(**kwargs)
+
+
+def test_surface_enumerator_owns_validated_replacements():
+    """Caller mutation must not alter validated enumeration settings."""
+    replacements = {"Li": {"Li": 0.5}}
+    enumerator = SurfaceEnumerator(replacements)
+
+    replacements["Li"]["Li"] = 1.0
+
+    assert enumerator.replacements == {"Li": {"Li": 0.5}}
+    with pytest.raises(TypeError):
+        enumerator.replacements["Li"]["Li"] = 1.0
+
+
+def test_surface_enumerator_rejects_unrealizable_occupancy(monkeypatch):
+    """No allowed area multiplier can realize one-third of one site."""
+    slab = _configured_slab()
+    enumerator = SurfaceEnumerator(
+        {"Li": {"Li": 1 / 3}}, min_cell_size=1, max_cell_size=2
+    )
+    raw_called = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal raw_called
+        raw_called = True
+        return []
+
+    monkeypatch.setattr(
+        "surface_pd.core.enum._apply_raw_enumeration", fail_if_called
+    )
+
+    with pytest.raises(ValueError, match="cannot be realized"):
+        enumerator.apply_enumeration(slab)
+
+    assert raw_called is False
+
+
+@pytest.mark.parametrize("max_structures", [True, 0, -1, 1.5])
+def test_surface_enumerator_validates_raw_candidate_limit(max_structures):
+    """The raw enumlib candidate limit must be a positive integer."""
+    enumerator = SurfaceEnumerator({"Li": {"Li": 1.0}})
+
+    with pytest.raises((TypeError, ValueError)):
+        enumerator.apply_enumeration(
+            _configured_slab(), max_structures=max_structures
+        )

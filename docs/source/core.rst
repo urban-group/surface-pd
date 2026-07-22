@@ -2,10 +2,16 @@
 core
 ====
 
-``EnumWithComposition`` class
-*****************************
+``SurfaceEnumerator`` class
+***************************
 
-.. autoclass:: surface_pd.core.EnumWithComposition
+.. autoclass:: surface_pd.core.SurfaceEnumerator
+    :members:
+
+``SurfaceEnumerationMetadata`` class
+************************************
+
+.. autoclass:: surface_pd.core.SurfaceEnumerationMetadata
     :members:
 
 ``EnumerationSlab`` class

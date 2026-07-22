@@ -16,7 +16,7 @@ enumeration transformation:
 
     from pymatgen.core import Lattice
 
-    from surface_pd.core import EnumerationSlab, EnumWithComposition
+    from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 
     slab = EnumerationSlab(
         Lattice.tetragonal(3.0, 15.0),
@@ -32,7 +32,7 @@ enumeration transformation:
     ]
     print(populations)
 
-    enumerator = EnumWithComposition(
+    enumerator = SurfaceEnumerator(
         {"Li": {"Li": 0.5}},
         min_cell_size=1,
         max_cell_size=1,
@@ -45,7 +45,7 @@ enumeration transformation:
     (1, 1)
 
 The example configures enumeration but does not call
-:meth:`~surface_pd.core.EnumWithComposition.apply_enumeration`, because that
+:meth:`~surface_pd.core.SurfaceEnumerator.apply_enumeration`, because that
 operation requires the external enumlib executables. See
 :doc:`tutorials-surface-enum` for the complete command-line workflow.
 

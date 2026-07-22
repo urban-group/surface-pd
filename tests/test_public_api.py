@@ -24,7 +24,8 @@ from surface_pd.core.post_check import PostCheck
 
 PUBLIC_CLASSES = (
     core.EnumerationSlab,
-    core.EnumWithComposition,
+    core.SurfaceEnumerationMetadata,
+    core.SurfaceEnumerator,
     plot.CompositionColoring,
     configuration.PhaseDiagramConfiguration,
     thermodynamics.ThermodynamicState,
@@ -87,7 +88,8 @@ def test_subpackage_exports_define_the_supported_api():
         "EnumerationSlab",
         "SlabAnalysis",
         "SlabLayer",
-        "EnumWithComposition",
+        "SurfaceEnumerationMetadata",
+        "SurfaceEnumerator",
     ]
     assert plot.__all__ == [
         "CompositionColoring",
@@ -113,6 +115,7 @@ def test_subpackage_exports_define_the_supported_api():
         "ThermodynamicState",
     ]
     assert analysis.__all__ == []
+    assert not hasattr(core, "EnumWithComposition")
     assert util.__all__ == []
     assert error.__all__ == [
         "NoInversionSymmetryError",

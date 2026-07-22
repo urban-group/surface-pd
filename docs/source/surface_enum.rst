@@ -16,7 +16,7 @@ Workflow
 - The to-be-enumerated composition that user defined will be further checked to make sure it will yield integral number of atoms.
 - The slab model will be separated as the top, center, and bottom regions according to the statement of constrains defined for all atoms (user defined).
 - The top and center regions will be combined and create a pseudo slab model.
-- The target atoms in the pseudo slab model will be substituted by dummy species to facilitate the EnumWithComposition class to detect and enumerate.
+- Surface-pd manages temporary internal marker species before passing the configured surface sites to :class:`~surface_pd.core.SurfaceEnumerator`.
 - The "top" surface of the pseudo slab model will be enumerated in 3D to generate all geometrically distinct slab models (a, b, and c lattice parameters are all possible to change). 
 - Applying the filtration steps to remove those enumerated pseudo slab models have c lattice parameter changed since we only want 2D surface enumeration (only a and b lattice parameters are allowed to change).
 - The remaining enumerated pseudo slab models will be symmetrized on the basis of the inversion symmetry.

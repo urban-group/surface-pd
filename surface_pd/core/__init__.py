@@ -16,12 +16,13 @@ post_check
     Post-processing validation for enumerated structures.
 """
 
-from .enum import EnumWithComposition
+from .enum import SurfaceEnumerationMetadata, SurfaceEnumerator
 from .enumeration_slab import EnumerationSlab, SlabAnalysis, SlabLayer
 
 __all__ = [
     "EnumerationSlab",
     "SlabAnalysis",
     "SlabLayer",
-    "EnumWithComposition",
+    "SurfaceEnumerationMetadata",
+    "SurfaceEnumerator",
 ]

@@ -61,7 +61,7 @@ def test_enumeration_notebook_is_a_clean_maintained_tutorial():
     assert "EnumerationSlab" in source
     assert "EnumerationSlab.from_file" in source
     assert ".analyze()" in source
-    assert "EnumWithComposition" in source
+    assert "SurfaceEnumerator" in source
     assert "enumlib" in source
     assert "symmetric" in source
     assert "max_cell_size" in source

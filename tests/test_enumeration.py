@@ -144,7 +144,7 @@ def test_public_enumerator_returns_only_in_plane_surface_cells(tmp_path):
     _, _, env = _skip_without_enumlib(tmp_path)
     script = f"""
 from pymatgen.core import Structure
-from surface_pd.core import EnumerationSlab, EnumWithComposition
+from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 
 source = Structure.from_file({str(LI_SLAB)!r})
 slab = EnumerationSlab.from_structure(
@@ -153,7 +153,7 @@ slab = EnumerationSlab.from_structure(
     num_enumerated_layers={{"Li": 1}},
     symmetric=False,
 )
-results = EnumWithComposition(
+results = SurfaceEnumerator(
     {{"Li": {{"Li": 0.5}}}}, min_cell_size=2, max_cell_size=2
 ).apply_enumeration(slab, max_structures=20)
 print(len(results))
@@ -186,7 +186,7 @@ def test_public_enumerator_finalizes_symmetric_surface_cells(tmp_path):
     _, _, env = _skip_without_enumlib(tmp_path)
     script = f"""
 from pymatgen.core import Structure
-from surface_pd.core import EnumerationSlab, EnumWithComposition
+from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 
 source = Structure.from_file({str(LI2O_SLAB)!r})
 slab = EnumerationSlab.from_structure(
@@ -195,7 +195,7 @@ slab = EnumerationSlab.from_structure(
     num_enumerated_layers={{"Li": 1, "O": 2}},
     symmetric=True,
 )
-results = EnumWithComposition(
+results = SurfaceEnumerator(
     {{"Li": {{"Li": 1.0}}, "O": {{"O": 0.75}}}},
     min_cell_size=1,
     max_cell_size=2,

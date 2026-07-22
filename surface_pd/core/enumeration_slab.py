@@ -416,6 +416,15 @@ class EnumerationSlab(Structure):
             raise TypeError("symmetric must be a boolean or None")
         self._symmetric = value
 
+    @property
+    def enumeration_metadata(self):
+        """SurfaceEnumerationMetadata or None: Finalization provenance."""
+        return getattr(self, "_enumeration_metadata", None)
+
+    def _set_enumeration_metadata(self, metadata):
+        """Attach immutable provenance to a finalized enumeration result."""
+        self._enumeration_metadata = metadata
+
     def _plane_height_angstrom(self):
         """Return the repeat distance normal to the in-plane lattice."""
         in_plane = [index for index in range(3) if index != self.direction]
@@ -615,9 +624,9 @@ class EnumerationSlab(Structure):
         """
         Generate supplemental structures.
 
-        Supplemental structures include the cases that the to-be-enumerated
-        structure is straight forward to generate and does not require the
-        EnumWithComposition class to involve.
+        Supplemental structures cover straightforward compositions that can
+        be generated without invoking
+        :class:`~surface_pd.core.SurfaceEnumerator`.
 
         Parameters
         ----------
