@@ -17,7 +17,6 @@ import numpy as np
 from pymatgen.core import Composition, DummySpecies, Element, Species
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
-from pymatgen.core.surface import get_slab_regions
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 from surface_pd.error import NoInversionSymmetryError
@@ -50,6 +49,40 @@ class SlabLayer:
     def __post_init__(self):
         object.__setattr__(
             self, "species_counts", MappingProxyType(dict(self.species_counts))
+        )
+
+
+@dataclass(frozen=True)
+class SlabAnalysis:
+    """Immutable analysis of one state of an enumeration slab.
+
+    Attributes
+    ----------
+    layers : tuple of SlabLayer
+        Cartesian layers ordered from the bottom to the top surface.
+    enumerated_site_indices : mapping of str to tuple of int
+        Selected site indices grouped by enumerated parent species.
+    fixed_site_indices : tuple of int
+        Sites whose selective-dynamics flags are all false.
+    fixed_region_bounds_angstrom : tuple of float or None
+        Minimum and maximum fixed-site coordinates in the layer coordinate
+        system. ``None`` indicates that the slab has no fixed sites.
+    """
+
+    layers: tuple[SlabLayer, ...]
+    enumerated_site_indices: Mapping[str, tuple[int, ...]]
+    fixed_site_indices: tuple[int, ...]
+    fixed_region_bounds_angstrom: tuple[float, float] | None
+
+    def __post_init__(self):
+        indices = {
+            species: tuple(values)
+            for species, values in self.enumerated_site_indices.items()
+        }
+        object.__setattr__(
+            self,
+            "enumerated_site_indices",
+            MappingProxyType(indices),
         )
 
 
@@ -394,8 +427,8 @@ class EnumerationSlab(Structure):
         height = float(np.dot(normal, self.lattice.matrix[self.direction]))
         return abs(height)
 
-    def _find_layers(self):
-        """Detect Cartesian layers after cutting the largest periodic gap."""
+    def _site_coordinates_angstrom(self):
+        """Return site coordinates after cutting the largest periodic gap."""
         if not self:
             return ()
         period = self._plane_height_angstrom()
@@ -412,10 +445,18 @@ class EnumerationSlab(Structure):
         cut = (int(np.argmax(circular_gaps)) + 1) % len(ordered)
         unwrapped = ordered[cut:] + ordered[:cut]
         start = unwrapped[0][1]
-        positioned = [
-            (index, coordinate if coordinate >= start else coordinate + period)
+        positioned = {
+            index: coordinate if coordinate >= start else coordinate + period
             for index, coordinate in unwrapped
-        ]
+        }
+        return tuple(float(positioned[index]) for index in range(len(self)))
+
+    def _find_layers(self):
+        """Detect Cartesian layers after cutting the largest periodic gap."""
+        if not self:
+            return ()
+        coordinates = self._site_coordinates_angstrom()
+        positioned = sorted(enumerate(coordinates), key=lambda item: item[1])
 
         clusters = []
         current = [positioned[0]]
@@ -451,6 +492,58 @@ class EnumerationSlab(Structure):
         """Tuple of :class:`SlabLayer` objects ordered bottom to top."""
         return self._find_layers()
 
+    def _select_enumerated_site_indices(self, layers, only_top=False):
+        """Select configured species indices from detected surface layers."""
+        if self.enumerated_species is None:
+            return {}
+        selected_by_species = {}
+        for species in self.enumerated_species:
+            species_layers = [
+                layer for layer in layers if species in layer.species_counts
+            ]
+            count = self.num_enumerated_layers[species]
+            selected_layers = list(species_layers[-count:])
+            if self.symmetric and not only_top:
+                selected_layers.extend(species_layers[:count])
+            selected_by_species[species] = tuple(
+                sorted(
+                    {
+                        index
+                        for layer in selected_layers
+                        for index in layer.site_indices
+                        if species in self[index]
+                    }
+                )
+            )
+        return selected_by_species
+
+    def analyze(self):
+        """Return an immutable analysis snapshot of the current slab state."""
+        layers = self._find_layers()
+        fixed_indices = tuple(
+            index
+            for index, site in enumerate(self)
+            if "selective_dynamics" in site.properties
+            and not any(site.properties["selective_dynamics"])
+        )
+        if fixed_indices:
+            coordinates = self._site_coordinates_angstrom()
+            fixed_coordinates = [coordinates[index] for index in fixed_indices]
+            fixed_bounds = (
+                float(min(fixed_coordinates)),
+                float(max(fixed_coordinates)),
+            )
+        else:
+            fixed_bounds = None
+        return SlabAnalysis(
+            layers=layers,
+            enumerated_site_indices=self._select_enumerated_site_indices(
+                layers
+            ),
+            fixed_site_indices=fixed_indices,
+            fixed_region_bounds_angstrom=fixed_bounds,
+        )
+
     def wrap_pbc(self):
         """
         Wrap fractional coordinates back into the unit cell.
@@ -483,78 +576,7 @@ class EnumerationSlab(Structure):
             site.frac_coords[self.direction] += shift
         return self
 
-    def get_center_sites(self):
-        """
-        Get center sites from fixed selective dynamics flags.
-
-        Returns
-        -------
-        tuple[float, float, EnumerationSlab]
-            Lower and upper fractional-coordinate bounds of the fixed region,
-            followed by a new slab containing its fixed sites.
-        """
-        center_sites = []
-        for s in self:
-            if "selective_dynamics" in s.properties and not any(
-                s.properties["selective_dynamics"]
-            ):
-                center_sites.append(copy.deepcopy(s))
-
-        # Get the central slab boundaries
-        center = EnumerationSlab.from_sites(center_sites)
-        center_region = get_slab_regions(center)
-        lower_limit, upper_limit = center_region[0]
-        return lower_limit, upper_limit, center
-
-    def get_fixed_region_bounds(self):
-        """Return fractional-coordinate bounds of the fixed slab region.
-
-        Returns
-        -------
-        tuple[float, float]
-            Lower and upper surface-normal bounds of the fixed central sites.
-        """
-        lower_limit, upper_limit, _ = self.get_center_sites()
-        return lower_limit, upper_limit
-
-    def get_enumerated_site_indices(self, only_top: bool = False):
-        """
-        Get target species indices in the relaxed surface layers.
-
-        Parameters
-        ----------
-        only_top : bool, default=False
-            Return only top-surface indices when true.
-
-        Returns
-        -------
-        dict[str, list[int]]
-            Selected site indices grouped by enumerated species.
-
-        """
-        relaxed_index_by_species = {}
-        for species in self.enumerated_species:
-            species_layers = [
-                layer
-                for layer in self.layers
-                if species in layer.species_counts
-            ]
-            count = self.num_enumerated_layers[species]
-            selected_layers = list(species_layers[-count:])
-            if self.symmetric and not only_top:
-                selected_layers.extend(species_layers[:count])
-            relaxed_index_by_species[species] = sorted(
-                {
-                    index
-                    for layer in selected_layers
-                    for index in layer.site_indices
-                    if species in self[index]
-                }
-            )
-
-        return relaxed_index_by_species
-
-    def _surface_substitute(self, dummy_species: list):
+    def _surface_substitute(self, dummy_species: list, analysis=None):
         """
         Substitute top-surface target species with dummy species.
 
@@ -571,8 +593,10 @@ class EnumerationSlab(Structure):
 
         """
         slab_surface_substitute = copy.deepcopy(self)
-        relaxed_index = slab_surface_substitute.get_enumerated_site_indices(
-            only_top=True
+        if analysis is None:
+            analysis = self.analyze()
+        relaxed_index = self._select_enumerated_site_indices(
+            analysis.layers, only_top=True
         )
 
         for i, species in enumerate(self.enumerated_species):
@@ -651,8 +675,11 @@ class EnumerationSlab(Structure):
         On symmetry failure, the central region is written to
         ``debug-center.vasp`` in the current working directory.
         """
-        # Generate the reference slab which is just the central fixed region
-        _, _, slab_ref = self.get_center_sites()
+        # Generate the reference slab from sites fixed by selective dynamics.
+        fixed_indices = self.analyze().fixed_site_indices
+        slab_ref = EnumerationSlab.from_sites(
+            [copy.deepcopy(self[index]) for index in fixed_indices]
+        )
 
         # Determine symmetry operations of the reference slab and make sure
         # the reference slab has an inversion center
@@ -949,16 +976,20 @@ class EnumerationSlab(Structure):
             site.frac_coords[self.direction] += displace
         return self
 
-    def add_selective_dynamics(self, lower_limit: float, upper_limit: float):
+    def add_selective_dynamics(
+        self,
+        lower_limit_angstrom: float,
+        upper_limit_angstrom: float,
+    ):
         """
         Add selective dynamics to a refined slab model.
 
         Parameters
         ----------
-        lower_limit : float
-            Lower fractional-coordinate bound of the fixed central region.
-        upper_limit : float
-            Upper fractional-coordinate bound of the fixed central region.
+        lower_limit_angstrom : float
+            Lower Cartesian-coordinate bound of the fixed region.
+        upper_limit_angstrom : float
+            Upper Cartesian-coordinate bound of the fixed region.
 
         Returns
         -------
@@ -967,14 +998,13 @@ class EnumerationSlab(Structure):
             flags outside it. The receiver is not mutated.
 
         """
-        direction = self.direction
-        tolerance = _FRACTIONAL_COORD_TOLERANCE
         structure = copy.deepcopy(self)
-        for site in structure:
+        coordinates = structure._site_coordinates_angstrom()
+        for index, site in enumerate(structure):
             if (
-                lower_limit - tolerance
-                <= site.frac_coords[direction]
-                <= upper_limit + tolerance
+                lower_limit_angstrom - 1e-8
+                <= coordinates[index]
+                <= upper_limit_angstrom + 1e-8
             ):
                 site.properties = {"selective_dynamics": [False, False, False]}
             else:

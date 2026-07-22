@@ -85,6 +85,7 @@ def test_subpackage_exports_define_the_supported_api():
     """Only domain-facing classes and raised errors are public exports."""
     assert core.__all__ == [
         "EnumerationSlab",
+        "SlabAnalysis",
         "SlabLayer",
         "EnumWithComposition",
     ]

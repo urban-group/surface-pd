@@ -1,5 +1,7 @@
 """Tests for the public surface-constrained enumeration workflow."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from pymatgen.core import Lattice, Structure
@@ -32,13 +34,87 @@ def _configured_slab():
 def test_selected_indices_are_separate_from_fixed_region_bounds():
     """Site selection and fixed-region metadata should have clear APIs."""
     slab = _configured_slab()
+    analysis = slab.analyze()
 
-    assert slab.get_enumerated_site_indices() == {"Li": [1]}
-    assert slab.get_fixed_region_bounds() == (0.5, 0.5)
+    assert analysis.enumerated_site_indices == {"Li": (1,)}
+    assert analysis.fixed_site_indices == (2,)
+    assert analysis.fixed_region_bounds_angstrom == (7.5, 7.5)
     assert not hasattr(slab, "index_extraction")
+    assert not hasattr(slab, "get_enumerated_site_indices")
+    assert not hasattr(slab, "get_fixed_region_bounds")
+    assert not hasattr(slab, "get_center_sites")
     assert not hasattr(slab, "layers_finder")
     assert not hasattr(slab, "group_atoms_by_layer")
     assert not hasattr(slab, "layer_distinguisher")
+
+
+def test_analysis_snapshot_does_not_change_with_the_source_structure():
+    """A snapshot should remain valid after the mutable slab changes."""
+    slab = _configured_slab()
+    original = slab.analyze()
+
+    slab.translate_sites([0, 1, 2], [0, 0, 0.1], frac_coords=True)
+    updated = slab.analyze()
+
+    assert original.fixed_region_bounds_angstrom == (7.5, 7.5)
+    assert updated.fixed_region_bounds_angstrom == (9.0, 9.0)
+
+
+def test_cartesian_analysis_reproduces_symmetric_reference_selection():
+    """The Cartesian analysis should retain the reviewed Li2O selection."""
+    root = Path(__file__).resolve().parents[1]
+    slab = EnumerationSlab.from_file(
+        root
+        / "examples/enumeration-examples/structure/electrode"
+        / "POSCAR_Li2O_110.vasp",
+        direction=2,
+        layer_tolerance_angstrom=0.5,
+        enumerated_species=["Li", "O"],
+        num_enumerated_layers={"Li": 1, "O": 2},
+        symmetric=True,
+    )
+
+    assert slab.analyze().enumerated_site_indices == {
+        "Li": (0, 1, 24, 25),
+        "O": (26, 27, 37, 38),
+    }
+
+
+def test_cartesian_analysis_reproduces_asymmetric_reference_selection():
+    """The Cartesian analysis should retain the reviewed Li selection."""
+    root = Path(__file__).resolve().parents[1]
+    slab = EnumerationSlab.from_file(
+        root
+        / "examples/enumeration-examples/structure/electrode"
+        / "POSCAR_Li_100.vasp",
+        direction=2,
+        layer_tolerance_angstrom=0.5,
+        enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 1},
+        symmetric=False,
+    )
+
+    analysis = slab.analyze()
+
+    assert analysis.enumerated_site_indices == {"Li": (8,)}
+    assert analysis.fixed_site_indices == (0, 1, 2, 3)
+    assert analysis.fixed_region_bounds_angstrom == pytest.approx(
+        (1.163226969138, 6.295090732845)
+    )
+
+
+def test_analysis_without_fixed_sites_has_no_fixed_bounds():
+    """Missing fixed flags should be represented without invented bounds."""
+    slab = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li"],
+        [[0, 0, 0.5]],
+    )
+
+    analysis = slab.analyze()
+
+    assert analysis.fixed_site_indices == ()
+    assert analysis.fixed_region_bounds_angstrom is None
 
 
 def test_cartesian_layers_are_independent_of_vacuum_length():
@@ -124,10 +200,19 @@ def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
             {"structure": valid},
         ]
 
+    analyze_calls = 0
+    original_analyze = EnumerationSlab.analyze
+
+    def counted_analyze(structure):
+        nonlocal analyze_calls
+        analyze_calls += 1
+        return original_analyze(structure)
+
     monkeypatch.setattr(
         "surface_pd.core.enum._apply_raw_enumeration",
         fake_raw_enumeration,
     )
+    monkeypatch.setattr(EnumerationSlab, "analyze", counted_analyze)
     enumerator = EnumWithComposition(
         {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
     )
@@ -135,6 +220,7 @@ def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
     results = enumerator.apply_enumeration(slab)
 
     assert len(results) == 1
+    assert analyze_calls == 1
     assert np.allclose(results[0].lattice.matrix[2], slab.lattice.matrix[2])
     assert all("X" not in str(species) for species in results[0].species)
 

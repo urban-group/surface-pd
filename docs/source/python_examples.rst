@@ -26,7 +26,10 @@ enumeration transformation:
         num_enumerated_layers={"Li": 1},
         symmetric=True,
     )
-    populations = [layer.species_counts["Li"] for layer in slab.layers]
+    analysis = slab.analyze()
+    populations = [
+        layer.species_counts["Li"] for layer in analysis.layers
+    ]
     print(populations)
 
     enumerator = EnumWithComposition(

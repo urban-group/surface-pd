@@ -80,20 +80,19 @@ class EnumWithComposition:
                 "replacements must contain the same species as "
                 "structure.enumerated_species"
             )
+        analysis = structure.analyze()
         if structure.symmetric:
-            pre_check = PreCheck(structure)
+            pre_check = PreCheck(structure, analysis=analysis)
             if not pre_check.relax_both_surfaces():
                 raise IncompatibleSymmError
             if not pre_check.has_inversion_symmetry():
                 raise NoInversionSymmetryError
 
-        fixed_region_bounds = structure.get_fixed_region_bounds()
-
         markers = [
             DummySpecies(f"Xsurface{i + 1}")
             for i in range(len(structure.enumerated_species))
         ]
-        marked = structure._surface_substitute(markers)
+        marked = structure._surface_substitute(markers, analysis=analysis)
         substitutions = {
             marker: self.replacements[species]
             for marker, species in zip(
@@ -132,9 +131,7 @@ class EnumWithComposition:
             if structure.symmetric:
                 _complete_selective_dynamics(
                     finalized,
-                    structure.direction,
-                    fixed_region_bounds,
-                    1e-8,
+                    analysis.fixed_region_bounds_angstrom,
                 )
                 finalized = finalized.symmetrize_top_base()
                 finalized = EnumerationSlab.from_structure(
@@ -191,19 +188,16 @@ def _is_in_plane_derivative(parent, child, min_cell_size, max_cell_size):
     return min_cell_size <= multiplier <= max_cell_size
 
 
-def _complete_selective_dynamics(
-    structure, direction, fixed_region_bounds, tolerance
-):
+def _complete_selective_dynamics(structure, fixed_region_bounds_angstrom):
     """Restore flags omitted from sites created by pymatgen enumeration."""
-    lower_limit, upper_limit = fixed_region_bounds
-    for site in structure:
+    if fixed_region_bounds_angstrom is None:
+        raise ValueError("symmetric enumeration requires fixed slab sites")
+    lower_limit, upper_limit = fixed_region_bounds_angstrom
+    coordinates = structure._site_coordinates_angstrom()
+    for index, site in enumerate(structure):
         flags = site.properties.get("selective_dynamics")
         if flags is not None:
             continue
-        coordinate = site.frac_coords[direction]
-        fixed = (
-            lower_limit - tolerance
-            <= coordinate
-            <= upper_limit + tolerance
-        )
+        coordinate = coordinates[index]
+        fixed = lower_limit - 1e-8 <= coordinate <= upper_limit + 1e-8
         site.properties["selective_dynamics"] = [not fixed] * 3

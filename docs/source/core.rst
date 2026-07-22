@@ -19,3 +19,9 @@ core
 
 .. autoclass:: surface_pd.core.SlabLayer
     :members:
+
+``SlabAnalysis`` class
+**********************
+
+.. autoclass:: surface_pd.core.SlabAnalysis
+    :members:

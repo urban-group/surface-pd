@@ -47,9 +47,8 @@ def selective_dynamics_completion(
     structure: EnumerationSlab,
     direction: int,
     dummy_species: list,
-    center_bottom: float,
-    center_top: float,
-    tolerance: float,
+    fixed_bottom_angstrom: float,
+    fixed_top_angstrom: float,
 ):
     """
     Complete selective dynamics properties after enumeration.
@@ -58,9 +57,8 @@ def selective_dynamics_completion(
         structure: Enumerated slab model.
         direction: Same as before.
         dummy_species: Same as before.
-        center_bottom: Same as before.
-        center_top: Same as before.
-        tolerance: Same as before.
+        fixed_bottom_angstrom: Lower Cartesian bound of the fixed region.
+        fixed_top_angstrom: Upper Cartesian bound of the fixed region.
 
     Returns
     -------
@@ -68,15 +66,17 @@ def selective_dynamics_completion(
     """
     # print(structure)
     # print(dummy_species)
-    for t in structure:
+    structure.direction = direction
+    coordinates = structure._site_coordinates_angstrom()
+    for index, t in enumerate(structure):
         for ds in dummy_species:
             if ds in t:
                 t.properties = {"selective_dynamics": [True, True, True]}
         if t.properties["selective_dynamics"] is None:
             if (
-                center_bottom - tolerance
-                <= t.frac_coords[direction]
-                <= center_top + tolerance
+                fixed_bottom_angstrom - 1e-8
+                <= coordinates[index]
+                <= fixed_top_angstrom + 1e-8
             ):
                 t.properties = {"selective_dynamics": [False, False, False]}
             else:

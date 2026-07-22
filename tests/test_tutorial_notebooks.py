@@ -60,6 +60,7 @@ def test_enumeration_notebook_is_a_clean_maintained_tutorial():
     assert "/Users/" not in source
     assert "EnumerationSlab" in source
     assert "EnumerationSlab.from_file" in source
+    assert ".analyze()" in source
     assert "EnumWithComposition" in source
     assert "enumlib" in source
     assert "symmetric" in source

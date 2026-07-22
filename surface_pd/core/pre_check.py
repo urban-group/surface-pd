@@ -21,8 +21,9 @@ class PreCheck:
 
     """
 
-    def __init__(self, structure: EnumerationSlab):
+    def __init__(self, structure: EnumerationSlab, analysis=None):
         self.structure = structure
+        self.analysis = analysis
 
     enum_cmd = which('enum.x')
     makestr_cmd = which('makestr.x') or which("makeStr.x") or which(
@@ -89,34 +90,10 @@ class PreCheck:
 
     def relax_both_surfaces(self):
         """Check whether only one side of the surface is relaxed."""
-        # Wrap any out of unit cell atoms back
-        self.structure.wrap_pbc()
-
-        fixed_atoms_c_set = []
-        for site in self.structure:
-            # Handle both list and numpy array for selective_dynamics
-            sd = site.properties["selective_dynamics"]
-            if all(not x for x in sd):  # All False
-                fixed_atoms_c_set.append(
-                    site.frac_coords[self.structure.direction])
-        min_fixed_atom_c = min(fixed_atoms_c_set)
-
-        # Check the slab region
-        ranges = get_slab_regions(self.structure)
-        # Note: pymatgen 2024.10.3+ returns 1 region (slab only),
-        # older versions returned 2 regions (slab + vacuum)
-        if len(ranges) == 2:
-            lower_boundary = min(ranges[0][1], ranges[1][0])
-        elif len(ranges) == 1:
-            lower_boundary = min(ranges[0])
-        else:
-            # Should not happen, but handle edge case
-            lower_boundary = min(ranges[0])
-
-        separation = (
-            min_fixed_atom_c - lower_boundary
-        ) * self.structure._plane_height_angstrom()
-        if separation < self.structure.layer_tolerance_angstrom:
+        analysis = self.analysis or self.structure.analyze()
+        fixed = set(analysis.fixed_site_indices)
+        bottom_surface = set(analysis.layers[0].site_indices)
+        if fixed & bottom_surface:
             logger.info(
                 "The slab model provided has the whole bottom surface fixed; "
                 "no symmetrization is needed."
@@ -140,7 +117,8 @@ class PreCheck:
         """
         is_int = []
 
-        selected_indices = self.structure.get_enumerated_site_indices()
+        analysis = self.analysis or self.structure.analyze()
+        selected_indices = analysis.enumerated_site_indices
         num_atoms = {
             key: len(value) for key, value in selected_indices.items()
         }

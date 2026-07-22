@@ -17,6 +17,11 @@ post_check
 """
 
 from .enum import EnumWithComposition
-from .enumeration_slab import EnumerationSlab, SlabLayer
+from .enumeration_slab import EnumerationSlab, SlabAnalysis, SlabLayer
 
-__all__ = ["EnumerationSlab", "SlabLayer", "EnumWithComposition"]
+__all__ = [
+    "EnumerationSlab",
+    "SlabAnalysis",
+    "SlabLayer",
+    "EnumWithComposition",
+]

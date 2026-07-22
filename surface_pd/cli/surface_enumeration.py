@@ -115,10 +115,10 @@ def automate_surface(
     input_structure.num_enumerated_layers = num_enumerated_layers
     input_structure.symmetric = symmetric
     direction = input_structure.direction
-    fractional_tolerance = 1e-8
+    analysis = input_structure.analyze()
 
     # PreCheck
-    pre_check = PreCheck(input_structure)
+    pre_check = PreCheck(input_structure, analysis=analysis)
 
     if not pre_check.is_cuboid():
         raise SlabOrientationError
@@ -144,11 +144,11 @@ def automate_surface(
     # direction defined by user (will be used as criteria next)
     criteria = input_structure.lattice.abc[direction]
 
-    # Get the indices of the to-be-enumerated atoms on the surface.
-    # Get the c_frac coordinates of the lower and upper boundaries of the
-    # fixed region in the central slab.
-    center_bottom, center_top = input_structure.get_fixed_region_bounds()
-    relaxed_index = input_structure.get_enumerated_site_indices()
+    fixed_region_bounds = analysis.fixed_region_bounds_angstrom
+    if fixed_region_bounds is None:
+        raise NonDefinedSelectiveDynamicsError
+    fixed_bottom, fixed_top = fixed_region_bounds
+    relaxed_index = analysis.enumerated_site_indices
 
     # Define the "dummy" species that will be used to substitute the target
     # species
@@ -158,7 +158,9 @@ def automate_surface(
 
     # Replace the to-be-enumerated species from the slab top surface with
     # "dummy" species. This will facilitate the enumeration code.
-    input_substituted = input_structure._surface_substitute(dummy_species)
+    input_substituted = input_structure._surface_substitute(
+        dummy_species, analysis=analysis
+    )
 
     # Initialize a number to store total number of enumerated slab models
     num = 0
@@ -208,9 +210,8 @@ def automate_surface(
                     structure=filtered_structure,
                     direction=direction,
                     dummy_species=dummy_species,
-                    center_bottom=center_bottom,
-                    center_top=center_top,
-                    tolerance=fractional_tolerance,
+                    fixed_bottom_angstrom=fixed_bottom,
+                    fixed_top_angstrom=fixed_top,
                 )
 
             # Symmetrize slab models based on the top enumerated
@@ -287,7 +288,8 @@ def automate_surface(
                     )
                     refined_structure = (
                         refined_structure.add_selective_dynamics(
-                            lower_limit=center_bottom, upper_limit=center_top
+                            lower_limit_angstrom=fixed_bottom,
+                            upper_limit_angstrom=fixed_top,
                         )
                     )
                 else:
@@ -296,7 +298,8 @@ def automate_surface(
                     )
                     refined_structure = (
                         refined_structure.add_selective_dynamics(
-                            lower_limit=center_bottom, upper_limit=center_top
+                            lower_limit_angstrom=fixed_bottom,
+                            upper_limit_angstrom=fixed_top,
                         )
                     )
 
