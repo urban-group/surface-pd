@@ -362,7 +362,7 @@ def test_cli_evaluates_configured_alignment(tmp_path):
     ]
     data["alignments"] = [
         {
-            "root_dataset_id": "root",
+            "reference_dataset_id": "root",
             "target_dataset_id": "target",
             "reference_anchor_phase_id": "anchor",
             "target_anchor_phase_id": "anchor",

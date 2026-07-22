@@ -317,7 +317,7 @@ def test_load_datasets_applies_direct_alignment_in_declared_order(tmp_path):
     data["datasets"].append(target)
     data["alignments"] = [
         {
-            "root_dataset_id": "root",
+            "reference_dataset_id": "root",
             "target_dataset_id": "target",
             "reference_anchor_phase_id": "anchor",
             "target_anchor_phase_id": "anchor",
@@ -330,7 +330,7 @@ def test_load_datasets_applies_direct_alignment_in_declared_order(tmp_path):
     assert isinstance(root, PhaseDataset)
     assert isinstance(aligned, AlignedPhaseDataset)
     assert aligned.dataset_id == "target"
-    assert aligned.root_dataset_id == "root"
+    assert aligned.reference_dataset_id == "root"
     assert aligned.energy_offset_ev == pytest.approx(-25.0)
     assert aligned.alignment.reference_anchor_id == "root:anchor"
     assert aligned.alignment.target_anchor_id == "target:anchor"
@@ -338,7 +338,7 @@ def test_load_datasets_applies_direct_alignment_in_declared_order(tmp_path):
 
 
 def test_configuration_rejects_alignment_chains():
-    """Every alignment must point directly from an unaligned root."""
+    """Every alignment must point from an ordinary reference dataset."""
     data = _configuration_data()
     for dataset_id in ("middle", "target"):
         dataset = json.loads(json.dumps(data["datasets"][0]))
@@ -346,14 +346,14 @@ def test_configuration_rejects_alignment_chains():
         data["datasets"].append(dataset)
     data["alignments"] = [
         {
-            "root_dataset_id": "root",
+            "reference_dataset_id": "root",
             "target_dataset_id": "middle",
             "reference_anchor_phase_id": "anchor",
             "target_anchor_phase_id": "anchor",
             "bulk_reference_id": "bulk-C",
         },
         {
-            "root_dataset_id": "middle",
+            "reference_dataset_id": "middle",
             "target_dataset_id": "target",
             "reference_anchor_phase_id": "anchor",
             "target_anchor_phase_id": "anchor",
@@ -361,5 +361,26 @@ def test_configuration_rejects_alignment_chains():
         },
     ]
 
-    with pytest.raises(ValueError, match="root.*alignment target"):
+    with pytest.raises(ValueError, match="reference.*alignment target"):
+        PhaseDiagramConfiguration(data)
+
+
+def test_configuration_rejects_obsolete_root_dataset_alignment_key():
+    """Alignment configuration should use one reference/target vocabulary."""
+    data = _configuration_data()
+    target = json.loads(json.dumps(data["datasets"][0]))
+    target["dataset_id"] = "target"
+    target["path"] = "target.dat"
+    data["datasets"].append(target)
+    data["alignments"] = [
+        {
+            "root_dataset_id": "root",
+            "target_dataset_id": "target",
+            "reference_anchor_phase_id": "anchor",
+            "target_anchor_phase_id": "anchor",
+            "bulk_reference_id": "bulk-C",
+        }
+    ]
+
+    with pytest.raises(ValueError, match="reference_dataset_id"):
         PhaseDiagramConfiguration(data)

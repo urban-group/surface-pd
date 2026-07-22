@@ -69,7 +69,7 @@
   ],
   "alignments": [
     {
-      "root_dataset_id": "li",
+      "reference_dataset_id": "li",
       "target_dataset_id": "ni",
       "reference_anchor_phase_id": "Li8Ni12O24_3-phase-25",
       "target_anchor_phase_id": "full-O-full-Li",

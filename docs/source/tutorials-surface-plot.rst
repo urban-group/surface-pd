@@ -47,7 +47,7 @@ The command performs the following reviewed sequence:
 
 1. Read and strictly validate the versioned JSON configuration.
 2. Resolve and load every explicitly mapped phase table.
-3. Construct any declared direct-to-root aligned dataset views.
+3. Construct any declared direct-to-reference aligned dataset views.
 4. Evaluate the configured thermodynamic model on the two-dimensional grid.
 5. Render phase identity or the configured composition quantity.
 6. Save and/or display only after every preceding stage succeeds.

@@ -229,14 +229,14 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "root_dataset_id",
+        "reference_dataset_id",
         "target_dataset_id",
         "reference_anchor_phase_id",
         "target_anchor_phase_id",
         "bulk_reference_id"
       ],
       "properties": {
-        "root_dataset_id": {"$ref": "#/$defs/identifierText"},
+        "reference_dataset_id": {"$ref": "#/$defs/identifierText"},
         "target_dataset_id": {"$ref": "#/$defs/identifierText"},
         "reference_anchor_phase_id": {
           "$ref": "#/$defs/identifierText"

@@ -430,7 +430,7 @@ class PhaseDiagramConfiguration:
         dataset_ids: set[str],
         reference_ids: set[str],
     ) -> None:
-        """Validate identity references in direct-to-root alignments."""
+        """Validate direct-to-reference alignment identities."""
         targets = set()
         for index, item in enumerate(
             _require_sequence(value, "alignments")
@@ -438,7 +438,7 @@ class PhaseDiagramConfiguration:
             alignment = _require_keys(
                 item,
                 {
-                    "root_dataset_id",
+                    "reference_dataset_id",
                     "target_dataset_id",
                     "reference_anchor_phase_id",
                     "target_anchor_phase_id",
@@ -446,12 +446,17 @@ class PhaseDiagramConfiguration:
                 },
                 f"alignments[{index}]",
             )
-            root_id = alignment["root_dataset_id"]
+            reference_dataset_id = alignment["reference_dataset_id"]
             target_id = alignment["target_dataset_id"]
-            if root_id not in dataset_ids or target_id not in dataset_ids:
+            if (
+                reference_dataset_id not in dataset_ids
+                or target_id not in dataset_ids
+            ):
                 raise ValueError("alignment contains an unknown dataset_id")
-            if root_id == target_id:
-                raise ValueError("alignment root and target must be distinct")
+            if reference_dataset_id == target_id:
+                raise ValueError(
+                    "alignment reference and target must be distinct"
+                )
             if target_id in targets:
                 raise ValueError("each alignment target must be unique")
             targets.add(target_id)
@@ -467,13 +472,13 @@ class PhaseDiagramConfiguration:
                 raise ValueError(
                     "alignment contains an unknown bulk_reference_id"
                 )
-        roots = {
-            alignment["root_dataset_id"]
+        reference_dataset_ids = {
+            alignment["reference_dataset_id"]
             for alignment in _require_sequence(value, "alignments")
         }
-        if roots & targets:
+        if reference_dataset_ids & targets:
             raise ValueError(
-                "an alignment root cannot also be an alignment target"
+                "an alignment reference cannot also be an alignment target"
             )
 
     @staticmethod
@@ -627,8 +632,8 @@ class PhaseDiagramConfiguration:
         }
         aligned = {}
         for definition in self._data["alignments"]:
-            root_id = validate_identifier(
-                definition["root_dataset_id"], "root_dataset_id"
+            reference_dataset_id = validate_identifier(
+                definition["reference_dataset_id"], "reference_dataset_id"
             )
             target_id = validate_identifier(
                 definition["target_dataset_id"], "target_dataset_id"
@@ -637,7 +642,7 @@ class PhaseDiagramConfiguration:
                 definition["bulk_reference_id"], "bulk_reference_id"
             )
             alignment = DatasetAlignment(
-                datasets[root_id],
+                datasets[reference_dataset_id],
                 datasets[target_id],
                 definition["reference_anchor_phase_id"],
                 definition["target_anchor_phase_id"],

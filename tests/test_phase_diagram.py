@@ -220,11 +220,11 @@ def test_multiple_datasets_require_unique_ids():
         specification.evaluate(model, (first, second))
 
 
-def test_aligned_dataset_requires_its_root_in_same_diagram():
+def test_aligned_dataset_requires_its_reference_in_same_diagram():
     """Aligned target energies should be compared in their declared gauge."""
     model = _model(("voltage", "temperature"))
     components = model.components
-    root = _dataset(components, "root", (0.0,))
+    reference = _dataset(components, "reference", (0.0,))
     target_composition = {
         components[0]: 2,
         components[1]: 1,
@@ -242,14 +242,14 @@ def test_aligned_dataset_requires_its_root_in_same_diagram():
         _METHOD,
     )
     aligned = DatasetAlignment(
-        root, target, "p0", "p0", bulk
+        reference, target, "p0", "p0", bulk
     ).create_aligned_dataset()
     specification = PhaseDiagramSpecification(
         _axis("voltage"), _axis("temperature"), {}
     )
 
-    with pytest.raises(ValueError, match="root.*root"):
+    with pytest.raises(ValueError, match="reference.*reference"):
         specification.evaluate(model, (aligned,))
 
-    result = specification.evaluate(model, (root, aligned))
-    assert result.phase_ids == ("root:p0", "target:p0")
+    result = specification.evaluate(model, (reference, aligned))
+    assert result.phase_ids == ("reference:p0", "target:p0")

@@ -250,7 +250,7 @@ Explicit dataset alignment
 
 Slab datasets with different numbers of bulk-like layers can share the same
 surface termination but use different total-energy zeros. ``DatasetAlignment``
-places one target dataset on the energy convention of one root dataset using
+places one target dataset on the energy convention of one reference dataset using
 explicitly named anchor phases and exactly one bulk ``ReferencePhase``. It
 never guesses anchors from compositions or energies.
 
@@ -293,12 +293,12 @@ an integer multiple of the bulk formula unit across every component.
     :members:
 
 ``AlignedPhaseDataset`` is a non-mutating view created by
-``DatasetAlignment.create_aligned_dataset()``. It retains the root and target
+``DatasetAlignment.create_aligned_dataset()``. It retains the reference and target
 datasets, both explicit anchor identities, the bulk reference, signed bulk-unit
 count, and energy offset through its ``alignment`` property. Source
 ``Phase.dft_energy_ev`` values remain unchanged.
 
-Only direct-to-root alignment is supported initially. Both inputs to
+Only direct-to-reference alignment is supported initially. Both inputs to
 ``DatasetAlignment`` must be ordinary ``PhaseDataset`` objects, so aligned
 views cannot be chained and cyclic alignment graphs cannot be constructed.
 
@@ -335,8 +335,8 @@ temperature/direct-chemical-potential, and future state-variable pairs.
 
 One specification can compare multiple ordinary or aligned datasets in the
 declared order. Dataset IDs must be unique. An aligned target is accepted only
-when its ordinary root dataset is also supplied, ensuring that every compared
-energy uses the declared root convention.
+when its ordinary reference dataset is also supplied, ensuring that every
+compared energy uses the declared reference convention.
 
 .. autoclass:: surface_pd.thermodynamics.PhaseDiagramSpecification
     :members:

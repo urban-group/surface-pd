@@ -125,7 +125,7 @@ def test_aligned_view_preserves_source_data_and_alignment_provenance():
     assert aligned.source_dataset is target
     assert aligned.alignment is alignment
     assert aligned.dataset_id == "target"
-    assert aligned.root_dataset_id == "reference"
+    assert aligned.reference_dataset_id == "reference"
     assert aligned.components == target.components
     assert aligned.phases == target.phases
     assert aligned.qualified_phase_ids == target.qualified_phase_ids
@@ -252,7 +252,7 @@ def test_alignment_rejects_incompatible_physical_inputs(
 
 
 def test_alignment_rejects_chaining_an_aligned_view():
-    """The initial API should permit only direct-to-root alignments."""
+    """The initial API permits only direct-to-reference alignments."""
     reference, target = _alignment_pair()
     aligned = DatasetAlignment(
         reference, target, "anchor", "anchor", _bulk()

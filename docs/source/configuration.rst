@@ -27,7 +27,7 @@ Every configuration contains exactly these top-level fields:
     Separate whitespace-delimited tables with canonical columns and optional
     name overrides.
 ``alignments``
-    Explicit direct-to-root dataset alignments.
+    Explicit direct-to-reference dataset alignments.
 ``rendering``
     Identity or composition coloring and presentation options.
 
@@ -155,13 +155,13 @@ stable global identities are ``dataset_id:phase_id``.
 Configured alignment
 ====================
 
-An alignment names an ordinary root dataset, a target dataset, one anchor in
+An alignment names an ordinary reference dataset, a target dataset, one anchor in
 each dataset, and a bulk reference from ``reference_phases``:
 
 .. code-block:: json
 
     {
-      "root_dataset_id": "facet_001",
+      "reference_dataset_id": "facet_001",
       "target_dataset_id": "facet_104",
       "reference_anchor_phase_id": "p0",
       "target_anchor_phase_id": "q0",
@@ -173,7 +173,7 @@ Loading replaces the declared target with a non-mutating
 energies remain available unchanged through ``source_dataset``, while the view
 retains the anchors, bulk reference, signed bulk-unit count, and calculated
 energy offset. The alignment equation and compatibility conditions are given
-in :ref:`dataset-alignment`. Alignments must be direct to an ordinary root;
+in :ref:`dataset-alignment`. Alignments must be direct to an ordinary reference;
 chains and cycles are rejected.
 
 .. autoclass:: surface_pd.configuration.PhaseDiagramConfiguration

@@ -308,7 +308,7 @@ class PhaseDiagramSpecification:
             General thermodynamic model used for every dataset.
         datasets : sequence of PhaseDataset or AlignedPhaseDataset
             Nonempty ordered candidate datasets. IDs must be unique, and every
-            aligned view must be accompanied by its ordinary root dataset.
+        aligned view must be accompanied by its ordinary reference dataset.
 
         Returns
         -------
@@ -342,11 +342,12 @@ class PhaseDiagramSpecification:
         for dataset in datasets:
             if (
                 isinstance(dataset, AlignedPhaseDataset)
-                and dataset.root_dataset_id not in ordinary_ids
+                and dataset.reference_dataset_id not in ordinary_ids
             ):
                 raise ValueError(
-                    f"aligned dataset {dataset.dataset_id!r} requires root "
-                    f"dataset {dataset.root_dataset_id!r}"
+                    f"aligned dataset {dataset.dataset_id!r} requires "
+                    "reference "
+                    f"dataset {dataset.reference_dataset_id!r}"
                 )
 
         supplied_variables = {

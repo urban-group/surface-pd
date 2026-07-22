@@ -13,7 +13,7 @@ _AREA_ABSOLUTE_TOLERANCE_ANGSTROM2 = 1e-8
 
 @dataclass(frozen=True)
 class DatasetAlignment:
-    r"""Align a target dataset to an explicit root-dataset anchor.
+    r"""Align a target dataset to an explicit reference-dataset anchor.
 
     Parameters
     ----------
@@ -53,8 +53,8 @@ class DatasetAlignment:
         \Delta E_\mathrm{target} = E_\mathrm{reference}
         - E_\mathrm{target} + kG_\mathrm{bulk}.
 
-    Alignment is direct to one root dataset. Aligned views cannot be used as
-    alignment inputs, so chained and cyclic alignment are unsupported.
+    Alignment is direct to one reference dataset. Aligned views cannot be used
+    as alignment inputs, so chained and cyclic alignment are unsupported.
     """
 
     reference_dataset: PhaseDataset
@@ -229,7 +229,7 @@ class DatasetAlignment:
 
     @property
     def reference_anchor_id(self) -> str:
-        """Return the qualified root-dataset anchor identity."""
+        """Return the qualified reference-dataset anchor identity."""
         return self.reference_dataset.qualified_phase_id(
             self.reference_anchor_phase_id
         )
@@ -253,8 +253,8 @@ class AlignedPhaseDataset:
     Parameters
     ----------
     alignment : DatasetAlignment
-        Validated direct-to-root alignment defining the source dataset, energy
-        offset, anchors, bulk formula unit, and alignment direction.
+        Validated direct-to-reference alignment defining the source dataset,
+        energy offset, anchors, bulk formula unit, and alignment direction.
 
     Notes
     -----
@@ -276,8 +276,8 @@ class AlignedPhaseDataset:
         return self.alignment.target_dataset
 
     @property
-    def root_dataset_id(self) -> str:
-        """Return the dataset ID defining the root energy convention."""
+    def reference_dataset_id(self) -> str:
+        """Return the dataset ID defining the reference energy convention."""
         return self.alignment.reference_dataset.dataset_id
 
     @property
