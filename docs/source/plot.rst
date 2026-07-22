@@ -21,6 +21,15 @@ Axis text comes only from each
 inversion changes presentation only and does not mutate coordinates or
 thermodynamic results.
 
+Thin black boundaries between differently rendered representative phases are
+enabled by default. They follow the cell edges of the same nearest-shaded
+representative field used for the colors, so phases with nonconsecutive
+internal indices remain unambiguous. ``boundary_color`` accepts a Matplotlib
+color, and ``boundary_linewidth`` sets its width in points. Pass
+``boundary_color=None`` to draw only the colored mesh. These are presentation
+choices: boundary construction neither changes the energy tensor nor discards
+the complete tie-preserving stability mask.
+
 .. autofunction:: surface_pd.plot.plot_phase_diagram
 
 Explicit composition coloring

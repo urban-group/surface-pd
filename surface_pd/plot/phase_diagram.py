@@ -1,15 +1,18 @@
 """Rendering for generalized numerical phase diagrams."""
 
 from dataclasses import dataclass
+from numbers import Real
 from typing import Literal
 
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.collections import LineCollection
 from matplotlib.colorbar import Colorbar
-from matplotlib.colors import BoundaryNorm
+from matplotlib.colors import BoundaryNorm, is_color_like
 from matplotlib.figure import Figure
+from matplotlib.typing import ColorType
 
 from surface_pd.thermodynamics import PhaseDiagramResult
 from surface_pd.thermodynamics._validation import (
@@ -145,6 +148,50 @@ def _axis_label(label: str, unit: str) -> str:
     return f"{label} ({unit})"
 
 
+def _cell_edges(coordinates: np.ndarray) -> np.ndarray:
+    """Return nearest-shading cell edges for increasing center coordinates."""
+    midpoints = 0.5 * (coordinates[:-1] + coordinates[1:])
+    first = coordinates[0] - 0.5 * (coordinates[1] - coordinates[0])
+    last = coordinates[-1] + 0.5 * (coordinates[-1] - coordinates[-2])
+    return np.concatenate(([first], midpoints, [last]))
+
+
+def _phase_boundary_segments(result: PhaseDiagramResult) -> list[np.ndarray]:
+    """Return cell-edge segments separating representative stable phases."""
+    representatives = result.representative_phase_indices
+    x_values = result.specification.x_axis.values
+    y_values = result.specification.y_axis.values
+    x_edges = _cell_edges(x_values)
+    y_edges = _cell_edges(y_values)
+    segments = []
+
+    for y_index, x_index in np.argwhere(
+        representatives[:, 1:] != representatives[:, :-1]
+    ):
+        x_boundary = x_edges[x_index + 1]
+        segments.append(
+            np.array(
+                [
+                    [x_boundary, y_edges[y_index]],
+                    [x_boundary, y_edges[y_index + 1]],
+                ]
+            )
+        )
+    for y_index, x_index in np.argwhere(
+        representatives[1:, :] != representatives[:-1, :]
+    ):
+        y_boundary = y_edges[y_index + 1]
+        segments.append(
+            np.array(
+                [
+                    [x_edges[x_index], y_boundary],
+                    [x_edges[x_index + 1], y_boundary],
+                ]
+            )
+        )
+    return segments
+
+
 def plot_phase_diagram(
     result: PhaseDiagramResult,
     *,
@@ -153,6 +200,8 @@ def plot_phase_diagram(
     cmap: str | None = None,
     invert_x_axis: bool = False,
     invert_y_axis: bool = False,
+    boundary_color: ColorType | None = "black",
+    boundary_linewidth: float = 1.0,
 ) -> tuple[Figure, Axes, Colorbar]:
     """Render an already evaluated generalized phase diagram.
 
@@ -173,6 +222,12 @@ def plot_phase_diagram(
         If true, present the x-axis in decreasing screen order.
     invert_y_axis : bool, optional
         If true, present the y-axis in decreasing screen order.
+    boundary_color : color-like or None, optional
+        Matplotlib color for boundaries between representative stable phases.
+        Defaults to black. ``None`` disables the boundary overlay.
+    boundary_linewidth : float, optional
+        Positive finite phase-boundary width in points. This option is ignored
+        when ``boundary_color`` is ``None``.
 
     Returns
     -------
@@ -190,6 +245,17 @@ def plot_phase_diagram(
         invert_y_axis, bool
     ):
         raise TypeError("axis inversion options must be boolean")
+    if boundary_color is not None and not is_color_like(boundary_color):
+        raise ValueError("boundary_color must be a Matplotlib color or None")
+    if boundary_color is not None and (
+        isinstance(boundary_linewidth, bool)
+        or not isinstance(boundary_linewidth, Real)
+        or not np.isfinite(boundary_linewidth)
+        or boundary_linewidth <= 0
+    ):
+        raise ValueError(
+            "boundary_linewidth must be a positive finite real number"
+        )
 
     if ax is None:
         figure, axes = plt.subplots()
@@ -234,6 +300,18 @@ def plot_phase_diagram(
         )
         colorbar = figure.colorbar(mesh, ax=axes)
         colorbar.set_label(_axis_label(coloring.label, coloring.unit))
+
+    if boundary_color is not None:
+        boundary_segments = _phase_boundary_segments(result)
+        if boundary_segments:
+            axes.add_collection(
+                LineCollection(
+                    boundary_segments,
+                    colors=boundary_color,
+                    linewidths=float(boundary_linewidth),
+                    zorder=mesh.get_zorder() + 1,
+                )
+            )
 
     x_axis = result.specification.x_axis
     y_axis = result.specification.y_axis
