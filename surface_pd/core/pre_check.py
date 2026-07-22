@@ -84,9 +84,9 @@ class PreCheck:
                 fairly strict).
 
         """
-        return EnumerationSlab.from_sites(self.structure).is_symmetry(
-            symprec=symprec, return_isc=False
-        )
+        return EnumerationSlab.from_sites(
+            self.structure
+        ).has_inversion_symmetry(symprec=symprec)
 
     def relax_both_surfaces(self):
         """Check whether only one side of the surface is relaxed."""

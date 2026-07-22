@@ -149,6 +149,7 @@ from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 source = Structure.from_file({str(LI_SLAB)!r})
 slab = EnumerationSlab.from_structure(
     source,
+    direction=2,
     enumerated_species=["Li"],
     num_enumerated_layers={{"Li": 1}},
     symmetric=False,
@@ -191,6 +192,7 @@ from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 source = Structure.from_file({str(LI2O_SLAB)!r})
 slab = EnumerationSlab.from_structure(
     source,
+    direction=2,
     enumerated_species=["Li", "O"],
     num_enumerated_layers={{"Li": 1, "O": 2}},
     symmetric=True,
@@ -208,7 +210,7 @@ for result in results:
     )
     print(
         len(result), result.composition["Li"], result.composition["O"],
-        result.lattice.c, result.is_symmetry(), complete,
+        result.lattice.c, result.has_inversion_symmetry(), complete,
     )
 """
     result = subprocess.run(

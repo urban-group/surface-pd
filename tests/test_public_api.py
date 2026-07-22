@@ -324,6 +324,7 @@ def test_enumeration_slab_from_structure_preserves_structure_data():
 
     slab = EnumerationSlab.from_structure(
         structure,
+        direction=2,
         enumerated_species=["Li"],
         num_enumerated_layers={"Li": 1},
         symmetric=False,
@@ -369,11 +370,11 @@ def test_enumeration_slab_from_file_preserves_data_and_surface_options(
 
 
 def test_enumeration_slab_from_file_uses_default_surface_options(tmp_path):
-    """The CLI-compatible file call should retain the standard defaults."""
+    """A file call should retain defaults other than explicit direction."""
     filename = tmp_path / "structure.json"
     Structure(Lattice.cubic(3), ["Li"], [[0, 0, 0]]).to(filename=filename)
 
-    slab = EnumerationSlab.from_file(filename)
+    slab = EnumerationSlab.from_file(filename, direction=2)
 
     assert isinstance(slab, EnumerationSlab)
     assert slab.direction == 2
@@ -381,6 +382,25 @@ def test_enumeration_slab_from_file_uses_default_surface_options(tmp_path):
     assert slab.enumerated_species is None
     assert slab.num_enumerated_layers is None
     assert slab.symmetric is None
+
+
+def test_high_level_slab_factories_require_direction():
+    """Factories must not guess which lattice direction contains vacuum."""
+    structure_signature = inspect.signature(EnumerationSlab.from_structure)
+    file_signature = inspect.signature(EnumerationSlab.from_file)
+
+    assert (
+        structure_signature.parameters["direction"].default
+        is inspect.Parameter.empty
+    )
+    assert (
+        file_signature.parameters["direction"].default
+        is inspect.Parameter.empty
+    )
+    with pytest.raises(TypeError, match="direction"):
+        EnumerationSlab.from_structure(
+            Structure(Lattice.cubic(3), ["Li"], [[0, 0, 0]])
+        )
 
 
 def test_layer_map_keys_must_match_enumerated_species():

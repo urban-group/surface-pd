@@ -103,7 +103,9 @@ def automate_surface(
 
     """
     # Load parent slab model
-    input_structure = EnumerationSlab.from_file(target_slab_path)
+    input_structure = EnumerationSlab.from_file(
+        target_slab_path, direction=2
+    )
 
     # Wrap out of the boundary fractional coordinates back into the unit cell.
     input_structure.wrap_pbc()
@@ -238,8 +240,10 @@ def automate_surface(
         for k, symmetrized_structure in enumerate(enumerated_structures):
             indicator = 0
             if symmetric:
-                _, origin, _ = symmetrized_structure.is_symmetry(
-                    return_isc=True
+                _, origin, _ = (
+                    symmetrized_structure._inversion_symmetry_details(
+                        return_details=True
+                    )
                 )
                 min_c, _ = symmetrized_structure.get_max_min_c_frac()
                 sga = SpacegroupAnalyzer(symmetrized_structure, symprec=0.1)

@@ -139,6 +139,7 @@ class SurfaceEnumerator:
         analysis = structure.analyze()
         self._validate_realizable_composition(structure, analysis)
         if structure.symmetric:
+            _validate_symmetric_selective_dynamics(structure, analysis)
             pre_check = PreCheck(structure, analysis=analysis)
             if not pre_check.relax_both_surfaces():
                 raise IncompatibleSymmError
@@ -348,3 +349,31 @@ def _complete_selective_dynamics(structure, fixed_region_bounds_angstrom):
         coordinate = coordinates[index]
         fixed = lower_limit - 1e-8 <= coordinate <= upper_limit + 1e-8
         site.properties["selective_dynamics"] = [not fixed] * 3
+
+
+def _validate_symmetric_selective_dynamics(structure, analysis):
+    """Validate complete flags and relaxed outer layers for both surfaces."""
+    for index, site in enumerate(structure):
+        flags = site.properties.get("selective_dynamics")
+        if (
+            flags is None
+            or len(flags) != 3
+            or any(not isinstance(value, (bool, np.bool_)) for value in flags)
+        ):
+            raise ValueError(
+                "symmetric enumeration requires three Boolean "
+                f"selective_dynamics flags on site {index}"
+            )
+    if not analysis.fixed_site_indices:
+        raise ValueError(
+            "symmetric enumeration requires a fixed region identified by "
+            "selective_dynamics"
+        )
+    outer_indices = (
+        analysis.layers[0].site_indices + analysis.layers[-1].site_indices
+    )
+    if any(
+        not all(structure[index].properties["selective_dynamics"])
+        for index in outer_indices
+    ):
+        raise IncompatibleSymmError

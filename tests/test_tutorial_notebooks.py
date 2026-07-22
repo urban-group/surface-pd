@@ -4,6 +4,12 @@ from pathlib import Path
 
 import nbformat
 from nbclient import NotebookClient
+from pymatgen.core import Lattice, Structure
+
+from surface_pd.core import (
+    EnumerationSlab,
+    SurfaceEnumerationMetadata,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PHASE_DIAGRAM_NOTEBOOK = (
@@ -62,6 +68,8 @@ def test_enumeration_notebook_is_a_clean_maintained_tutorial():
     assert "EnumerationSlab.from_file" in source
     assert ".analyze()" in source
     assert "SurfaceEnumerator" in source
+    assert "WRITE_POSCARS = False" in source
+    assert "generated-poscars" in source
     assert "enumlib" in source
     assert "symmetric" in source
     assert "max_cell_size" in source
@@ -88,7 +96,62 @@ def test_enumeration_notebook_executes_from_examples_directory():
     outputs = executed.cells[-1].get("outputs", [])
     assert len(outputs) == 1
     assert outputs[0].output_type == "stream"
-    assert "enumlib" in outputs[0].text
+    assert "POSCAR export skipped by default" in outputs[0].text
+
+
+def test_enumeration_notebook_poscar_export_is_opt_in_and_preserves_flags(
+    tmp_path,
+    monkeypatch,
+):
+    """The documented export cell should write finalized pymatgen slabs."""
+    notebook = nbformat.read(ENUMERATION_NOTEBOOK, as_version=4)
+    export_cell = next(
+        cell for cell in notebook.cells if cell.id == "optional-poscar-export"
+    )
+    slab = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li", "Li"],
+        [[0, 0, 0.4], [0, 0, 0.6]],
+        site_properties={
+            "selective_dynamics": [
+                [False, False, False],
+                [True, True, True],
+            ]
+        },
+    )
+    slab._set_enumeration_metadata(
+        SurfaceEnumerationMetadata(
+            transformation_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            area_multiplier=1,
+            raw_candidate_rank=3,
+            symmetric=False,
+        )
+    )
+    source = export_cell.source.replace(
+        "WRITE_POSCARS = False", "WRITE_POSCARS = True", 1
+    )
+    monkeypatch.chdir(tmp_path)
+
+    exec(
+        compile(source, "optional-poscar-export", "exec"),
+        {
+            "Path": Path,
+            "enumerated_slabs": [slab],
+            "symmetric_results": [],
+        },
+    )
+
+    path = (
+        tmp_path
+        / "generated-poscars"
+        / "POSCAR_Li100_area1_rank0003.vasp"
+    )
+    restored = Structure.from_file(path)
+    assert path.is_file()
+    assert restored.site_properties["selective_dynamics"] == [
+        [False, False, False],
+        [True, True, True]
+    ]
 
 
 def test_jupyter_checkpoint_files_are_absent():

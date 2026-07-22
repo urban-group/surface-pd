@@ -158,13 +158,13 @@ class PostCheck:
         """
         if keep_symmetric:
             try:
-                symmetric, origin, _ = self.structure.is_symmetry(
-                    symprec=symprec, return_isc=True
+                symmetric, origin, _ = (
+                    self.structure._inversion_symmetry_details(
+                        symprec=symprec, return_details=True
+                    )
                 )
             except TypeError:
-                symmetric = self.structure.is_symmetry(
-                    symprec, return_isc=False
-                )
+                symmetric = self.structure.has_inversion_symmetry(symprec)
 
             if not symmetric:
                 species_str = ""

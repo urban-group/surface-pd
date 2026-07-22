@@ -25,6 +25,7 @@ def _configured_slab():
     )
     return EnumerationSlab.from_structure(
         structure,
+        direction=2,
         enumerated_species=["Li"],
         num_enumerated_layers={"Li": 1},
         symmetric=False,
@@ -46,6 +47,7 @@ def test_selected_indices_are_separate_from_fixed_region_bounds():
     assert not hasattr(slab, "layers_finder")
     assert not hasattr(slab, "group_atoms_by_layer")
     assert not hasattr(slab, "layer_distinguisher")
+    assert not hasattr(slab, "layers")
 
 
 def test_analysis_snapshot_does_not_change_with_the_source_structure():
@@ -132,12 +134,12 @@ def test_cartesian_layers_are_independent_of_vacuum_length():
         layer_tolerance_angstrom=0.25,
     )
 
-    assert [layer.site_indices for layer in short.layers] == [
-        layer.site_indices for layer in long.layers
+    assert [layer.site_indices for layer in short.analyze().layers] == [
+        layer.site_indices for layer in long.analyze().layers
     ]
-    assert short.layers[0].coordinate == pytest.approx(2.1)
-    assert long.layers[0].coordinate == pytest.approx(2.1)
-    assert isinstance(short.layers[0].coordinate, float)
+    assert short.analyze().layers[0].coordinate == pytest.approx(2.1)
+    assert long.analyze().layers[0].coordinate == pytest.approx(2.1)
+    assert isinstance(short.analyze().layers[0].coordinate, float)
 
 
 def test_layers_use_plane_height_for_a_slanted_vacuum_vector():
@@ -150,11 +152,12 @@ def test_layers_use_plane_height_for_a_slanted_vacuum_vector():
         layer_tolerance_angstrom=0.25,
     )
 
-    assert len(slab.layers) == 1
-    assert slab.layers[0].coordinate == pytest.approx(2.1)
-    assert slab.layers[0].species_counts == {"Li": 2}
+    layers = slab.analyze().layers
+    assert len(layers) == 1
+    assert layers[0].coordinate == pytest.approx(2.1)
+    assert layers[0].species_counts == {"Li": 2}
     with pytest.raises(TypeError):
-        slab.layers[0].species_counts["Li"] = 1
+        layers[0].species_counts["Li"] = 1
 
 
 def test_layer_detection_handles_the_periodic_cell_boundary():
@@ -166,7 +169,10 @@ def test_layer_detection_handles_the_periodic_cell_boundary():
         layer_tolerance_angstrom=0.31,
     )
 
-    assert {layer.site_indices for layer in slab.layers} == {(0, 1), (2,)}
+    assert {layer.site_indices for layer in slab.analyze().layers} == {
+        (0, 1),
+        (2,),
+    }
 
 
 def test_layer_clustering_does_not_chain_beyond_the_tolerance():
@@ -178,7 +184,71 @@ def test_layer_clustering_does_not_chain_beyond_the_tolerance():
         layer_tolerance_angstrom=0.25,
     )
 
-    assert [layer.site_indices for layer in slab.layers] == [(0, 1), (2,)]
+    assert [layer.site_indices for layer in slab.analyze().layers] == [
+        (0, 1),
+        (2,),
+    ]
+
+
+def test_analysis_rejects_incomplete_enumeration_configuration():
+    """Species and layer counts must be configured together."""
+    slab = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li"],
+        [[0, 0, 0.5]],
+        enumerated_species=["Li"],
+    )
+
+    with pytest.raises(ValueError, match="num_enumerated_layers"):
+        slab.analyze()
+
+
+def test_analysis_rejects_missing_species_and_excessive_layer_counts():
+    """Layer requests must be realizable on the configured slab."""
+    missing = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li"],
+        [[0, 0, 0.5]],
+        enumerated_species=["O"],
+        num_enumerated_layers={"O": 1},
+        symmetric=False,
+    )
+    excessive = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li"],
+        [[0, 0, 0.5]],
+        enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 2},
+        symmetric=False,
+    )
+
+    with pytest.raises(ValueError, match="O.*no detected layers"):
+        missing.analyze()
+    with pytest.raises(ValueError, match="requests 2.*only 1"):
+        excessive.analyze()
+
+
+def test_symmetric_analysis_rejects_overlapping_surface_layers():
+    """Top and bottom selections must not overlap for symmetric slabs."""
+    slab = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li", "Li", "Li"],
+        [[0, 0, 0.2], [0, 0, 0.5], [0, 0, 0.8]],
+        enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 2},
+        symmetric=True,
+    )
+
+    with pytest.raises(ValueError, match="non-overlapping layers per surface"):
+        slab.analyze()
+
+
+def test_public_symmetry_check_has_a_boolean_contract():
+    """Public inversion-symmetry inspection should always return a Boolean."""
+    slab = _configured_slab()
+
+    assert isinstance(slab.has_inversion_symmetry(), bool)
+    assert not hasattr(slab, "is_symmetry")
 
 
 def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
@@ -286,6 +356,32 @@ def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):
 
     with pytest.raises(IncompatibleSymmError):
         enumerator.apply_enumeration(slab)
+
+    assert raw_called is False
+
+
+def test_symmetric_enumeration_rejects_incomplete_selective_dynamics(
+    monkeypatch,
+):
+    """Every symmetric-slab site needs complete Boolean relaxation flags."""
+    slab = _configured_slab()
+    slab.symmetric = True
+    del slab[1].properties["selective_dynamics"]
+    raw_called = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal raw_called
+        raw_called = True
+        return []
+
+    monkeypatch.setattr(
+        "surface_pd.core.enum._apply_raw_enumeration", fail_if_called
+    )
+
+    with pytest.raises(ValueError, match="selective_dynamics"):
+        SurfaceEnumerator(
+            {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
+        ).apply_enumeration(slab)
 
     assert raw_called is False
 

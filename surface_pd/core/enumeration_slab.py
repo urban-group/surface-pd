@@ -178,7 +178,7 @@ class EnumerationSlab(Structure):
         cls,
         structure: Structure,
         *,
-        direction: int = 2,
+        direction: int,
         layer_tolerance_angstrom: float = 0.5,
         enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
@@ -191,7 +191,7 @@ class EnumerationSlab(Structure):
         structure : Structure
             Source structure whose lattice, sites, charge, labels, site
             properties, and structure properties are copied.
-        direction : int, default=2
+        direction : int
             Lattice-axis index containing the slab's broken periodicity and
             vacuum region.
         layer_tolerance_angstrom : float, default=0.5
@@ -233,7 +233,7 @@ class EnumerationSlab(Structure):
         sort: bool = False,
         merge_tol: float = 0.0,
         *,
-        direction: int = 2,
+        direction: int,
         layer_tolerance_angstrom: float = 0.5,
         enumerated_species: Sequence[str] | None = None,
         num_enumerated_layers: Mapping[str, int] | None = None,
@@ -258,7 +258,7 @@ class EnumerationSlab(Structure):
         merge_tol : float, default=0.0
             Cartesian distance in angstroms within which pymatgen merges
             sites while parsing.
-        direction : int, default=2
+        direction : int
             Lattice-axis index containing the slab's broken periodicity and
             vacuum region.
         layer_tolerance_angstrom : float, default=0.5
@@ -496,10 +496,44 @@ class EnumerationSlab(Structure):
             )
         return tuple(layers)
 
-    @property
-    def layers(self):
-        """Tuple of :class:`SlabLayer` objects ordered bottom to top."""
-        return self._find_layers()
+    def _validate_selection_configuration(self, layers):
+        """Validate configured species and layer counts against this slab."""
+        species = self.enumerated_species
+        counts = self.num_enumerated_layers
+        if species is None and counts is None:
+            return
+        if species is None or counts is None:
+            raise ValueError(
+                "enumerated_species and num_enumerated_layers must be "
+                "configured together"
+            )
+        if self.symmetric is None:
+            raise ValueError(
+                "symmetric must be configured when enumeration layers are "
+                "selected"
+            )
+        for symbol in species:
+            available = sum(
+                symbol in layer.species_counts for layer in layers
+            )
+            if available == 0:
+                raise ValueError(
+                    f"{symbol} has no detected layers in the slab"
+                )
+            requested = counts[symbol]
+            if self.symmetric:
+                per_surface = available // 2
+                if requested > per_surface:
+                    raise ValueError(
+                        f"{symbol} requests {requested} layers, but only "
+                        f"{per_surface} non-overlapping layers per surface "
+                        "are available"
+                    )
+            elif requested > available:
+                raise ValueError(
+                    f"{symbol} requests {requested} layers, but only "
+                    f"{available} are available"
+                )
 
     def _select_enumerated_site_indices(self, layers, only_top=False):
         """Select configured species indices from detected surface layers."""
@@ -529,6 +563,7 @@ class EnumerationSlab(Structure):
     def analyze(self):
         """Return an immutable analysis snapshot of the current slab state."""
         layers = self._find_layers()
+        self._validate_selection_configuration(layers)
         fixed_indices = tuple(
             index
             for index, site in enumerate(self)
@@ -693,11 +728,13 @@ class EnumerationSlab(Structure):
         # Determine symmetry operations of the reference slab and make sure
         # the reference slab has an inversion center
         try:
-            symmetric, origin, inversion = slab_ref.is_symmetry(
-                symprec=symprec, return_isc=True
+            symmetric, origin, inversion = (
+                slab_ref._inversion_symmetry_details(
+                    symprec=symprec, return_details=True
+                )
             )
         except TypeError:
-            symmetric = slab_ref.is_symmetry(symprec, return_isc=False)
+            symmetric = slab_ref.has_inversion_symmetry(symprec)
 
         if not symmetric:
             debug_filename = "debug-center.vasp"
@@ -778,7 +815,23 @@ class EnumerationSlab(Structure):
                 minimum = site.frac_coords[self.direction]
         return minimum, maximum
 
-    def is_symmetry(self, symprec: float = 1e-1, return_isc: bool = False):
+    def has_inversion_symmetry(self, symprec: float = 1e-1):
+        """Return whether the slab has inversion symmetry.
+
+        Parameters
+        ----------
+        symprec : float, default=0.1
+            Cartesian symmetry tolerance in angstroms.
+        """
+        return bool(
+            self._inversion_symmetry_details(
+                symprec=symprec, return_details=False
+            )
+        )
+
+    def _inversion_symmetry_details(
+        self, symprec: float = 1e-1, return_details: bool = False
+    ):
         """
         Check whether the slab model is symmetric.
 
@@ -789,22 +842,23 @@ class EnumerationSlab(Structure):
         ----------
         symprec : float, default=1e-1
             Cartesian symmetry tolerance in angstroms.
-        return_isc : bool, default=False
+        return_details : bool, default=False
             Return inversion-center details when true.
 
         Returns
         -------
         bool or tuple[bool, numpy.ndarray, SymmOp] or None
-            With ``return_isc=False``, whether the slab has Laue symmetry.
-            With ``return_isc=True``, a true flag, fractional inversion-center
-            coordinates, and the pymatgen inversion operation are returned
-            when found. ``None`` is returned if Laue symmetry is reported but
-            no explicit inversion operation is available.
+            With ``return_details=False``, whether the slab has Laue symmetry.
+            With ``return_details=True``, a true flag, fractional
+            inversion-center coordinates, and the pymatgen inversion
+            operation are returned when found. ``None`` is returned if Laue
+            symmetry is reported but no explicit inversion operation is
+            available.
 
         """
         sga = SpacegroupAnalyzer(self, symprec=symprec)
         if sga.is_laue():  # has Laue symmetry (centro-symmetry)
-            if return_isc:
+            if return_details:
                 ops = sga.get_symmetry_operations()
                 for op in ops:
                     if np.all(op.rotation_matrix == -np.identity(3)):
@@ -944,8 +998,8 @@ class EnumerationSlab(Structure):
                 site.frac_coords = site.frac_coords + origin
             self.wrap_pbc()
         else:
-            symmetric, origin, _ = self.is_symmetry(
-                symprec=0.1, return_isc=True
+            symmetric, origin, _ = self._inversion_symmetry_details(
+                symprec=0.1, return_details=True
             )
             for site in self:
                 site.frac_coords -= origin
