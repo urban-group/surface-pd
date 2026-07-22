@@ -1,9 +1,11 @@
 """Tests for the public surface-constrained enumeration workflow."""
 
 import numpy as np
+import pytest
 from pymatgen.core import Lattice, Structure
 
 from surface_pd.core import EnumerationSlab, EnumWithComposition
+from surface_pd.error import IncompatibleSymmError
 
 
 def _configured_slab():
@@ -68,3 +70,28 @@ def test_surface_enumerator_rejects_normal_multiplication_and_mixing(
     assert len(results) == 1
     assert np.allclose(results[0].lattice.matrix[2], slab.lattice.matrix[2])
     assert all("X" not in str(species) for species in results[0].species)
+
+
+def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):
+    """Symmetric enumeration should validate both relaxed surfaces first."""
+    slab = _configured_slab()
+    slab[0].properties["selective_dynamics"] = [False, False, False]
+    slab.symmetric = True
+    raw_called = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal raw_called
+        raw_called = True
+        return []
+
+    monkeypatch.setattr(
+        "surface_pd.core.enum._apply_raw_enumeration", fail_if_called
+    )
+    enumerator = EnumWithComposition(
+        {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
+    )
+
+    with pytest.raises(IncompatibleSymmError):
+        enumerator.apply_enumeration(slab)
+
+    assert raw_called is False

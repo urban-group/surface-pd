@@ -64,6 +64,8 @@ def test_enumeration_notebook_is_a_clean_maintained_tutorial():
     assert "symmetric" in source
     assert "max_cell_size" in source
     assert "DummySpecies" not in source
+    assert "POSCAR_Li2O_110.vasp" in source
+    assert "symmetric_slab" in source
 
 
 def test_enumeration_notebook_executes_from_examples_directory():

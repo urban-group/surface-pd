@@ -10,6 +10,8 @@ from pymatgen.transformations.standard_transformations import (
 )
 
 from surface_pd.core.enumeration_slab import EnumerationSlab
+from surface_pd.core.pre_check import PreCheck
+from surface_pd.error import IncompatibleSymmError, NoInversionSymmetryError
 
 
 class EnumWithComposition:
@@ -78,6 +80,14 @@ class EnumWithComposition:
                 "replacements must contain the same species as "
                 "structure.enumerated_species"
             )
+        if structure.symmetric:
+            pre_check = PreCheck(structure)
+            if not pre_check.relax_both_surfaces():
+                raise IncompatibleSymmError
+            if not pre_check.has_inversion_symmetry():
+                raise NoInversionSymmetryError
+
+        fixed_region_bounds = structure.get_fixed_region_bounds()
 
         markers = [
             DummySpecies(f"Xsurface{i + 1}")
@@ -118,6 +128,12 @@ class EnumWithComposition:
                 symmetric=structure.symmetric,
             )
             if structure.symmetric:
+                _complete_selective_dynamics(
+                    finalized,
+                    structure.direction,
+                    fixed_region_bounds,
+                    structure.tolerance,
+                )
                 finalized = finalized.symmetrize_top_base()
                 finalized = EnumerationSlab.from_structure(
                     finalized,
@@ -169,3 +185,21 @@ def _is_in_plane_derivative(parent, child, min_cell_size, max_cell_size):
         return False
     multiplier = abs(round(np.linalg.det(integer_matrix)))
     return min_cell_size <= multiplier <= max_cell_size
+
+
+def _complete_selective_dynamics(
+    structure, direction, fixed_region_bounds, tolerance
+):
+    """Restore flags omitted from sites created by pymatgen enumeration."""
+    lower_limit, upper_limit = fixed_region_bounds
+    for site in structure:
+        flags = site.properties.get("selective_dynamics")
+        if flags is not None:
+            continue
+        coordinate = site.frac_coords[direction]
+        fixed = (
+            lower_limit - tolerance
+            <= coordinate
+            <= upper_limit + tolerance
+        )
+        site.properties["selective_dynamics"] = [not fixed] * 3

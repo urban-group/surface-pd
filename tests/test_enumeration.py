@@ -33,6 +33,14 @@ LI_SLAB = (
     / "electrode"
     / "POSCAR_Li_100.vasp"
 )
+LI2O_SLAB = (
+    PROJECT_ROOT
+    / "examples"
+    / "enumeration-examples"
+    / "structure"
+    / "electrode"
+    / "POSCAR_Li2O_110.vasp"
+)
 
 
 def _enumlib_env(tmp_path: Path):
@@ -171,3 +179,54 @@ for result in results:
         float(values[3]) == pytest.approx(30.791121)
         for values in structures
     )
+
+
+def test_public_enumerator_finalizes_symmetric_surface_cells(tmp_path):
+    """Return complete inversion-symmetric Li2O surface derivatives."""
+    _, _, env = _skip_without_enumlib(tmp_path)
+    script = f"""
+from pymatgen.core import Structure
+from surface_pd.core import EnumerationSlab, EnumWithComposition
+
+source = Structure.from_file({str(LI2O_SLAB)!r})
+slab = EnumerationSlab.from_structure(
+    source,
+    enumerated_species=["Li", "O"],
+    num_enumerated_layers={{"Li": 1, "O": 2}},
+    symmetric=True,
+)
+results = EnumWithComposition(
+    {{"Li": {{"Li": 1.0}}, "O": {{"O": 0.75}}}},
+    min_cell_size=1,
+    max_cell_size=2,
+).apply_enumeration(slab, max_structures=20)
+print(len(results))
+for result in results:
+    complete = all(
+        site.properties.get("selective_dynamics") is not None
+        for site in result
+    )
+    print(
+        len(result), result.composition["Li"], result.composition["O"],
+        result.lattice.c, result.is_symmetry(), complete,
+    )
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=PROJECT_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=120,
+    )
+
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.splitlines()
+    assert lines[0] == "4"
+    for line in lines[1:]:
+        sites, lithium, oxygen, c_length, symmetric, complete = line.split()
+        assert (int(sites), float(lithium), float(oxygen)) == (76, 52.0, 24.0)
+        assert float(c_length) == pytest.approx(38.7623252869)
+        assert symmetric == "True"
+        assert complete == "True"
