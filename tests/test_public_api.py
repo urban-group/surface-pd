@@ -328,6 +328,52 @@ def test_enumeration_slab_from_structure_preserves_structure_data():
     assert slab.enumerated_species == ["Li"]
 
 
+def test_enumeration_slab_from_file_preserves_data_and_surface_options(
+    tmp_path,
+):
+    """The file factory should parse with pymatgen and configure the slab."""
+    structure = Structure(
+        Lattice.tetragonal(3.0, 15.0),
+        ["Li", "O"],
+        [[0, 0, 0.2], [0, 0, 0.8]],
+        site_properties={"selective_dynamics": [[False] * 3, [True] * 3]},
+    )
+    filename = tmp_path / "POSCAR"
+    structure.to(filename=filename, fmt="poscar")
+
+    slab = EnumerationSlab.from_file(
+        filename,
+        direction=1,
+        tolerance=0.05,
+        enumerated_species=["Li"],
+        num_enumerated_layers={"Li": 1},
+        symmetric=False,
+    )
+
+    assert isinstance(slab, EnumerationSlab)
+    assert slab == Structure.from_file(filename)
+    assert slab.direction == 1
+    assert slab.tolerance == 0.05
+    assert slab.enumerated_species == ["Li"]
+    assert slab.num_enumerated_layers == {"Li": 1}
+    assert slab.symmetric is False
+
+
+def test_enumeration_slab_from_file_uses_default_surface_options(tmp_path):
+    """The CLI-compatible file call should retain the standard defaults."""
+    filename = tmp_path / "structure.json"
+    Structure(Lattice.cubic(3), ["Li"], [[0, 0, 0]]).to(filename=filename)
+
+    slab = EnumerationSlab.from_file(filename)
+
+    assert isinstance(slab, EnumerationSlab)
+    assert slab.direction == 2
+    assert slab.tolerance == 0.03
+    assert slab.enumerated_species is None
+    assert slab.num_enumerated_layers is None
+    assert slab.symmetric is None
+
+
 def test_layer_map_keys_must_match_enumerated_species():
     """Each selected species should have exactly one layer count."""
     with pytest.raises(ValueError, match="same species"):

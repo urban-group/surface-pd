@@ -10,6 +10,7 @@ import logging
 import math
 from collections.abc import Mapping, Sequence
 from numbers import Integral, Real
+from os import PathLike
 
 import numpy as np
 from pymatgen.core import Composition, DummySpecies, Element, Species
@@ -50,7 +51,9 @@ class EnumerationSlab(Structure):
     properties : dict, optional
         Structure-level properties accepted by pymatgen.
     direction : int, default=2
-        Lattice-axis index normal to the surface. Must be 0, 1, or 2.
+        Lattice-axis index containing the broken periodicity and vacuum
+        region. The corresponding vector need not be perpendicular to the
+        surface plane. Must be 0, 1, or 2.
     tolerance : float, default=0.03
         Positive finite fractional-coordinate tolerance used to group layers.
     enumerated_species : sequence of str, optional
@@ -127,7 +130,8 @@ class EnumerationSlab(Structure):
             Source structure whose lattice, sites, charge, labels, site
             properties, and structure properties are copied.
         direction : int, default=2
-            Lattice-axis index normal to the surface.
+            Lattice-axis index containing the slab's broken periodicity and
+            vacuum region.
         tolerance : float, default=0.03
             Fractional-coordinate tolerance used to group layers.
         enumerated_species : sequence of str, optional
@@ -159,11 +163,80 @@ class EnumerationSlab(Structure):
             symmetric=symmetric,
         )
 
+    @classmethod
+    def from_file(
+        cls,
+        filename: str | PathLike,
+        primitive: bool = False,
+        sort: bool = False,
+        merge_tol: float = 0.0,
+        *,
+        direction: int = 2,
+        tolerance: float = 0.03,
+        enumerated_species: Sequence[str] | None = None,
+        num_enumerated_layers: Mapping[str, int] | None = None,
+        symmetric: bool | None = None,
+        **kwargs,
+    ):
+        """Read a structure file and configure it for surface enumeration.
+
+        File-format detection and parsing are delegated to
+        :meth:`pymatgen.core.Structure.from_file`. The parsed structure is then
+        converted through :meth:`from_structure`, so file-based and in-memory
+        construction use the same surface configuration and validation.
+
+        Parameters
+        ----------
+        filename : str or path-like
+            Structure file in a format supported by pymatgen.
+        primitive : bool, default=False
+            Ask pymatgen to return a primitive structure where supported.
+        sort : bool, default=False
+            Ask pymatgen to sort sites by its standard ordering.
+        merge_tol : float, default=0.0
+            Cartesian distance in angstroms within which pymatgen merges
+            sites while parsing.
+        direction : int, default=2
+            Lattice-axis index containing the slab's broken periodicity and
+            vacuum region.
+        tolerance : float, default=0.03
+            Fractional-coordinate tolerance used to group layers.
+        enumerated_species : sequence of str, optional
+            Species whose outer surface layers may be modified.
+        num_enumerated_layers : mapping of str to int, optional
+            Independent outer-layer count for each enumerated species.
+        symmetric : bool, optional
+            Whether corresponding layers on both surfaces are selected.
+        **kwargs
+            Additional keyword arguments passed to pymatgen's file parser.
+
+        Returns
+        -------
+        EnumerationSlab
+            Parsed independent structure configured for surface enumeration.
+        """
+        structure = Structure.from_file(
+            filename,
+            primitive=primitive,
+            sort=sort,
+            merge_tol=merge_tol,
+            **kwargs,
+        )
+        return cls.from_structure(
+            structure,
+            direction=direction,
+            tolerance=tolerance,
+            enumerated_species=enumerated_species,
+            num_enumerated_layers=num_enumerated_layers,
+            symmetric=symmetric,
+        )
+
     @property
     def direction(self):
-        """int: Lattice-axis index perpendicular to the surface.
+        """int: Lattice-axis index containing the slab's vacuum region.
 
-        Valid axis indices are 0, 1, and 2.
+        The corresponding lattice vector need not be perpendicular to the
+        surface plane. Valid axis indices are 0, 1, and 2.
         """
         return self._direction
 
