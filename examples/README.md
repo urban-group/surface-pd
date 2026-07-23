@@ -46,38 +46,15 @@ the SCAN+rVV10+U LiNiO2 (001) example step by step. It is intentionally more
 explicit than the command-line workflow so that the model, datasets,
 thermodynamic result, and rendering API can be inspected independently.
 
-See the docs for reference details.
+The authoritative runnable command-line guides are:
 
-### 1. Surface Enumeration
+- [Surface-enumeration command-line walkthrough](surface-enumeration-cli.md)
+- [Phase-diagram command-line walkthrough](phase-diagram-cli.md)
 
-The `surface-enumeration` command enumerates vacancies or substitutions in
-surface slab structures. It reads a JSON configuration containing the slab
-path, replacement fractions, selected layers, maximum cell size, and symmetry
-choice. Example configurations are in `enumeration-examples/input`.
-
-**Example:**
-
-```bash
-surface-enumeration enumeration-examples/input/input-Li.json
-```
-
-### 2. Phase Diagram Plotting
-
-The `surface-pd-plot` command evaluates one versioned generalized configuration:
-
-**Example:**
-
-```bash
-surface-pd-plot \
-    plotting-examples/lno-001-scan/charge.json \
-    --x-range 0 5 --y-range 1 1500 \
-    --output lno-001-charge.pdf
-```
-
-The plotting examples use version-1 JSON and explicitly mapped phase tables.
-Distinct PBE+U and SCAN+rVV10+U calculations are retained. The discharge
-examples contain only accessible candidate phases and preserve their original
-charge-state DFT energies; they do not use zero-energy exclusion sentinels.
+Both guides use the committed inputs in this directory and keep every command
+relative to `examples/`. Sphinx retains the corresponding input-format,
+command-option, and scientific reference material without duplicating these
+walkthroughs.
 
 ## Getting Help
 

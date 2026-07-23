@@ -432,8 +432,7 @@ def main(argv: list[str] | None = None) -> None:
             "specified surface layers.\n\n"
             "Example usage:\n"
             "  %(prog)s input.json\n"
-            "  %(prog)s input.json --generate-poscar\n"
-            "  %(prog)s examples/enumeration-examples/input/input-Li.json -g"
+            "  %(prog)s input.json --generate-poscar"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(

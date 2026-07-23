@@ -47,7 +47,10 @@ enumeration transformation:
 The example configures enumeration but does not call
 :meth:`~surface_pd.core.SurfaceEnumerator.apply_enumeration`, because that
 operation requires the external enumlib executables. See
-:doc:`tutorials-surface-enum` for the complete command-line workflow.
+:doc:`tutorials-surface-enum` for the command reference and the examples-owned
+`command-line walkthrough
+<https://github.com/urban-group/surface-pd/blob/main/examples/surface-enumeration-cli.md>`_
+for the runnable workflow.
 
 Grand-potential calculation
 ===========================

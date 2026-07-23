@@ -199,6 +199,33 @@ def test_documented_example_paths_exist():
     assert "example/" not in documentation
 
 
+def test_command_line_walkthroughs_have_one_examples_owned_copy():
+    """Runnable CLI guides should live under examples, not in Sphinx."""
+    enumeration_guide = (
+        PROJECT_ROOT / "examples" / "surface-enumeration-cli.md"
+    )
+    plotting_guide = PROJECT_ROOT / "examples" / "phase-diagram-cli.md"
+    examples_readme = (PROJECT_ROOT / "examples" / "README.md").read_text()
+    sphinx_enumeration = (
+        PROJECT_ROOT / "docs" / "source" / "tutorials-surface-enum.rst"
+    ).read_text()
+    sphinx_plotting = (
+        PROJECT_ROOT / "docs" / "source" / "tutorials-surface-plot.rst"
+    ).read_text()
+
+    assert enumeration_guide.is_file()
+    assert plotting_guide.is_file()
+    assert "surface-enumeration-cli.md" in examples_readme
+    assert "phase-diagram-cli.md" in examples_readme
+    assert "input-LCO.json" in enumeration_guide.read_text()
+    assert "lno-001-scan/charge.json" in plotting_guide.read_text()
+    assert "input-LCO.json" not in sphinx_enumeration
+    assert "lno-001-scan/charge.json" not in sphinx_plotting
+    assert "376 distinct structures" not in sphinx_enumeration
+    assert "surface-enumeration-cli.md" in sphinx_enumeration
+    assert "phase-diagram-cli.md" in sphinx_plotting
+
+
 def test_user_documentation_has_one_surface_pd_citation():
     """All citation locations should agree on canonical software metadata."""
     import surface_pd
