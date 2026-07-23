@@ -85,6 +85,34 @@ class SlabAnalysis:
             MappingProxyType(indices),
         )
 
+    def __str__(self):
+        """Return a compact, deterministic report for interactive use."""
+        lines = ["SlabAnalysis", f"  Layers ({len(self.layers)}):"]
+        for layer_index, layer in enumerate(self.layers):
+            site_indices = ", ".join(map(str, layer.site_indices))
+            species = ", ".join(
+                f"{symbol}: {count}"
+                for symbol, count in sorted(layer.species_counts.items())
+            )
+            lines.append(
+                f"    {layer_index}: {layer.coordinate:.3f} Å | "
+                f"sites: {site_indices} | species: {species}"
+            )
+        selected = "; ".join(
+            f"{species}: {', '.join(map(str, indices))}"
+            for species, indices in self.enumerated_site_indices.items()
+        )
+        fixed = ", ".join(map(str, self.fixed_site_indices))
+        lines.append(f"  Enumerated sites: {selected or 'none'}")
+        lines.append(f"  Fixed sites: {fixed or 'none'}")
+        if self.fixed_region_bounds_angstrom is None:
+            fixed_region = "none"
+        else:
+            lower, upper = self.fixed_region_bounds_angstrom
+            fixed_region = f"{lower:.3f}–{upper:.3f} Å"
+        lines.append(f"  Fixed region: {fixed_region}")
+        return "\n".join(lines)
+
 
 class EnumerationSlab(Structure):
     """Represent and manipulate a periodic surface slab.
@@ -172,6 +200,36 @@ class EnumerationSlab(Structure):
         self.num_enumerated_layers = num_enumerated_layers
         self._validate_layer_species_match()
         self.symmetric = symmetric
+
+    def __str__(self):
+        """Return the pymatgen structure summary plus surface settings."""
+        if self.enumerated_species is None:
+            species = "not configured"
+        else:
+            species = ", ".join(self.enumerated_species)
+        if self.num_enumerated_layers is None:
+            layers = "not configured"
+        else:
+            layers = ", ".join(
+                f"{symbol}: {count}"
+                for symbol, count in self.num_enumerated_layers.items()
+            )
+        if self.symmetric is None:
+            symmetric = "not configured"
+        else:
+            symmetric = "yes" if self.symmetric else "no"
+        surface_summary = "\n".join(
+            (
+                "Surface enumeration",
+                f"  Vacuum-bearing direction: {self.direction}",
+                "  Layer tolerance: "
+                f"{self.layer_tolerance_angstrom:.3f} Å",
+                f"  Enumerated species: {species}",
+                f"  Enumerated layers: {layers}",
+                f"  Symmetric: {symmetric}",
+            )
+        )
+        return f"{super().__str__()}\n{surface_summary}"
 
     @classmethod
     def from_structure(
@@ -567,7 +625,7 @@ class EnumerationSlab(Structure):
         fixed_indices = tuple(
             index
             for index, site in enumerate(self)
-            if "selective_dynamics" in site.properties
+            if site.properties.get("selective_dynamics") is not None
             and not any(site.properties["selective_dynamics"])
         )
         if fixed_indices:

@@ -67,6 +67,9 @@ class SurfaceEnumerator:
     symmetrically distinct raw candidates. Accepted candidates retain that
     order, and surface-pd does not apply a second structure-matching or
     deduplication pass after surface filtering or symmetric finalization.
+    Callers that require a different, tolerance-dependent equivalence policy
+    can explicitly compare selected results with pymatgen's
+    :class:`~pymatgen.analysis.structure_matcher.StructureMatcher`.
     """
 
     def __init__(
@@ -187,11 +190,11 @@ class SurfaceEnumerator:
                 num_enumerated_layers=structure.num_enumerated_layers,
                 symmetric=structure.symmetric,
             )
+            _complete_selective_dynamics(
+                finalized,
+                analysis.fixed_region_bounds_angstrom,
+            )
             if structure.symmetric:
-                _complete_selective_dynamics(
-                    finalized,
-                    analysis.fixed_region_bounds_angstrom,
-                )
                 finalized = finalized.symmetrize_top_base()
                 finalized = EnumerationSlab.from_structure(
                     finalized,
@@ -338,16 +341,18 @@ def _in_plane_transformation(parent, child, min_cell_size, max_cell_size):
 
 def _complete_selective_dynamics(structure, fixed_region_bounds_angstrom):
     """Restore flags omitted from sites created by pymatgen enumeration."""
-    if fixed_region_bounds_angstrom is None:
-        raise ValueError("symmetric enumeration requires fixed slab sites")
-    lower_limit, upper_limit = fixed_region_bounds_angstrom
+    if fixed_region_bounds_angstrom is not None:
+        lower_limit, upper_limit = fixed_region_bounds_angstrom
     coordinates = structure._site_coordinates_angstrom()
     for index, site in enumerate(structure):
         flags = site.properties.get("selective_dynamics")
         if flags is not None:
             continue
         coordinate = coordinates[index]
-        fixed = lower_limit - 1e-8 <= coordinate <= upper_limit + 1e-8
+        fixed = (
+            fixed_region_bounds_angstrom is not None
+            and lower_limit - 1e-8 <= coordinate <= upper_limit + 1e-8
+        )
         site.properties["selective_dynamics"] = [not fixed] * 3
 
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from pymatgen.core import Lattice, Structure
+from pymatgen.io.vasp import Poscar
 
 from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 from surface_pd.error import IncompatibleSymmError
@@ -48,6 +49,59 @@ def test_selected_indices_are_separate_from_fixed_region_bounds():
     assert not hasattr(slab, "group_atoms_by_layer")
     assert not hasattr(slab, "layer_distinguisher")
     assert not hasattr(slab, "layers")
+
+
+def test_enumeration_slab_string_extends_the_structure_summary():
+    """Configured slab strings should include surface-enumeration settings."""
+    summary = str(_configured_slab())
+
+    assert summary.startswith("Full Formula (Li2 O1)\n")
+    assert "Sites (3)" in summary
+    assert summary.endswith(
+        "Surface enumeration\n"
+        "  Vacuum-bearing direction: 2\n"
+        "  Layer tolerance: 0.500 Å\n"
+        "  Enumerated species: Li\n"
+        "  Enumerated layers: Li: 1\n"
+        "  Symmetric: no"
+    )
+
+
+def test_unconfigured_enumeration_slab_string_reports_missing_settings():
+    """Unset optional enumeration settings should be visible, not invented."""
+    slab = EnumerationSlab(
+        Lattice.tetragonal(3, 10),
+        ["Li"],
+        [[0, 0, 0.5]],
+    )
+
+    summary = str(slab)
+
+    assert "Enumerated species: not configured" in summary
+    assert "Enumerated layers: not configured" in summary
+    assert "Symmetric: not configured" in summary
+
+
+def test_analysis_has_a_readable_string_summary():
+    """Analysis should provide a concise report for interactive inspection."""
+    summary = str(_configured_slab().analyze())
+
+    assert summary.startswith("SlabAnalysis\n")
+    assert "Layers (3):" in summary
+    assert "0: 3.000 Å | sites: 0 | species: Li: 1" in summary
+    assert "Enumerated sites: Li: 1" in summary
+    assert "Fixed sites: 2" in summary
+    assert "Fixed region: 7.500–7.500 Å" in summary
+
+
+def test_analysis_ignores_missing_selective_dynamics_flags():
+    """Missing pymatgen site flags should not be mistaken for fixed sites."""
+    slab = _configured_slab()
+    slab[0].properties["selective_dynamics"] = None
+
+    analysis = slab.analyze()
+
+    assert analysis.fixed_site_indices == (2,)
 
 
 def test_analysis_snapshot_does_not_change_with_the_source_structure():
@@ -333,6 +387,34 @@ def test_finalized_candidates_retain_raw_order_without_deduplication(
     assert [
         result.enumeration_metadata.raw_candidate_rank for result in results
     ] == [0, 1]
+
+
+def test_asymmetric_finalization_restores_missing_selective_dynamics(
+    monkeypatch, tmp_path
+):
+    """Final results should remain analyzable and writable as POSCAR files."""
+    slab = _configured_slab()
+    candidate = slab.copy()
+    candidate.make_supercell([[2, 0, 0], [0, 1, 0], [0, 0, 1]])
+    for site in candidate:
+        site.properties["selective_dynamics"] = None
+    monkeypatch.setattr(
+        "surface_pd.core.enum._apply_raw_enumeration",
+        lambda *args, **kwargs: [{"structure": candidate}],
+    )
+
+    result = SurfaceEnumerator(
+        {"Li": {"Li": 0.5}}, min_cell_size=2, max_cell_size=2
+    ).apply_enumeration(slab)[0]
+
+    assert all(
+        site.properties["selective_dynamics"] is not None for site in result
+    )
+    assert sum(
+        not any(site.properties["selective_dynamics"]) for site in result
+    ) == 2
+    assert len(result.analyze().fixed_site_indices) == 2
+    Poscar(result).write_file(tmp_path / "POSCAR")
 
 
 def test_symmetric_enumeration_rejects_one_sided_relaxation(monkeypatch):

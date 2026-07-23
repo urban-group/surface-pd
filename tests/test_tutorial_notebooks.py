@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import nbformat
+import numpy as np
 from nbclient import NotebookClient
 from pymatgen.core import Lattice, Structure
 
@@ -148,10 +149,10 @@ def test_enumeration_notebook_poscar_export_is_opt_in_and_preserves_flags(
     )
     restored = Structure.from_file(path)
     assert path.is_file()
-    assert restored.site_properties["selective_dynamics"] == [
-        [False, False, False],
-        [True, True, True]
-    ]
+    assert np.array_equal(
+        restored.site_properties["selective_dynamics"],
+        [[False, False, False], [True, True, True]],
+    )
 
 
 def test_jupyter_checkpoint_files_are_absent():
