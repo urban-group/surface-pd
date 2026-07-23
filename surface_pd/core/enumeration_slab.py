@@ -646,7 +646,7 @@ class EnumerationSlab(Structure):
             fixed_region_bounds_angstrom=fixed_bounds,
         )
 
-    def wrap_pbc(self):
+    def _wrap_pbc(self):
         """
         Wrap fractional coordinates back into the unit cell.
 
@@ -661,10 +661,6 @@ class EnumerationSlab(Structure):
 
         """
         EPS = np.finfo(np.double).eps
-        # min_c, _ = self.get_max_min_c_frac()
-        # if min_c < -0.01:
-        #     shift = abs(min_c) + 0.01
-        # else:
         shift = 0
 
         for site in self:
@@ -711,7 +707,7 @@ class EnumerationSlab(Structure):
 
         return slab_surface_substitute
 
-    def generate_supplemental_structures(
+    def _generate_supplemental_structures(
         self, subs_dict: dict, relaxed_index: dict
     ):
         """
@@ -743,7 +739,7 @@ class EnumerationSlab(Structure):
         structure.remove_sites(removed_index)
         return structure
 
-    def symmetrize_top_base(self, symprec: float = 1e-4):
+    def _symmetrize_top_base(self, symprec: float = 1e-4):
         """
         Symmetrize the top surface by the inversion symmetry center.
 
@@ -805,7 +801,7 @@ class EnumerationSlab(Structure):
             raise NoInversionSymmetryError
 
         # New way to implement wrap_pbc
-        self.wrap_pbc()
+        self._wrap_pbc()
 
         # Symmetrized slab models based on top only
         top_sites = []
@@ -849,12 +845,12 @@ class EnumerationSlab(Structure):
             sites.append(s2)
 
         symmetrized_slab_top = EnumerationSlab.from_sites(sites)
-        symmetrized_slab_top = symmetrized_slab_top.wrap_pbc()
+        symmetrized_slab_top = symmetrized_slab_top._wrap_pbc()
         symmetrized_slab_top = symmetrized_slab_top.get_sorted_structure()
 
         return symmetrized_slab_top
 
-    def get_max_min_c_frac(self):
+    def _get_max_min_c_frac(self):
         """
         Get the maximum and minimum fractional c coordinates.
 
@@ -931,7 +927,7 @@ class EnumerationSlab(Structure):
         else:
             return False
 
-    def check_rotate(self, criteria: float):
+    def _check_rotate(self, criteria: float):
         """
         Check if the slab needs rotation to satisfy the cuboid requirement.
 
@@ -974,7 +970,7 @@ class EnumerationSlab(Structure):
         else:
             return slab_rotated
 
-    def calculate_num_sites(
+    def _calculate_num_sites(
         self, composition_list: list, relaxed_index: dict, max_cell_size: int
     ):
         """
@@ -1028,7 +1024,7 @@ class EnumerationSlab(Structure):
         )
         return curr_num_sites
 
-    def tune_isc(self, origin, shift_isc_back: bool = True):
+    def _tune_isc(self, origin, shift_isc_back: bool = True):
         """
         Shift or shift back the inversion symmetry center.
 
@@ -1054,17 +1050,17 @@ class EnumerationSlab(Structure):
         if shift_isc_back:
             for site in self:
                 site.frac_coords = site.frac_coords + origin
-            self.wrap_pbc()
+            self._wrap_pbc()
         else:
             symmetric, origin, _ = self._inversion_symmetry_details(
                 symprec=0.1, return_details=True
             )
             for site in self:
                 site.frac_coords -= origin
-            self.wrap_pbc()
+            self._wrap_pbc()
         return self
 
-    def tune_c(self, target_min_c: float):
+    def _tune_c(self, target_min_c: float):
         """
         Slightly adjust the slab along the slab direction defined before.
 
@@ -1087,7 +1083,7 @@ class EnumerationSlab(Structure):
         This method mutates the receiver and returns it for fluent use.
 
         """
-        _min_c, _ = self.get_max_min_c_frac()
+        _min_c, _ = self._get_max_min_c_frac()
         displace = target_min_c - _min_c
 
         if abs(displace) < _FRACTIONAL_COORD_TOLERANCE:
@@ -1097,7 +1093,7 @@ class EnumerationSlab(Structure):
             site.frac_coords[self.direction] += displace
         return self
 
-    def add_selective_dynamics(
+    def _add_selective_dynamics(
         self,
         lower_limit_angstrom: float,
         upper_limit_angstrom: float,

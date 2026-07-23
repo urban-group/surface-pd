@@ -108,7 +108,7 @@ def automate_surface(
     )
 
     # Wrap out of the boundary fractional coordinates back into the unit cell.
-    input_structure.wrap_pbc()
+    input_structure._wrap_pbc()
 
     # Define important parameters which will be used later, including to be
     # enumerated species, number of layers relaxed, whether to keep the
@@ -176,7 +176,7 @@ def automate_surface(
 
         composition_list = list(get_values_nested_dict(subs_dict))
         if all_int(composition_list):
-            structure = input_structure.generate_supplemental_structures(
+            structure = input_structure._generate_supplemental_structures(
                 subs_dict, relaxed_index
             )
             supplemental_structures = [structure]
@@ -184,7 +184,7 @@ def automate_surface(
         else:
             if have_zero(composition_list):
                 slab_substituted = (
-                    slab_substituted.generate_supplemental_structures(
+                    slab_substituted._generate_supplemental_structures(
                         subs_dict, relaxed_index
                     )
                 )
@@ -229,7 +229,7 @@ def automate_surface(
                 )
                 if symmetric:
                     enumerated_structures.append(
-                        filtered_structure.symmetrize_top_base()
+                        filtered_structure._symmetrize_top_base()
                     )
                 else:
                     enumerated_structures.append(filtered_structure)
@@ -245,13 +245,13 @@ def automate_surface(
                         return_details=True
                     )
                 )
-                min_c, _ = symmetrized_structure.get_max_min_c_frac()
+                min_c, _ = symmetrized_structure._get_max_min_c_frac()
                 sga = SpacegroupAnalyzer(symmetrized_structure, symprec=0.1)
                 # Create the refined structures
                 refined_structure = sga.get_refined_structure()
 
                 # Define number of sites that should be after enumeration
-                total_num_sites = input_structure.calculate_num_sites(
+                total_num_sites = input_structure._calculate_num_sites(
                     composition_list=composition_list,
                     relaxed_index=relaxed_index,
                     max_cell_size=max_cell_size,
@@ -284,30 +284,30 @@ def automate_surface(
                 noncontiguous = len(get_slab_regions(refined_structure)) == 2
 
                 if noncontiguous:
-                    refined_structure = refined_structure.tune_isc(
+                    refined_structure = refined_structure._tune_isc(
                         origin=origin, shift_isc_back=True
                     )
-                    refined_structure = refined_structure.tune_c(
+                    refined_structure = refined_structure._tune_c(
                         target_min_c=min_c
                     )
                     refined_structure = (
-                        refined_structure.add_selective_dynamics(
+                        refined_structure._add_selective_dynamics(
                             lower_limit_angstrom=fixed_bottom,
                             upper_limit_angstrom=fixed_top,
                         )
                     )
                 else:
-                    refined_structure = refined_structure.tune_c(
+                    refined_structure = refined_structure._tune_c(
                         target_min_c=min_c
                     )
                     refined_structure = (
-                        refined_structure.add_selective_dynamics(
+                        refined_structure._add_selective_dynamics(
                             lower_limit_angstrom=fixed_bottom,
                             upper_limit_angstrom=fixed_top,
                         )
                     )
 
-                refined_structure = refined_structure.tune_isc(
+                refined_structure = refined_structure._tune_isc(
                     origin=origin, shift_isc_back=False
                 )
             else:

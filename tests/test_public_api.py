@@ -154,9 +154,23 @@ def test_slab_uses_corrected_enumerated_layer_name():
     assert not hasattr(slab, "num_layers_enumed")
 
 
-def test_slab_uses_corrected_supplemental_structure_method_name():
-    """The public slab method should use an action-oriented name."""
-    assert hasattr(EnumerationSlab, "generate_supplemental_structures")
+def test_enumeration_slab_pipeline_helpers_are_private():
+    """Legacy CLI machinery should not appear in the supported slab API."""
+    helper_names = {
+        "wrap_pbc",
+        "generate_supplemental_structures",
+        "symmetrize_top_base",
+        "get_max_min_c_frac",
+        "check_rotate",
+        "calculate_num_sites",
+        "tune_isc",
+        "tune_c",
+        "add_selective_dynamics",
+    }
+
+    for name in helper_names:
+        assert not hasattr(EnumerationSlab, name)
+        assert hasattr(EnumerationSlab, f"_{name}")
     assert not hasattr(EnumerationSlab, "supplemental_structures_gene")
 
 

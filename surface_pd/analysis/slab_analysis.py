@@ -38,7 +38,7 @@ def structure_filter(input_slabs, direction, criteria):
         if any((x - 0.0001) <= criteria <= (x + 0.0001) for x in lattice):
             slab["structure"] = EnumerationSlab.from_sites(
                 slab["structure"]
-            ).check_rotate(criteria)
+            )._check_rotate(criteria)
             filtered_structures.append(slab["structure"])
     return filtered_structures
 

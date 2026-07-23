@@ -195,7 +195,7 @@ class SurfaceEnumerator:
                 analysis.fixed_region_bounds_angstrom,
             )
             if structure.symmetric:
-                finalized = finalized.symmetrize_top_base()
+                finalized = finalized._symmetrize_top_base()
                 finalized = EnumerationSlab.from_structure(
                     finalized,
                     direction=structure.direction,
