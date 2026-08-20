@@ -744,13 +744,18 @@ class EnumerationSlab(Structure):
         Symmetrize the top surface by the inversion symmetry center.
 
         This creates a fully enumerated slab model. The inversion symmetry
-        center is
-        determined based on the central fixed region only because the input
+        center is determined based on the central fixed region only because
+        the input
         slab model is not symmetric since on the one hand, the top surface
         of the slab is substituted by other dummy species,
         on the other hand, it has been enumerated with different Li and O
         compositions on the surface. Therefore, using the whole slab to
         detect the inversion symmetry does not work.
+
+        Surface membership is determined in a periodic coordinate system cut
+        at the slab's largest vacuum gap. It therefore does not depend on the
+        fractional-coordinate representation of the inversion center or on
+        the vertical placement of the slab in the unit cell.
 
         Parameters
         ----------
@@ -774,7 +779,10 @@ class EnumerationSlab(Structure):
         ``debug-center.vasp`` in the current working directory.
         """
         # Generate the reference slab from sites fixed by selective dynamics.
-        fixed_indices = self.analyze().fixed_site_indices
+        # The analysis coordinates cut the largest periodic gap, providing a
+        # translation-invariant bottom-to-top ordering of the physical slab.
+        analysis = self.analyze()
+        fixed_indices = analysis.fixed_site_indices
         slab_ref = EnumerationSlab.from_sites(
             [copy.deepcopy(self[index]) for index in fixed_indices]
         )
@@ -782,7 +790,7 @@ class EnumerationSlab(Structure):
         # Determine symmetry operations of the reference slab and make sure
         # the reference slab has an inversion center
         try:
-            symmetric, origin, inversion = (
+            symmetric, _, inversion = (
                 slab_ref._inversion_symmetry_details(
                     symprec=symprec, return_details=True
                 )
@@ -804,36 +812,16 @@ class EnumerationSlab(Structure):
         self._wrap_pbc()
 
         # Symmetrized slab models based on top only
+        coordinates = self._site_coordinates_angstrom()
+        fixed_top = max(coordinates[index] for index in fixed_indices)
         top_sites = []
-        bottom_sites = []
         center_sites = slab_ref.sites
 
-        for s in [
-            s
-            for s in self
-            if s.frac_coords[self.direction] > origin[self.direction]
-        ]:
+        for index, s in enumerate(self):
             if "selective_dynamics" in s.properties and any(
                 s.properties["selective_dynamics"]
-            ):
+            ) and coordinates[index] > fixed_top:
                 top_sites.append(copy.deepcopy(s))
-        for s in [
-            s
-            for s in self
-            if s.frac_coords[self.direction] < origin[self.direction]
-        ]:
-            if "selective_dynamics" in s.properties and any(
-                s.properties["selective_dynamics"]
-            ):
-                bottom_sites.append(copy.deepcopy(s))
-
-        # # Extend the center sites list in case of some sites have exactly the
-        # # same c fractional coordinates of the origin
-        # center_sites.extend(
-        #     [copy.deepcopy(s) for s in self
-        #      if s.frac_coords[self.direction] ==
-        #      origin[self.direction]]
-        # )
 
         # Initialize a new slab model which only has the center and top
         # regions of the initial slab model

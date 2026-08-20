@@ -34,12 +34,7 @@ LI_SLAB = (
     / "POSCAR_Li_100.vasp"
 )
 LI2O_SLAB = (
-    PROJECT_ROOT
-    / "examples"
-    / "enumeration-examples"
-    / "structure"
-    / "electrode"
-    / "POSCAR_Li2O_110.vasp"
+    PROJECT_ROOT / "tests" / "data" / "POSCAR_Li2O_110_symmetric.vasp"
 )
 
 
@@ -182,36 +177,45 @@ for result in results:
     )
 
 
-def test_public_enumerator_finalizes_symmetric_surface_cells(tmp_path):
-    """Return complete inversion-symmetric Li2O surface derivatives."""
+def test_public_symmetric_enumerator_is_translation_invariant(tmp_path):
+    """Return equivalent Li2O derivatives after periodic translations."""
     _, _, env = _skip_without_enumlib(tmp_path)
     script = f"""
 from pymatgen.core import Structure
 from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 
 source = Structure.from_file({str(LI2O_SLAB)!r})
-slab = EnumerationSlab.from_structure(
-    source,
-    direction=2,
-    enumerated_species=["Li", "O"],
-    num_enumerated_layers={{"Li": 1, "O": 2}},
-    symmetric=True,
-)
-results = SurfaceEnumerator(
-    {{"Li": {{"Li": 1.0}}, "O": {{"O": 0.75}}}},
-    min_cell_size=1,
-    max_cell_size=2,
-).apply_enumeration(slab, max_structures=20)
-print(len(results))
-for result in results:
-    complete = all(
-        site.properties.get("selective_dynamics") is not None
-        for site in result
+for translation in (0.0, 0.25, 0.5, 0.75):
+    translated = source.copy()
+    translated.translate_sites(
+        range(len(translated)), [0, 0, translation],
+        frac_coords=True, to_unit_cell=True,
     )
-    print(
-        len(result), result.composition["Li"], result.composition["O"],
-        result.lattice.c, result.has_inversion_symmetry(), complete,
+    slab = EnumerationSlab.from_structure(
+        translated,
+        direction=2,
+        enumerated_species=["Li", "O"],
+        num_enumerated_layers={{"Li": 1, "O": 2}},
+        symmetric=True,
     )
+    results = SurfaceEnumerator(
+        {{"Li": {{"Li": 1.0}}, "O": {{"O": 0.75}}}},
+        min_cell_size=1,
+        max_cell_size=2,
+    ).apply_enumeration(slab, max_structures=20)
+    print(translation, len(results))
+    for result in results:
+        complete = all(
+            site.properties.get("selective_dynamics") is not None
+            for site in result
+        )
+        metadata = result.enumeration_metadata
+        print(
+            len(result), result.composition["Li"], result.composition["O"],
+            result.lattice.c, result.has_inversion_symmetry(), complete,
+            metadata.area_multiplier, metadata.raw_candidate_rank,
+            metadata.symmetric,
+        )
 """
     result = subprocess.run(
         [sys.executable, "-c", script],
@@ -225,10 +229,24 @@ for result in results:
 
     assert result.returncode == 0, result.stderr
     lines = result.stdout.splitlines()
-    assert lines[0] == "4"
-    for line in lines[1:]:
-        sites, lithium, oxygen, c_length, symmetric, complete = line.split()
-        assert (int(sites), float(lithium), float(oxygen)) == (76, 52.0, 24.0)
-        assert float(c_length) == pytest.approx(38.7623252869)
-        assert symmetric == "True"
-        assert complete == "True"
+    assert len(lines) == 20
+    result_groups = []
+    for offset, translation in zip(
+        range(0, 20, 5), (0.0, 0.25, 0.5, 0.75), strict=True
+    ):
+        assert lines[offset] == f"{translation} 4"
+        group = []
+        for line in lines[offset + 1 : offset + 5]:
+            values = line.split()
+            assert (int(values[0]), float(values[1]), float(values[2])) == (
+                76,
+                52.0,
+                24.0,
+            )
+            assert float(values[3]) == pytest.approx(38.7623252869)
+            assert values[4:7] == ["True", "True", "2"]
+            assert values[8] == "True"
+            group.append(tuple(values))
+        result_groups.append(group)
+
+    assert result_groups[1:] == [result_groups[0]] * 3

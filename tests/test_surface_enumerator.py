@@ -10,6 +10,10 @@ from pymatgen.io.vasp import Poscar
 from surface_pd.core import EnumerationSlab, SurfaceEnumerator
 from surface_pd.error import IncompatibleSymmError
 
+SYMMETRIC_LI2O_FIXTURE = (
+    Path(__file__).parent / "data/POSCAR_Li2O_110_symmetric.vasp"
+)
+
 
 def _configured_slab():
     structure = Structure(
@@ -134,6 +138,42 @@ def test_cartesian_analysis_reproduces_symmetric_reference_selection():
         "Li": (0, 1, 24, 25),
         "O": (26, 27, 37, 38),
     }
+
+
+def test_symmetric_finalization_is_invariant_to_vertical_translation():
+    """Periodic translations must not change the reconstructed slab."""
+    source = EnumerationSlab.from_file(
+        SYMMETRIC_LI2O_FIXTURE,
+        direction=2,
+        layer_tolerance_angstrom=0.5,
+        enumerated_species=["Li", "O"],
+        num_enumerated_layers={"Li": 1, "O": 2},
+        symmetric=True,
+    )
+
+    finalized_compositions = []
+    for translation in (0.0, 0.25, 0.5, 0.75):
+        translated = source.copy()
+        translated.translate_sites(
+            range(len(translated)),
+            [0, 0, translation],
+            frac_coords=True,
+            to_unit_cell=True,
+        )
+        translated = EnumerationSlab.from_structure(
+            translated,
+            direction=2,
+            layer_tolerance_angstrom=0.5,
+            enumerated_species=["Li", "O"],
+            num_enumerated_layers={"Li": 1, "O": 2},
+            symmetric=True,
+        )
+
+        finalized_compositions.append(
+            translated._symmetrize_top_base().composition
+        )
+
+    assert finalized_compositions == [source.composition] * 4
 
 
 def test_cartesian_analysis_reproduces_asymmetric_reference_selection():

@@ -155,6 +155,7 @@ Thumbs.db
 # Project specific
 *.vasp
 *.POSCAR
+!tests/data/*.vasp
 *.CONTCAR
 
 tex/
